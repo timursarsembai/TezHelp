@@ -1,0 +1,45 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/pre_tool_policy.py\"",
+            "commandWindows": "powershell -NoProfile -Command \"$root=(git rev-parse --show-toplevel); py -3 (Join-Path $root '.codex/hooks/pre_tool_policy.py')\"",
+            "timeout": 15,
+            "statusMessage": "Checking TezHelp command safety"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/post_edit_architecture_check.py\"",
+            "commandWindows": "powershell -NoProfile -Command \"$root=(git rev-parse --show-toplevel); py -3 (Join-Path $root '.codex/hooks/post_edit_architecture_check.py')\"",
+            "timeout": 30,
+            "statusMessage": "Checking TezHelp architecture warnings"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/stop_quality_gate.py\"",
+            "commandWindows": "powershell -NoProfile -Command \"$root=(git rev-parse --show-toplevel); py -3 (Join-Path $root '.codex/hooks/stop_quality_gate.py')\"",
+            "timeout": 30,
+            "statusMessage": "Checking TezHelp quality-gate status"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+.next/
+.turbo/
+coverage/
+dist/
+node_modules/
+.pnpm-store/
+playwright-report/
+test-results/
+pnpm-debug.log*
+*.tsbuildinfo
+__pycache__/
+*.pyc

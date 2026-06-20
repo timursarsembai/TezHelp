@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #165dff;
+  --color-brand-orange: #ff7a00;
+  --color-brand-success: #16a36a;
+  --color-brand-danger: #dc3545;
+  --color-app-background: #f6f8fc;
+  --color-app-text: #152033;
+}
+
+body {
+  margin: 0;
+}

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    "apps/api": {
+      "entry": ["migrations/*.js"],
+      "ignoreDependencies": ["@nestjs/terminus", "pino-http", "supertest", "@types/supertest"]
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "tezhelp",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.8.0",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=11.8.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "local:dev": "pnpm infra:up && pnpm db:migrate && pnpm dev",
+    "build": "turbo run build",
+    "lint": "eslint . && dependency-cruiser --config .dependency-cruiser.cjs .",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:integration": "dotenv -e .env.example -- turbo run test:integration",
+    "test:e2e": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:migrate": "pnpm --filter @tezhelp/api db:migrate",
+    "infra:up": "docker compose --env-file .env.example -f infrastructure/docker/docker-compose.yml up -d",
+    "infra:down": "docker compose --env-file .env.example -f infrastructure/docker/docker-compose.yml down",
+    "knip": "knip",
+    "graph:cycles": "madge --circular --extensions ts,tsx apps packages"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.61.0",
+    "@types/node": "26.0.0",
+    "dependency-cruiser": "17.4.3",
+    "dotenv-cli": "11.0.0",
+    "eslint": "10.5.0",
+    "eslint-import-resolver-typescript": "4.4.5",
+    "eslint-plugin-import-x": "4.16.2",
+    "jsdom": "29.1.1",
+    "knip": "6.17.1",
+    "madge": "8.0.0",
+    "prettier": "3.8.4",
+    "tsx": "4.22.4",
+    "turbo": "2.9.18",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.61.1",
+    "vitest": "4.1.9"
+  }
+}
