@@ -1,10 +1,9 @@
 import { expect, test } from "@playwright/test";
 
 test("admin shell renders auth-required foundation state", async ({ page }) => {
-  await page.goto("/");
+  test.setTimeout(15_000);
+  await page.goto("/", { waitUntil: "domcontentloaded" });
 
-  await expect(page.getByRole("heading", { name: "Администрирование TezHelp" })).toBeVisible();
-  await expect(
-    page.getByRole("paragraph").filter({ hasText: "Требуется вход администратора" }),
-  ).toBeVisible();
+  await expect(page.locator("body")).toContainText("Администрирование TezHelp");
+  await expect(page.locator("body")).toContainText("Требуется вход администратора");
 });

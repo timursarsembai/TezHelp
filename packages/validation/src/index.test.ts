@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { apiEnvSchema, localeSchema } from "./index";
+import { apiEnvSchema, localeSchema, requestOtpSchema, switchRoleSchema } from "./index";
 
 describe("validation schemas", () => {
   it("accepts the three supported locales", () => {
@@ -25,5 +25,29 @@ describe("validation schemas", () => {
     });
 
     expect(env.PORT).toBe(4000);
+  });
+
+  it("rejects production startup with development identity adapters", () => {
+    expect(() =>
+      apiEnvSchema.parse({
+        NODE_ENV: "production",
+        DATABASE_URL: "postgres://tezhelp:tezhelp_dev_password@localhost:5432/tezhelp",
+        REDIS_URL: "redis://localhost:6379",
+        S3_ENDPOINT: "http://localhost:9000",
+        S3_REGION: "local",
+        S3_ACCESS_KEY_ID: "tezhelp_dev_access_key",
+        S3_SECRET_ACCESS_KEY: "tezhelp_dev_secret_key",
+        S3_BUCKET_PRIVATE: "tezhelp-private-dev",
+        IDENTITY_OTP_ADAPTER: "development",
+        IDENTITY_DEV_AUTH_HEADER_ENABLED: "true",
+        SESSION_COOKIE_SECURE: "false",
+      }),
+    ).toThrow();
+  });
+
+  it("validates identity public contracts", () => {
+    expect(requestOtpSchema.parse({ phone: "+77001234567" }).purpose).toBe("sign_in");
+    expect(switchRoleSchema.parse({ role: "provider" }).role).toBe("provider");
+    expect(() => requestOtpSchema.parse({ phone: "87001234567" })).toThrow();
   });
 });

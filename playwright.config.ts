@@ -1,5 +1,25 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const webServer =
+  process.env.PLAYWRIGHT_SKIP_WEBSERVER === "true"
+    ? undefined
+    : [
+        {
+          command: "node node_modules/next/dist/bin/next dev --port 3000",
+          cwd: "apps/web",
+          url: "http://127.0.0.1:3000",
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+        },
+        {
+          command: "node node_modules/next/dist/bin/next dev --port 3001",
+          cwd: "apps/admin",
+          url: "http://127.0.0.1:3001",
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+        },
+      ];
+
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: true,
@@ -21,18 +41,5 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], baseURL: "http://127.0.0.1:3001" },
     },
   ],
-  webServer: [
-    {
-      command: "pnpm --filter @tezhelp/web dev",
-      url: "http://127.0.0.1:3000",
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
-    },
-    {
-      command: "pnpm --filter @tezhelp/admin dev",
-      url: "http://127.0.0.1:3001",
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
-    },
-  ],
+  webServer,
 });

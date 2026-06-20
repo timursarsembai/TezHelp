@@ -47,6 +47,93 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </Button>
         </article>
       </section>
+
+      <section className="mt-4 rounded-lg bg-white p-5 shadow-sm" aria-labelledby="identity-title">
+        <div className="max-w-3xl">
+          <p className="text-sm font-semibold text-brand-blue">
+            {translate(locale, "identity.google")}
+          </p>
+          <h2 className="mt-2 text-2xl font-bold" id="identity-title">
+            {translate(locale, "identity.title")}
+          </h2>
+          <p className="mt-3 text-base leading-7 text-slate-700">
+            {translate(locale, "identity.subtitle")}
+          </p>
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <IdentityField
+            label={translate(locale, "identity.phone")}
+            placeholder={translate(locale, "identity.phonePlaceholder")}
+          />
+          <IdentityField
+            label={translate(locale, "identity.otp")}
+            placeholder={translate(locale, "identity.otpPlaceholder")}
+          />
+          <IdentitySelect
+            label={translate(locale, "identity.role")}
+            options={[
+              translate(locale, "identity.roleCustomer"),
+              translate(locale, "identity.roleProvider"),
+            ]}
+          />
+          <IdentitySelect
+            label={translate(locale, "identity.locale")}
+            options={["ru", "kk", "en"]}
+          />
+        </div>
+
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+          <Button className="w-full sm:w-fit">{translate(locale, "identity.submit")}</Button>
+          <Button className="w-full sm:w-fit" variant="secondary">
+            {translate(locale, "identity.completePhone")}
+          </Button>
+        </div>
+      </section>
     </ResponsiveShell>
+  );
+}
+
+function IdentityField({
+  label,
+  placeholder,
+}: {
+  readonly label: string;
+  readonly placeholder: string;
+}) {
+  const id = `identity-${label.toLowerCase().replace(/\s+/g, "-")}`;
+  return (
+    <label className="grid gap-2 text-sm font-semibold text-slate-900" htmlFor={id}>
+      {label}
+      <input
+        className="min-h-11 rounded-md border border-slate-300 px-3 text-base font-normal outline-none focus:border-brand-blue focus:ring-2 focus:ring-blue-100"
+        id={id}
+        inputMode="tel"
+        placeholder={placeholder}
+      />
+    </label>
+  );
+}
+
+function IdentitySelect({
+  label,
+  options,
+}: {
+  readonly label: string;
+  readonly options: ReadonlyArray<string>;
+}) {
+  const id = `identity-${label.toLowerCase().replace(/\s+/g, "-")}`;
+  return (
+    <label className="grid gap-2 text-sm font-semibold text-slate-900" htmlFor={id}>
+      {label}
+      <select
+        className="min-h-11 rounded-md border border-slate-300 bg-white px-3 text-base font-normal outline-none focus:border-brand-blue focus:ring-2 focus:ring-blue-100"
+        id={id}
+      >
+        {options.map((option) => (
+          <option key={option}>{option}</option>
+        ))}
+      </select>
+    </label>
   );
 }

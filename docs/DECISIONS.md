@@ -100,3 +100,18 @@ Reason:
 - raw SQL support for PostGIS
 - type-safe query construction without hiding database behavior
 - future wallet and commission workflows need visible, testable transactions
+
+## ADR-014 - Identity development adapters
+
+Status: accepted.
+
+Use a development OTP adapter and development auth header only in local/test
+environments. Production environment validation must fail when either unsafe
+adapter is enabled.
+
+Reason:
+
+- Phase 1 needs testable identity flows before real SMS integration
+- OTP values must never be logged or exposed by production-safe paths
+- Google identity must remain separate from trusted phone verification
+- local development must not masquerade as production authentication

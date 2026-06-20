@@ -9,6 +9,12 @@ describe("web shell localization", () => {
     expect(translate("en", "web.customer.title")).toContain("Roadside");
   });
 
+  it("has localized identity shell text", () => {
+    expect(translate("ru", "identity.phone")).toBe("Телефон");
+    expect(translate("kk", "identity.roleProvider")).toContain("Орындаушы");
+    expect(translate("en", "identity.completePhone")).toContain("Google");
+  });
+
   it("uses Russian as fallback locale", () => {
     expect(resolveLocale(undefined)).toBe("ru");
   });

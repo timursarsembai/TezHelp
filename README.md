@@ -1,9 +1,9 @@
 # TezHelp
 
 TezHelp is a marketplace for emergency roadside services in Kazakhstan. This
-repository is a production-oriented Phase 0 foundation: mobile-first web,
-separate admin web, standalone NestJS API, shared packages, and local
-infrastructure.
+repository is a production-oriented foundation: mobile-first web, separate
+admin web, standalone NestJS API, shared packages, local infrastructure, and the
+Phase 1 identity foundation.
 
 ## Requirements
 
@@ -34,6 +34,26 @@ Apps:
 - OpenAPI: `http://localhost:4000/openapi.json`
 - Swagger UI: `http://localhost:4000/docs`
 - MinIO console: `http://localhost:9001`
+
+## Identity Foundation
+
+Implemented development endpoints:
+
+- `POST /v1/auth/otp/request`
+- `POST /v1/auth/otp/verify`
+- `POST /v1/auth/google/development`
+- `GET /v1/me`
+- `POST /v1/me/phone-completion/request`
+- `POST /v1/me/phone-completion/verify`
+- `POST /v1/me/phone-change/request`
+- `POST /v1/me/phone-change/verify`
+- `PATCH /v1/me/locale`
+- `PATCH /v1/me/role`
+
+Development OTP is configured by `IDENTITY_DEVELOPMENT_OTP` and defaults to
+`123456`. The development OTP adapter and `x-tezhelp-user-id` development auth
+header are rejected in production by environment validation. Do not use these as
+production authentication.
 
 ## Canonical Commands
 
@@ -66,7 +86,7 @@ The MVP remains a modular monolith with a standalone NestJS backend.
 
 - `apps/web`: customer/provider responsive web shell.
 - `apps/admin`: separate protected administration shell.
-- `apps/api`: NestJS API foundation with configuration, database, health, and audit modules.
+- `apps/api`: NestJS API foundation with configuration, database, health, audit, and identity modules.
 - `packages/*`: shared UI, public contracts, validation, i18n, API client, maps, and config.
 - `infrastructure/docker`: local PostGIS, Redis, and S3-compatible object storage.
 
@@ -84,8 +104,10 @@ pnpm db:migrate
 ```
 
 The first migration enables PostGIS and `pgcrypto`, then creates the append-only
-`audit_events` foundation table. The migration command loads `.env.example` for
-local development defaults; production and CI should provide real environment
+`audit_events` foundation table. The second migration adds identity tables for
+users, auth links, customer/provider profiles, OTP challenges, sessions, and
+security events. The migration command loads `.env.example` for local
+development defaults; production and CI should provide real environment
 variables explicitly.
 
 ## Quality Gates
@@ -146,3 +168,4 @@ Start with:
 7. `docs/TESTING_STRATEGY.md`
 8. `docs/ROADMAP.md`
 9. `docs/plans/2026-06-19-bootstrap-foundation.md`
+10. `docs/plans/2026-06-20-identity-foundation.md`

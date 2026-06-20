@@ -5,8 +5,16 @@ import { ConfigurationModule } from "../foundation/configuration/configuration.m
 import { DatabaseModule } from "../foundation/database/database.module.js";
 import { HealthModule } from "../foundation/health/health.module.js";
 import { HttpFoundationModule } from "../foundation/http/http-foundation.module.js";
+import { IdentityModule } from "../identity/identity.module.js";
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule, AuditModule, HttpFoundationModule, HealthModule],
+  imports: [
+    ConfigurationModule,
+    DatabaseModule,
+    AuditModule,
+    HttpFoundationModule,
+    HealthModule,
+    IdentityModule,
+  ],
 })
 export class ApiRootModule {}

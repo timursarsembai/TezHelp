@@ -44,6 +44,14 @@ After Google sign-in, verified phone remains mandatory.
 
 Production must reject test OTP configuration.
 
+Current development defaults:
+
+- `IDENTITY_OTP_ADAPTER=development` is for local and test environments only.
+- `IDENTITY_DEVELOPMENT_OTP` is never logged and must not be used in production.
+- `IDENTITY_DEV_AUTH_HEADER_ENABLED` enables the local `x-tezhelp-user-id`
+  development header and is rejected in production.
+- `SESSION_COOKIE_SECURE=true` is required in production.
+
 OTP controls:
 
 - expiration

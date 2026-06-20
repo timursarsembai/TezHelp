@@ -8,6 +8,19 @@ export type MessageKey =
   | "web.provider.subtitle"
   | "web.nav.customer"
   | "web.nav.provider"
+  | "identity.title"
+  | "identity.subtitle"
+  | "identity.google"
+  | "identity.phone"
+  | "identity.phonePlaceholder"
+  | "identity.otp"
+  | "identity.otpPlaceholder"
+  | "identity.completePhone"
+  | "identity.role"
+  | "identity.roleCustomer"
+  | "identity.roleProvider"
+  | "identity.locale"
+  | "identity.submit"
   | "admin.title"
   | "admin.authRequired"
   | "admin.authRequiredBody"
@@ -26,6 +39,19 @@ const ru: Dictionary = {
     "Отдельная оболочка провайдера подготовлена для будущих заказов и откликов.",
   "web.nav.customer": "Клиент",
   "web.nav.provider": "Исполнитель",
+  "identity.title": "Вход и профиль",
+  "identity.subtitle": "Подтвердите телефон, завершите профиль после Google и выберите роль.",
+  "identity.google": "Войти через Google",
+  "identity.phone": "Телефон",
+  "identity.phonePlaceholder": "+77001234567",
+  "identity.otp": "Код из SMS",
+  "identity.otpPlaceholder": "123456",
+  "identity.completePhone": "Телефон обязателен после Google",
+  "identity.role": "Текущая роль",
+  "identity.roleCustomer": "Клиент",
+  "identity.roleProvider": "Исполнитель",
+  "identity.locale": "Язык интерфейса",
+  "identity.submit": "Продолжить",
   "admin.title": "Администрирование TezHelp",
   "admin.authRequired": "Требуется вход администратора",
   "admin.authRequiredBody":
@@ -38,11 +64,25 @@ const kk: Dictionary = {
   "app.brand": "TezHelp",
   "web.customer.title": "Жолдағы көмек жақын жерде",
   "web.customer.subtitle":
-    "Клиенттің мобильді қабығы болашақ API үшін дайын, бизнес ережелер интерфейсте жоқ.",
+    "Клиенттің мобильді қабығы болашақ API үшін дайын, бизнес ережелері интерфейсте жоқ.",
   "web.provider.title": "Орындаушының жұмыс орны",
   "web.provider.subtitle": "Провайдер қабығы болашақ тапсырыстар мен ұсыныстарға дайындалды.",
   "web.nav.customer": "Клиент",
   "web.nav.provider": "Орындаушы",
+  "identity.title": "Кіру және профиль",
+  "identity.subtitle":
+    "Телефонды растаңыз, Google-дан кейін профильді аяқтаңыз және рөлді таңдаңыз.",
+  "identity.google": "Google арқылы кіру",
+  "identity.phone": "Телефон",
+  "identity.phonePlaceholder": "+77001234567",
+  "identity.otp": "SMS коды",
+  "identity.otpPlaceholder": "123456",
+  "identity.completePhone": "Google-дан кейін телефон міндетті",
+  "identity.role": "Ағымдағы рөл",
+  "identity.roleCustomer": "Клиент",
+  "identity.roleProvider": "Орындаушы",
+  "identity.locale": "Интерфейс тілі",
+  "identity.submit": "Жалғастыру",
   "admin.title": "TezHelp әкімшілігі",
   "admin.authRequired": "Әкімші ретінде кіру қажет",
   "admin.authRequiredBody":
@@ -60,6 +100,19 @@ const en: Dictionary = {
   "web.provider.subtitle": "The provider shell is prepared for future orders and offers.",
   "web.nav.customer": "Customer",
   "web.nav.provider": "Provider",
+  "identity.title": "Sign in and profile",
+  "identity.subtitle": "Verify a phone, complete Google sign-in, and choose a role.",
+  "identity.google": "Continue with Google",
+  "identity.phone": "Phone",
+  "identity.phonePlaceholder": "+77001234567",
+  "identity.otp": "SMS code",
+  "identity.otpPlaceholder": "123456",
+  "identity.completePhone": "Phone is required after Google",
+  "identity.role": "Current role",
+  "identity.roleCustomer": "Customer",
+  "identity.roleProvider": "Provider",
+  "identity.locale": "Interface language",
+  "identity.submit": "Continue",
   "admin.title": "TezHelp administration",
   "admin.authRequired": "Administrator sign-in required",
   "admin.authRequiredBody":

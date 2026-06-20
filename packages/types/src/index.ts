@@ -4,6 +4,25 @@ export type Locale = (typeof supportedLocales)[number];
 
 export type HealthStatus = "ok" | "degraded" | "error";
 
+export type AccountStatus = "pending_phone" | "active" | "blocked";
+
+export type UserRole = "customer" | "provider";
+
+export interface IdentityUserSummary {
+  readonly id: string;
+  readonly status: AccountStatus;
+  readonly preferredLocale: Locale;
+  readonly selectedRole: UserRole;
+  readonly verifiedPhone?: string;
+  readonly roles: ReadonlyArray<UserRole>;
+}
+
+export interface OtpChallengeResponse {
+  readonly challengeId: string;
+  readonly expiresAt: string;
+  readonly resendAvailableAt: string;
+}
+
 export interface DependencyHealth {
   readonly status: HealthStatus;
   readonly latencyMs?: number;

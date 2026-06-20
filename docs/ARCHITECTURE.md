@@ -297,6 +297,19 @@ Kysely is the query builder, not the owner of domain policy. Repositories and
 application use cases must keep transaction boundaries explicit. Raw SQL is
 allowed for PostGIS and database features that need exact SQL control.
 
+## Identity foundation
+
+The `identity` backend module owns accounts, authentication links, phone OTP
+verification, locale preference, selected role, and account-level security
+events. It uses focused use cases such as request OTP, verify OTP, development
+Google sign-in, request phone change, update locale, and switch role.
+
+Development OTP and development auth headers are allowed only outside
+production. Production startup fails if those unsafe adapters are enabled. A
+verified phone is unique across non-blocked accounts by database constraint.
+Google identity links do not imply trusted phone ownership; phone completion is
+required before the account becomes active.
+
 ## Maps
 
 Use replaceable interfaces:
