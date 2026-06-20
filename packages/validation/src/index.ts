@@ -1,10 +1,23 @@
 import { z } from "zod";
 
-import { supportedLocales } from "@tezhelp/types";
+import { serviceCategorySlugs, supportedLocales } from "@tezhelp/types";
 
 export const localeSchema = z.enum(supportedLocales);
 export const userRoleSchema = z.enum(["customer", "provider"]);
 export const otpPurposeSchema = z.enum(["sign_in", "phone_completion", "phone_change"]);
+export const serviceCategorySlugSchema = z.enum(serviceCategorySlugs);
+export const providerTaxStatusSchema = z.enum([
+  "individual_entrepreneur",
+  "self_employed_special_tax",
+]);
+export const providerModerationStatusSchema = z.enum([
+  "draft",
+  "submitted",
+  "under_review",
+  "approved",
+  "rejected",
+  "suspended",
+]);
 
 export const phoneNumberSchema = z
   .string()
@@ -43,6 +56,43 @@ export const updateLocaleSchema = z.object({
 
 export const switchRoleSchema = z.object({
   role: userRoleSchema,
+});
+
+export const updateProviderProfileSchema = z.object({
+  displayName: z.string().trim().min(2).max(120).optional(),
+  iin: z
+    .string()
+    .regex(/^\d{12}$/)
+    .optional(),
+  city: z.string().trim().min(2).max(80).optional(),
+  taxStatus: providerTaxStatusSchema.optional(),
+});
+
+export const createProviderServiceProfileSchema = z.object({
+  categorySlug: serviceCategorySlugSchema,
+});
+
+export const registerProviderDocumentSchema = z.object({
+  serviceProfileId: z.uuid().optional(),
+  documentType: z.string().trim().min(2).max(80),
+  privateObjectKey: z.string().trim().min(8).max(512),
+  originalFilename: z.string().trim().min(1).max(255),
+  contentType: z.string().trim().min(3).max(120),
+  sizeBytes: z
+    .number()
+    .int()
+    .positive()
+    .max(20 * 1024 * 1024),
+  metadata: z.record(z.string(), z.unknown()).default({}),
+});
+
+export const moderationDecisionSchema = z.object({
+  reason: z.string().trim().min(3).max(1000),
+});
+
+export const adminModerationQueueSchema = z.object({
+  status: providerModerationStatusSchema.optional(),
+  categorySlug: serviceCategorySlugSchema.optional(),
 });
 
 export const apiEnvSchema = z

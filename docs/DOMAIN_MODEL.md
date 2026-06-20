@@ -43,6 +43,19 @@ Owns category-specific:
 - category suspension
 - category description and qualifications
 
+Current Phase 2 statuses:
+
+- `draft`
+- `submitted`
+- `under_review`
+- `approved`
+- `rejected`
+- `suspended`
+
+Approval is category-specific. A provider service profile is eligible for future
+offer publication only when its status is `approved` and it is not suspended.
+Submission records a document version and a target SLA deadline.
+
 ### ServiceCategory
 
 Owns configurable policy:
@@ -53,6 +66,12 @@ Owns configurable policy:
 - allowed tax statuses
 - required document rules
 - operational minimum override, if introduced
+
+Initial seeded categories are jump start, engine start assistance, wheel
+replacement, wheel inflation, mobile tire service, fuel delivery, tow truck,
+and vehicle unlocking. Each category has RU/KK/EN labels and descriptions.
+Tax-status allowance and required documents are stored as category configuration,
+not hardcoded legal policy.
 
 ### Order
 

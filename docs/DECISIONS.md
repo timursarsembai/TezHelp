@@ -115,3 +115,19 @@ Reason:
 - OTP values must never be logged or exposed by production-safe paths
 - Google identity must remain separate from trusted phone verification
 - local development must not masquerade as production authentication
+
+## ADR-015 - Provider moderation module boundaries
+
+Status: accepted.
+
+Phase 2 provider onboarding is split into `service-catalog`,
+`provider-services`, and `moderation` modules.
+
+Reason:
+
+- category policy belongs to service catalog configuration
+- provider-owned profiles and documents are separate from admin decisions
+- manual moderation decisions need their own audit history and authorization
+- future automatic verification can attach through adapters without turning the
+  provider module into a god service
+- approval must remain independent per service category

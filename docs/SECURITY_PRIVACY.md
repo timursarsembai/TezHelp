@@ -87,6 +87,12 @@ Examples:
 - access log for identity documents
 - never expose raw object keys as authorization
 
+Provider moderation documents are stored as private object metadata in the
+database. Provider self-access and admin review access must go through signed
+URL use cases and write `provider_document_access_audit`. Raw object keys are
+not an authorization mechanism. The current development signer is replaceable by
+a production S3-compatible presigner before real document uploads are enabled.
+
 ## Location security
 
 - start after departure
@@ -121,6 +127,9 @@ Audit at least:
 - admin order changes
 - complaint decisions
 - permission changes
+
+Phase 2 additionally writes moderation decision history for provider service
+profiles and audits signed document-review URL creation.
 
 Audit records are immutable to ordinary administrators.
 

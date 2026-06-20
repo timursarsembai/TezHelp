@@ -310,6 +310,28 @@ verified phone is unique across non-blocked accounts by database constraint.
 Google identity links do not imply trusted phone ownership; phone completion is
 required before the account becomes active.
 
+## Provider moderation foundation
+
+Phase 2 keeps provider onboarding split across cohesive modules:
+
+- `service-catalog` owns service categories, localized category labels,
+  configurable tax-status allowances, and category-specific document rules.
+- `provider-services` owns the provider general profile, provider-owned service
+  profiles, private document metadata, submission, and future offer eligibility.
+- `moderation` owns admin review queues, moderation decisions, category
+  suspension, decision history, and audited document-review access.
+
+One provider may create multiple provider service profiles. Each profile has its
+own moderation status, document version, submitted time, SLA deadline,
+moderator, decision reason, and rating/statistics placeholders. Approval in one
+category never approves another category.
+
+The current auth path for these endpoints is development-only:
+`x-tezhelp-user-id` for provider endpoints and `x-tezhelp-admin-user-id` for
+admin moderation endpoints. Production startup rejects the development-auth
+configuration. A later identity/RBAC task must replace these headers before
+production use.
+
 ## Maps
 
 Use replaceable interfaces:

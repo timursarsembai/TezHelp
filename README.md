@@ -3,7 +3,7 @@
 TezHelp is a marketplace for emergency roadside services in Kazakhstan. This
 repository is a production-oriented foundation: mobile-first web, separate
 admin web, standalone NestJS API, shared packages, local infrastructure, and the
-Phase 1 identity foundation.
+Phase 2 provider moderation foundation.
 
 ## Requirements
 
@@ -55,6 +55,32 @@ Development OTP is configured by `IDENTITY_DEVELOPMENT_OTP` and defaults to
 header are rejected in production by environment validation. Do not use these as
 production authentication.
 
+## Provider Moderation Foundation
+
+Implemented development endpoints:
+
+- `GET /v1/service-categories`
+- `GET /v1/provider/profile`
+- `PATCH /v1/provider/profile`
+- `GET /v1/provider/service-profiles`
+- `POST /v1/provider/service-profiles`
+- `POST /v1/provider/service-profiles/:serviceProfileId/submit`
+- `GET /v1/provider/service-profiles/:serviceProfileId/offer-eligibility`
+- `POST /v1/provider/documents`
+- `GET /v1/provider/documents/:documentId/access-url`
+- `GET /v1/admin/provider-moderation/queue`
+- `GET /v1/admin/provider-moderation/service-profiles/:serviceProfileId`
+- `POST /v1/admin/provider-moderation/service-profiles/:serviceProfileId/review`
+- `POST /v1/admin/provider-moderation/service-profiles/:serviceProfileId/approve`
+- `POST /v1/admin/provider-moderation/service-profiles/:serviceProfileId/reject`
+- `POST /v1/admin/provider-moderation/service-profiles/:serviceProfileId/suspend`
+- `GET /v1/admin/provider-moderation/documents/:documentId/access-url`
+
+Provider endpoints use the development `x-tezhelp-user-id` header. Admin
+moderation endpoints use `x-tezhelp-admin-user-id`. Both are local/test
+adapters only and are rejected in production through the same development-auth
+environment guard.
+
 ## Canonical Commands
 
 ```bash
@@ -86,7 +112,7 @@ The MVP remains a modular monolith with a standalone NestJS backend.
 
 - `apps/web`: customer/provider responsive web shell.
 - `apps/admin`: separate protected administration shell.
-- `apps/api`: NestJS API foundation with configuration, database, health, audit, and identity modules.
+- `apps/api`: NestJS API foundation with configuration, database, health, audit, identity, service catalog, provider-services, and moderation modules.
 - `packages/*`: shared UI, public contracts, validation, i18n, API client, maps, and config.
 - `infrastructure/docker`: local PostGIS, Redis, and S3-compatible object storage.
 
@@ -106,7 +132,10 @@ pnpm db:migrate
 The first migration enables PostGIS and `pgcrypto`, then creates the append-only
 `audit_events` foundation table. The second migration adds identity tables for
 users, auth links, customer/provider profiles, OTP challenges, sessions, and
-security events. The migration command loads `.env.example` for local
+security events. The third migration adds service categories, localized category
+labels, configurable category tax allowances and document rules, provider
+service profiles, private document metadata, moderation history, and document
+access audit. The migration command loads `.env.example` for local
 development defaults; production and CI should provide real environment
 variables explicitly.
 
@@ -169,3 +198,4 @@ Start with:
 8. `docs/ROADMAP.md`
 9. `docs/plans/2026-06-19-bootstrap-foundation.md`
 10. `docs/plans/2026-06-20-identity-foundation.md`
+11. `docs/plans/2026-06-21-provider-moderation.md`

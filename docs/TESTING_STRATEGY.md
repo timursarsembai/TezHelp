@@ -32,6 +32,10 @@ Required for:
 
 Use a real PostgreSQL/PostGIS test database, preferably via Docker.
 
+API integration tests that share the local Docker database run with file
+parallelism disabled. Tests may truncate shared tables, so parallel files can
+create false failures by deleting each other's fixtures.
+
 ### End-to-end tests
 
 Critical flows:

@@ -18,4 +18,10 @@ describe("i18n", () => {
     expect(translate("kk", "identity.title")).toContain("Кіру");
     expect(translate("en", "identity.title")).toContain("Sign in");
   });
+
+  it("has localized provider moderation strings", () => {
+    expect(translate("ru", "providerModeration.documents")).toContain("документы");
+    expect(translate("kk", "providerModeration.categorySelection")).toContain("санаттары");
+    expect(translate("en", "admin.moderation.queue")).toContain("queue");
+  });
 });

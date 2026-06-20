@@ -90,6 +90,58 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </Button>
         </div>
       </section>
+
+      <section
+        className="mt-4 rounded-lg bg-white p-5 shadow-sm"
+        aria-labelledby="provider-moderation-title"
+      >
+        <div className="max-w-3xl">
+          <p className="text-sm font-semibold text-brand-orange">
+            {translate(locale, "web.nav.provider")}
+          </p>
+          <h2 className="mt-2 text-2xl font-bold" id="provider-moderation-title">
+            {translate(locale, "providerModeration.title")}
+          </h2>
+          <p className="mt-3 text-base leading-7 text-slate-700">
+            {translate(locale, "providerModeration.subtitle")}
+          </p>
+        </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-4">
+          {[
+            translate(locale, "providerModeration.generalProfile"),
+            translate(locale, "providerModeration.categorySelection"),
+            translate(locale, "providerModeration.documents"),
+            translate(locale, "providerModeration.perCategoryStatus"),
+          ].map((item, index) => (
+            <div className="min-h-28 rounded-lg border border-slate-200 bg-slate-50 p-4" key={item}>
+              <p className="text-xs font-semibold text-slate-500">
+                {String(index + 1).padStart(2, "0")}
+              </p>
+              <p className="mt-3 text-sm font-semibold text-slate-950">{item}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm font-semibold text-slate-950">
+              {translate(locale, "providerModeration.rejectionReason")}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              {translate(locale, "providerModeration.perCategoryStatus")}
+            </p>
+          </div>
+          <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+            <p className="text-sm font-semibold text-slate-950">
+              {translate(locale, "providerModeration.documents")}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              {translate(locale, "providerModeration.resubmit")}
+            </p>
+          </div>
+        </div>
+      </section>
     </ResponsiveShell>
   );
 }

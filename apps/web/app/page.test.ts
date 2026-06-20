@@ -15,6 +15,12 @@ describe("web shell localization", () => {
     expect(translate("en", "identity.completePhone")).toContain("Google");
   });
 
+  it("has localized provider moderation shell text", () => {
+    expect(translate("ru", "providerModeration.perCategoryStatus")).toContain("категории");
+    expect(translate("kk", "providerModeration.resubmit")).toContain("Қайта");
+    expect(translate("en", "providerModeration.title")).toContain("moderation");
+  });
+
   it("uses Russian as fallback locale", () => {
     expect(resolveLocale(undefined)).toBe("ru");
   });

@@ -21,9 +21,26 @@ export type MessageKey =
   | "identity.roleProvider"
   | "identity.locale"
   | "identity.submit"
+  | "providerModeration.title"
+  | "providerModeration.subtitle"
+  | "providerModeration.generalProfile"
+  | "providerModeration.categorySelection"
+  | "providerModeration.documents"
+  | "providerModeration.perCategoryStatus"
+  | "providerModeration.rejectionReason"
+  | "providerModeration.resubmit"
   | "admin.title"
   | "admin.authRequired"
   | "admin.authRequiredBody"
+  | "admin.moderation.title"
+  | "admin.moderation.queue"
+  | "admin.moderation.filters"
+  | "admin.moderation.overdue"
+  | "admin.moderation.review"
+  | "admin.moderation.approve"
+  | "admin.moderation.reject"
+  | "admin.moderation.suspend"
+  | "admin.moderation.audit"
   | "common.status.foundation"
   | "common.language";
 
@@ -52,10 +69,28 @@ const ru: Dictionary = {
   "identity.roleProvider": "Исполнитель",
   "identity.locale": "Язык интерфейса",
   "identity.submit": "Продолжить",
+  "providerModeration.title": "Модерация услуг исполнителя",
+  "providerModeration.subtitle":
+    "Заполните общий профиль, выберите категории и отправьте документы на отдельную проверку.",
+  "providerModeration.generalProfile": "Общий профиль",
+  "providerModeration.categorySelection": "Категории услуг",
+  "providerModeration.documents": "Приватные документы",
+  "providerModeration.perCategoryStatus": "Статус по каждой категории",
+  "providerModeration.rejectionReason": "Причина отказа",
+  "providerModeration.resubmit": "Отправить повторно",
   "admin.title": "Администрирование TezHelp",
   "admin.authRequired": "Требуется вход администратора",
   "admin.authRequiredBody":
     "Foundation не реализует fake auth. Реальная авторизация будет добавлена отдельной задачей.",
+  "admin.moderation.title": "Ручная модерация исполнителей",
+  "admin.moderation.queue": "Очередь проверок",
+  "admin.moderation.filters": "Фильтры",
+  "admin.moderation.overdue": "Просрочено SLA",
+  "admin.moderation.review": "Проверка профиля и документов",
+  "admin.moderation.approve": "Одобрить",
+  "admin.moderation.reject": "Отклонить",
+  "admin.moderation.suspend": "Приостановить категорию",
+  "admin.moderation.audit": "История аудита",
   "common.status.foundation": "Foundation готов",
   "common.language": "Язык",
 };
@@ -83,10 +118,28 @@ const kk: Dictionary = {
   "identity.roleProvider": "Орындаушы",
   "identity.locale": "Интерфейс тілі",
   "identity.submit": "Жалғастыру",
+  "providerModeration.title": "Орындаушы қызметтерін модерациялау",
+  "providerModeration.subtitle":
+    "Жалпы профильді толтырып, санаттарды таңдаңыз және құжаттарды бөлек тексеруге жіберіңіз.",
+  "providerModeration.generalProfile": "Жалпы профиль",
+  "providerModeration.categorySelection": "Қызмет санаттары",
+  "providerModeration.documents": "Жеке құжаттар",
+  "providerModeration.perCategoryStatus": "Әр санаттың мәртебесі",
+  "providerModeration.rejectionReason": "Бас тарту себебі",
+  "providerModeration.resubmit": "Қайта жіберу",
   "admin.title": "TezHelp әкімшілігі",
   "admin.authRequired": "Әкімші ретінде кіру қажет",
   "admin.authRequiredBody":
     "Foundation fake auth қоспайды. Нақты авторизация бөлек тапсырмада қосылады.",
+  "admin.moderation.title": "Орындаушыларды қолмен модерациялау",
+  "admin.moderation.queue": "Тексеру кезегі",
+  "admin.moderation.filters": "Сүзгілер",
+  "admin.moderation.overdue": "SLA мерзімі өтті",
+  "admin.moderation.review": "Профиль мен құжаттарды тексеру",
+  "admin.moderation.approve": "Мақұлдау",
+  "admin.moderation.reject": "Қабылдамау",
+  "admin.moderation.suspend": "Санатты тоқтату",
+  "admin.moderation.audit": "Аудит тарихы",
   "common.status.foundation": "Foundation дайын",
   "common.language": "Тіл",
 };
@@ -113,10 +166,28 @@ const en: Dictionary = {
   "identity.roleProvider": "Provider",
   "identity.locale": "Interface language",
   "identity.submit": "Continue",
+  "providerModeration.title": "Provider service moderation",
+  "providerModeration.subtitle":
+    "Complete the general profile, choose categories, and submit private documents for separate review.",
+  "providerModeration.generalProfile": "General profile",
+  "providerModeration.categorySelection": "Service categories",
+  "providerModeration.documents": "Private documents",
+  "providerModeration.perCategoryStatus": "Per-category status",
+  "providerModeration.rejectionReason": "Rejection reason",
+  "providerModeration.resubmit": "Resubmit",
   "admin.title": "TezHelp administration",
   "admin.authRequired": "Administrator sign-in required",
   "admin.authRequiredBody":
     "The foundation does not implement fake auth. Real authorization comes in a separate task.",
+  "admin.moderation.title": "Manual provider moderation",
+  "admin.moderation.queue": "Review queue",
+  "admin.moderation.filters": "Filters",
+  "admin.moderation.overdue": "SLA overdue",
+  "admin.moderation.review": "Profile and document review",
+  "admin.moderation.approve": "Approve",
+  "admin.moderation.reject": "Reject",
+  "admin.moderation.suspend": "Suspend category",
+  "admin.moderation.audit": "Audit history",
   "common.status.foundation": "Foundation ready",
   "common.language": "Language",
 };
