@@ -180,6 +180,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               label={translate(locale, "chat.title")}
               value={translate(locale, "chat.disputeEvidence")}
             />
+            <MarketplaceField
+              label={translate(locale, "maps.liveTracking")}
+              value={translate(locale, "maps.staleState")}
+            />
           </div>
 
           <aside className="rounded-lg border border-slate-200 bg-slate-50 p-4">
@@ -199,6 +203,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <p className="mt-4 rounded-md border border-blue-100 bg-white p-3 text-sm font-semibold leading-6 text-slate-700">
               {translate(locale, "chat.attachmentAccess")}
             </p>
+            <div className="mt-4 grid gap-2 text-sm font-semibold text-slate-700">
+              <span>{translate(locale, "maps.customerMarker")}</span>
+              <span>{translate(locale, "maps.providerMarker")}</span>
+            </div>
           </aside>
         </div>
       </section>

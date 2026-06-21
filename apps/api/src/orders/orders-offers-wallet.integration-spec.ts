@@ -14,6 +14,12 @@ import {
 } from "../chat/application/chat.use-cases.js";
 import { ChatModule } from "../chat/chat.module.js";
 import { DatabaseService } from "../foundation/database/database.service.js";
+import {
+  GetAdminOrderLiveLocationUseCase,
+  GetOrderLiveLocationUseCase,
+  PublishProviderLocationUseCase,
+} from "../live-location/application/live-location.use-cases.js";
+import { LiveLocationModule } from "../live-location/live-location.module.js";
 import { OffersModule } from "../offers/offers.module.js";
 import {
   ListProviderOrdersUseCase,
@@ -62,6 +68,9 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
   let reportChatMessage: ReportChatMessageUseCase;
   let recordChatSystemMessage: RecordChatSystemMessageUseCase;
   let getAdminConversation: GetAdminOrderConversationUseCase;
+  let publishProviderLocation: PublishProviderLocationUseCase;
+  let getOrderLiveLocation: GetOrderLiveLocationUseCase;
+  let getAdminOrderLiveLocation: GetAdminOrderLiveLocationUseCase;
   let manualCredit: ManualWalletCreditUseCase;
   let getWallet: GetProviderWalletUseCase;
   let listProviderOrders: ListProviderOrdersUseCase;
@@ -75,7 +84,7 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
   beforeEach(async () => {
     await closeModule?.();
     const moduleRef = await Test.createTestingModule({
-      imports: [WalletModule, OrdersModule, OffersModule, ChatModule],
+      imports: [WalletModule, OrdersModule, OffersModule, ChatModule, LiveLocationModule],
     }).compile();
     closeModule = () => moduleRef.close();
 
@@ -95,12 +104,17 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
     reportChatMessage = moduleRef.get(ReportChatMessageUseCase);
     recordChatSystemMessage = moduleRef.get(RecordChatSystemMessageUseCase);
     getAdminConversation = moduleRef.get(GetAdminOrderConversationUseCase);
+    publishProviderLocation = moduleRef.get(PublishProviderLocationUseCase);
+    getOrderLiveLocation = moduleRef.get(GetOrderLiveLocationUseCase);
+    getAdminOrderLiveLocation = moduleRef.get(GetAdminOrderLiveLocationUseCase);
     manualCredit = moduleRef.get(ManualWalletCreditUseCase);
     getWallet = moduleRef.get(GetProviderWalletUseCase);
     listProviderOrders = moduleRef.get(ListProviderOrdersUseCase);
 
     await sql`
       truncate table
+        live_location_updates,
+        live_location_sessions,
         chat_attachment_access_audit,
         chat_message_reports,
         chat_attachments,
@@ -637,6 +651,120 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
         message: { messageType: "text", text: "Too late" },
       }),
     ).rejects.toMatchObject({ code: "CHAT_NOT_SENDABLE" });
+  });
+
+  it("allows assigned parties and admin to use live tracking after departure", async () => {
+    const selected = await createSelectedOrder({
+      categorySlug: "tow_truck",
+      offerPriceKzt: 10_000,
+      idSuffix: "live-location",
+    });
+
+    const beforeDeparture = await getOrderLiveLocation.execute({
+      orderId: selected.id,
+      viewerUserId: customerUserId,
+    });
+    await expect(
+      publishProviderLocation.execute({
+        orderId: selected.id,
+        providerUserId,
+        latitude: 43.25,
+        longitude: 76.91,
+        accuracyMeters: 15,
+        sequence: 1,
+        resumed: false,
+      }),
+    ).rejects.toMatchObject({ code: "LIVE_LOCATION_NOT_TRACKABLE" });
+
+    await departOrder.execute({ providerUserId, orderId: selected.id });
+    const published = await publishProviderLocation.execute({
+      orderId: selected.id,
+      providerUserId,
+      latitude: 43.25,
+      longitude: 76.91,
+      accuracyMeters: 15,
+      recordedAt: "2000-01-01T00:00:00.000Z",
+      sequence: 1,
+      resumed: true,
+    });
+    const customerSnapshot = await getOrderLiveLocation.execute({
+      orderId: selected.id,
+      viewerUserId: customerUserId,
+    });
+    const adminSnapshot = await getAdminOrderLiveLocation.execute(selected.id);
+
+    expect(beforeDeparture.visible).toBe(false);
+    expect(beforeDeparture.visibilityState).toBe("hidden");
+    expect(published.visible).toBe(true);
+    expect(published.visibilityState).toBe("stale");
+    expect(published.providerPoint?.sequence).toBe(1);
+    expect(published.providerPoint?.resumed).toBe(true);
+    expect(customerSnapshot.customerPoint?.latitude).toBeCloseTo(43.24, 2);
+    expect(customerSnapshot.providerPoint?.latitude).toBeCloseTo(43.25, 5);
+    expect(customerSnapshot.routeRebuildRequired).toBe(true);
+    expect(adminSnapshot.providerPoint?.longitude).toBeCloseTo(76.91, 5);
+  });
+
+  it("protects live tracking from unrelated users and terminal orders", async () => {
+    const selected = await createSelectedOrder({
+      categorySlug: "jump_start",
+      offerPriceKzt: 10_000,
+      idSuffix: "live-location-forbidden",
+    });
+    await departOrder.execute({ providerUserId, orderId: selected.id });
+    await publishProviderLocation.execute({
+      orderId: selected.id,
+      providerUserId,
+      latitude: 43.25,
+      longitude: 76.91,
+      accuracyMeters: 10,
+      sequence: 1,
+      resumed: false,
+    });
+
+    await expect(
+      getOrderLiveLocation.execute({
+        orderId: selected.id,
+        viewerUserId: secondCustomerUserId,
+      }),
+    ).rejects.toMatchObject({ code: "LIVE_LOCATION_FORBIDDEN" });
+    await expect(
+      publishProviderLocation.execute({
+        orderId: selected.id,
+        providerUserId: secondProviderUserId,
+        latitude: 43.26,
+        longitude: 76.92,
+        accuracyMeters: 10,
+        sequence: 1,
+        resumed: false,
+      }),
+    ).rejects.toMatchObject({ code: "LIVE_LOCATION_FORBIDDEN" });
+
+    await arriveOrder.execute({ providerUserId, orderId: selected.id });
+    await startOrderWork.execute({ providerUserId, orderId: selected.id });
+    await completeOrder.execute({
+      providerUserId,
+      orderId: selected.id,
+      idempotencyKey: "complete-live-location-forbidden",
+    });
+    const afterCompletion = await getOrderLiveLocation.execute({
+      orderId: selected.id,
+      viewerUserId: customerUserId,
+    });
+
+    expect(afterCompletion.visible).toBe(false);
+    expect(afterCompletion.visibilityState).toBe("hidden");
+    await expect(
+      publishProviderLocation.execute({
+        orderId: selected.id,
+        providerUserId,
+        latitude: 43.27,
+        longitude: 76.93,
+        accuracyMeters: 10,
+        sequence: 2,
+        resumed: false,
+      }),
+    ).rejects.toMatchObject({ code: "LIVE_LOCATION_NOT_TRACKABLE" });
   });
 
   async function approveProviderCategory(

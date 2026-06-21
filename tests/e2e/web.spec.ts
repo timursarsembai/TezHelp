@@ -12,4 +12,6 @@ test("web mobile shell renders localized identity entry points", async ({ page }
   await expect(page.getByLabel("Код из SMS")).toBeVisible();
   await expect(page.locator("body")).toContainText("Чат заказа");
   await expect(page.locator("body")).toContainText("Переписка хранится для разбора споров");
+  await expect(page.locator("body")).toContainText("Живое отслеживание");
+  await expect(page.locator("body")).toContainText("Метка исполнителя");
 });

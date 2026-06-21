@@ -121,6 +121,14 @@ verified phones only to the assigned customer or assigned provider after provide
 departure and before terminal order statuses. Unrelated users receive a
 forbidden error.
 
+Live tracking stores the customer order marker and provider GPS updates as
+PostGIS points. Provider GPS publication is accepted only from the assigned
+provider after departure and before terminal states. Assigned users and
+authorized administrators can read only active tracking snapshots. Stale points
+are labeled after 90 seconds and must not be animated as if movement continued.
+Before production, add a retention job for `live_location_updates` and review
+whether historical points are needed beyond dispute and safety windows.
+
 ## Financial security
 
 - append-only ledger

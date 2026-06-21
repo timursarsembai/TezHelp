@@ -38,4 +38,10 @@ describe("i18n", () => {
     expect(translate("kk", "chat.title")).toContain("чаты");
     expect(translate("en", "admin.chat.disputeReview")).toContain("dispute");
   });
+
+  it("has localized maps and live tracking strings", () => {
+    expect(translate("ru", "maps.liveTracking")).toContain("отслеживание");
+    expect(translate("kk", "maps.providerMarker")).toContain("Орындаушы");
+    expect(translate("en", "admin.maps.activeOrderTracking")).toContain("tracking");
+  });
 });

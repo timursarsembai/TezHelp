@@ -22,4 +22,9 @@ describe("admin shell", () => {
     expect(translate("ru", "admin.chat.disputeReview")).toContain("спора");
     expect(translate("en", "chat.attachmentAccess")).toContain("audited");
   });
+
+  it("has localized active-order tracking labels", () => {
+    expect(translate("ru", "admin.maps.activeOrderTracking")).toContain("активного");
+    expect(translate("en", "maps.staleState")).toContain("Last known");
+  });
 });

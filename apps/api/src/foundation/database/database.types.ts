@@ -14,6 +14,7 @@ type TextArrayColumn = ColumnType<
   ReadonlyArray<string> | undefined,
   ReadonlyArray<string>
 >;
+type CoordinateColumn = ColumnType<string, number | string, number | string>;
 
 interface AuditEventsTable {
   readonly id: Generated<string>;
@@ -69,6 +70,7 @@ export type CommissionReservationState = "reserved" | "captured" | "released" | 
 export type ChatSenderRole = "customer" | "provider" | "admin" | "system";
 export type ChatMessageType = "text" | "attachment" | "system";
 export type ChatAttachmentKind = "photo" | "voice";
+export type LiveLocationTrackingState = "active" | "stopped";
 
 interface UsersTable {
   readonly id: Generated<string>;
@@ -405,6 +407,36 @@ interface ChatAttachmentAccessAuditTable {
   readonly occurred_at: Generated<Date>;
 }
 
+interface LiveLocationSessionsTable {
+  readonly order_id: string;
+  readonly provider_user_id: string;
+  readonly tracking_state: Generated<LiveLocationTrackingState>;
+  readonly last_point: string | null;
+  readonly last_latitude: CoordinateColumn | null;
+  readonly last_longitude: CoordinateColumn | null;
+  readonly last_accuracy_meters: number | null;
+  readonly last_recorded_at: NullableTimestampColumn;
+  readonly last_sequence: Generated<number>;
+  readonly resumed_at: NullableTimestampColumn;
+  readonly stopped_at: NullableTimestampColumn;
+  readonly created_at: Generated<Date>;
+  readonly updated_at: TimestampColumn;
+}
+
+interface LiveLocationUpdatesTable {
+  readonly id: Generated<string>;
+  readonly order_id: string;
+  readonly provider_user_id: string;
+  readonly point: string;
+  readonly latitude: CoordinateColumn;
+  readonly longitude: CoordinateColumn;
+  readonly accuracy_meters: number;
+  readonly recorded_at: TimestampColumn;
+  readonly received_at: Generated<Date>;
+  readonly sequence: number;
+  readonly resumed: Generated<boolean>;
+}
+
 export interface DatabaseSchema {
   readonly audit_events: AuditEventsTable;
   readonly users: UsersTable;
@@ -435,6 +467,8 @@ export interface DatabaseSchema {
   readonly chat_attachments: ChatAttachmentsTable;
   readonly chat_message_reports: ChatMessageReportsTable;
   readonly chat_attachment_access_audit: ChatAttachmentAccessAuditTable;
+  readonly live_location_sessions: LiveLocationSessionsTable;
+  readonly live_location_updates: LiveLocationUpdatesTable;
 }
 
 export type TezHelpDatabase = Kysely<DatabaseSchema>;

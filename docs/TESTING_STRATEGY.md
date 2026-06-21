@@ -30,6 +30,8 @@ Required for:
 - order chat participant authorization
 - private chat attachment signed URL audit
 - message report idempotency
+- live location publication after departure
+- live location stale/offline visibility
 - one-active-order enforcement
 - concurrent provider selection attempts
 - authorization at repository/use-case boundaries
@@ -52,9 +54,10 @@ Critical flows:
 5. provider confirms departure
 6. phone becomes visible
 7. location update reaches customer
-8. provider arrives and completes
-9. commission is captured
-10. both sides submit reviews
+8. stale location is labeled without inferred movement
+9. provider arrives and completes
+10. commission is captured
+11. both sides submit reviews
 
 Additional flows:
 
@@ -66,6 +69,7 @@ Additional flows:
 - admin moderation
 - manual wallet credit
 - order chat dispute evidence labels
+- active-order tracking labels
 - responsive mobile viewport
 
 ## Concurrency tests
@@ -84,6 +88,7 @@ Explicitly test:
 
 - unauthorized document access
 - location access after order completion
+- live location publication before departure
 - provider phone access before departure
 - cross-order chat access
 - private attachment access by unrelated users

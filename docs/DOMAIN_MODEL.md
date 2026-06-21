@@ -161,6 +161,8 @@ Owns:
 
 - tracking state
 - last known point
+- customer order point for marker snapshots
+- provider GPS update history
 - accuracy
 - recorded time
 - stale state
@@ -202,6 +204,8 @@ Owned by a completed order. One review per direction per order.
 - location is not visible to unrelated users
 - tracking ends after completion or cancellation
 - stale data is labeled and never presented as current
+- stale provider markers require route rebuild from a fresh GPS point
+- provider movement is never inferred between updates
 
 ### Conversation
 
@@ -224,6 +228,7 @@ Recommended narrow policies:
 - `OrderTransitionPolicy`
 - `CancellationPolicy`
 - `ChatPolicy`
+- `LiveLocationPolicy`
 - `ProviderActivityPolicy`
 - `ProviderReliabilityCalculator`
 - `UnlockingVerificationPolicy`

@@ -34,6 +34,12 @@ describe("web shell localization", () => {
     expect(translate("en", "chat.attachmentAccess")).toContain("audited");
   });
 
+  it("has localized live tracking shell text", () => {
+    expect(translate("ru", "maps.customerMarker")).toContain("клиента");
+    expect(translate("kk", "maps.staleState")).toContain("нүкте");
+    expect(translate("en", "maps.providerMarker")).toContain("Provider");
+  });
+
   it("uses Russian as fallback locale", () => {
     expect(resolveLocale(undefined)).toBe("ru");
   });

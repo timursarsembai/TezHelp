@@ -5,6 +5,7 @@ import {
   cancelOrderSchema,
   chatAttachmentMetadataSchema,
   localeSchema,
+  liveLocationUpdateSchema,
   orderLifecycleCommandSchema,
   providerDiscoveryPreferenceSchema,
   reportChatMessageSchema,
@@ -133,5 +134,28 @@ describe("validation schemas", () => {
     expect(reportChatMessageSchema.parse({ reason: "dispute evidence" }).reason).toBe(
       "dispute evidence",
     );
+  });
+
+  it("validates live location update public contracts", () => {
+    const update = liveLocationUpdateSchema.parse({
+      latitude: 43.2389,
+      longitude: 76.8897,
+      accuracyMeters: 12,
+      recordedAt: "2026-06-22T10:00:00.000Z",
+      sequence: 7,
+      resumed: true,
+    });
+
+    expect(update.sequence).toBe(7);
+    expect(update.resumed).toBe(true);
+    expect(
+      liveLocationUpdateSchema.parse({ latitude: 43, longitude: 76, accuracyMeters: 0 }).resumed,
+    ).toBe(false);
+    expect(() =>
+      liveLocationUpdateSchema.parse({ latitude: 91, longitude: 76, accuracyMeters: 12 }),
+    ).toThrow();
+    expect(() =>
+      liveLocationUpdateSchema.parse({ latitude: 43, longitude: 76, accuracyMeters: 5001 }),
+    ).toThrow();
   });
 });

@@ -180,3 +180,21 @@ Reason:
   mixing lifecycle policy into chat persistence
 - realtime delivery and upload processing can be added later through ports
   without changing the core conversation model
+
+## ADR-019 - REST-backed live location foundation
+
+Status: accepted.
+
+Implement Phase 8 live tracking first as a REST-backed backend module with
+PostGIS persistence and explicit stale/resume state. Add WebSocket delivery as a
+later transport when the required Nest realtime dependencies and client loop are
+introduced.
+
+Reason:
+
+- active-order authorization and stale rules belong on the backend
+- PostGIS keeps exact provider/customer points queryable without frontend-owned
+  location policy
+- stale or paused browser tracking must not produce inferred movement
+- route and realtime providers should attach through replaceable interfaces
+- a small REST foundation is testable in the current Docker/CI stack

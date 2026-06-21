@@ -66,6 +66,10 @@ export type ChatMessageType = "text" | "attachment" | "system";
 
 export type ChatAttachmentKind = "photo" | "voice";
 
+export type LiveLocationTrackingState = "active" | "stopped";
+
+export type LiveLocationVisibilityState = "hidden" | "waiting" | "current" | "stale" | "offline";
+
 export type ProviderGeneralDocumentType = "face_photo" | "identity_document";
 
 export interface ServiceCategorySummary {
@@ -299,6 +303,32 @@ export interface OrderConversationSummary {
 export interface ChatAttachmentAccessUrlResponse {
   readonly url: string;
   readonly expiresAt: string;
+}
+
+export interface LiveLocationPoint {
+  readonly latitude: number;
+  readonly longitude: number;
+}
+
+export interface LiveProviderLocationPoint extends LiveLocationPoint {
+  readonly accuracyMeters: number;
+  readonly recordedAt: string;
+  readonly sequence: number;
+  readonly resumed: boolean;
+}
+
+export interface LiveLocationSnapshot {
+  readonly orderId: string;
+  readonly providerUserId?: string;
+  readonly visible: boolean;
+  readonly visibilityState: LiveLocationVisibilityState;
+  readonly trackingState?: LiveLocationTrackingState;
+  readonly customerPoint?: LiveLocationPoint;
+  readonly providerPoint?: LiveProviderLocationPoint;
+  readonly staleAfterSeconds: number;
+  readonly pollAfterMs: number;
+  readonly resumeRequired: boolean;
+  readonly routeRebuildRequired: boolean;
 }
 
 export interface IdentityUserSummary {

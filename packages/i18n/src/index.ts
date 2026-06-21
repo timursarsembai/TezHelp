@@ -46,6 +46,11 @@ export type MessageKey =
   | "chat.disputeEvidence"
   | "chat.attachmentAccess"
   | "admin.chat.disputeReview"
+  | "maps.liveTracking"
+  | "maps.customerMarker"
+  | "maps.providerMarker"
+  | "maps.staleState"
+  | "admin.maps.activeOrderTracking"
   | "admin.title"
   | "admin.authRequired"
   | "admin.authRequiredBody"
@@ -112,6 +117,11 @@ const ru: Dictionary = {
   "chat.disputeEvidence": "Переписка хранится для разбора споров",
   "chat.attachmentAccess": "Фото и голос открываются по аудируемой ссылке",
   "admin.chat.disputeReview": "Чат заказа для разбора спора",
+  "maps.liveTracking": "Живое отслеживание",
+  "maps.customerMarker": "Точка клиента",
+  "maps.providerMarker": "Метка исполнителя",
+  "maps.staleState": "Показана последняя известная точка",
+  "admin.maps.activeOrderTracking": "Отслеживание активного заказа",
   "admin.title": "Администрирование TezHelp",
   "admin.authRequired": "Требуется вход администратора",
   "admin.authRequiredBody":
@@ -178,6 +188,11 @@ const kk: Dictionary = {
   "chat.disputeEvidence": "Хат алмасу дауды қарау үшін сақталады",
   "chat.attachmentAccess": "Фото мен дауыс аудителетін сілтемемен ашылады",
   "admin.chat.disputeReview": "Дауды қарауға арналған тапсырыс чаты",
+  "maps.liveTracking": "Тікелей бақылау",
+  "maps.customerMarker": "Клиент нүктесі",
+  "maps.providerMarker": "Орындаушы белгісі",
+  "maps.staleState": "Соңғы белгілі нүкте көрсетілді",
+  "admin.maps.activeOrderTracking": "Белсенді тапсырысты бақылау",
   "admin.title": "TezHelp әкімшілігі",
   "admin.authRequired": "Әкімші ретінде кіру қажет",
   "admin.authRequiredBody":
@@ -243,6 +258,11 @@ const en: Dictionary = {
   "chat.disputeEvidence": "Conversation is retained for dispute review",
   "chat.attachmentAccess": "Photos and voice are opened through audited links",
   "admin.chat.disputeReview": "Order chat for dispute review",
+  "maps.liveTracking": "Live tracking",
+  "maps.customerMarker": "Customer point",
+  "maps.providerMarker": "Provider marker",
+  "maps.staleState": "Last known point is shown",
+  "admin.maps.activeOrderTracking": "Active order tracking",
   "admin.title": "TezHelp administration",
   "admin.authRequired": "Administrator sign-in required",
   "admin.authRequiredBody":

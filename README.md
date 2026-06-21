@@ -104,8 +104,8 @@ This slice publishes Almaty orders, lets eligible approved providers discover
 orders through optional PostGIS radius filtering, submits one offer per provider
 per order, consumes free response credits or a response fee atomically, freezes
 the selected offer price, reserves commission, and enforces one active assigned
-order per provider. Completion, cancellation, phone reveal, live location, real
-payments, and production RBAC remain future work.
+order per provider. Completion, cancellation, phone reveal, real payments, and
+production RBAC remain future work.
 
 ## Active Order Lifecycle Foundation
 
@@ -124,9 +124,9 @@ This slice moves assigned orders through departure, arrival, work started, and
 provider completion. Completion captures the reserved commission atomically.
 Customer/provider/admin cancellation releases or holds the reservation
 according to the current cancellation matrix. Contact visibility opens only to
-assigned parties after provider departure and closes on terminal statuses. Live
-tracking, production RBAC, activity sanctions, complaints, reviews, and real
-phone masking remain future work.
+assigned parties after provider departure and closes on terminal statuses.
+Production RBAC, activity sanctions, complaints, reviews, and real phone
+masking remain future work.
 
 ## Chat and Attachments Foundation
 
@@ -145,6 +145,21 @@ returns short-lived audited signed URLs for attachment reads, stores idempotent
 message reports for dispute review, and provides an internal use case for
 system event messages. Realtime delivery, browser upload orchestration, malware
 scanning, complaint resolution, and production RBAC remain future work.
+
+## Live Location Foundation
+
+Implemented development endpoints:
+
+- `POST /v1/provider/orders/:orderId/location`
+- `GET /v1/orders/:orderId/location`
+- `GET /v1/admin/orders/:orderId/location`
+
+This slice lets the assigned provider publish browser GPS points only after
+departure, stores current and historical points with PostGIS, exposes customer
+and provider marker coordinates only to assigned parties or authorized admins,
+and marks waiting/current/stale/offline state without inferring movement.
+Realtime WebSocket delivery, real browser geolocation loops, route calculation,
+location retention jobs, and production RBAC remain future work.
 
 ## Canonical Commands
 
@@ -177,7 +192,7 @@ The MVP remains a modular monolith with a standalone NestJS backend.
 
 - `apps/web`: customer/provider responsive web shell.
 - `apps/admin`: separate protected administration shell.
-- `apps/api`: NestJS API foundation with configuration, database, health, audit, identity, service catalog, provider-services, moderation, orders, offers, wallet, commissions, and chat modules.
+- `apps/api`: NestJS API foundation with configuration, database, health, audit, identity, service catalog, provider-services, moderation, orders, offers, wallet, commissions, chat, and live-location modules.
 - `packages/*`: shared UI, public contracts, validation, i18n, API client, maps, and config.
 - `infrastructure/docker`: local PostGIS, Redis, and S3-compatible object storage.
 
@@ -208,6 +223,8 @@ reference point used by PostGIS radius queries. The sixth migration adds active
 order lifecycle timestamps, cancellation metadata, and terminal idempotency keys.
 The seventh migration adds order conversations, chat messages, private
 photo/voice attachment metadata, message reports, and attachment access audit.
+The eighth migration adds live location sessions and provider GPS updates with
+PostGIS point indexes.
 The migration command loads `.env.example` for local development defaults;
 production and CI should provide real environment variables explicitly.
 
@@ -274,3 +291,4 @@ Start with:
 12. `docs/plans/2026-06-21-orders-offers-wallet.md`
 13. `docs/plans/2026-06-21-active-order-lifecycle.md`
 14. `docs/plans/2026-06-21-chat-attachments.md`
+15. `docs/plans/2026-06-22-live-location-foundation.md`

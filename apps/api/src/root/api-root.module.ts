@@ -7,6 +7,7 @@ import { DatabaseModule } from "../foundation/database/database.module.js";
 import { HealthModule } from "../foundation/health/health.module.js";
 import { HttpFoundationModule } from "../foundation/http/http-foundation.module.js";
 import { IdentityModule } from "../identity/identity.module.js";
+import { LiveLocationModule } from "../live-location/live-location.module.js";
 import { ModerationModule } from "../moderation/moderation.module.js";
 import { OffersModule } from "../offers/offers.module.js";
 import { OrdersModule } from "../orders/orders.module.js";
@@ -29,6 +30,7 @@ import { WalletModule } from "../wallet/wallet.module.js";
     OrdersModule,
     OffersModule,
     ChatModule,
+    LiveLocationModule,
   ],
 })
 export class ApiRootModule {}

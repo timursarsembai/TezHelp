@@ -202,6 +202,15 @@ export const reportChatMessageSchema = z.object({
   reason: z.string().trim().min(3).max(1000),
 });
 
+export const liveLocationUpdateSchema = z.object({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  accuracyMeters: z.number().int().min(0).max(5000),
+  recordedAt: z.iso.datetime().optional(),
+  sequence: z.number().int().positive().max(2_147_483_647).optional(),
+  resumed: z.boolean().default(false),
+});
+
 export const walletAdjustmentSchema = z.object({
   providerUserId: z.uuid(),
   amountKzt: positiveKztAmountSchema,

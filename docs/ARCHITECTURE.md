@@ -302,6 +302,14 @@ GET /v1/admin/orders/:orderId/chat
 GET /v1/admin/orders/:orderId/chat/attachments/:attachmentId/access-url
 ```
 
+Implemented live-location endpoints include:
+
+```text
+POST /v1/provider/orders/:orderId/location
+GET /v1/orders/:orderId/location
+GET /v1/admin/orders/:orderId/location
+```
+
 Use stable error codes such as:
 
 ```json
@@ -411,6 +419,28 @@ Current rules:
 
 Realtime WebSocket delivery, upload orchestration, malware scanning, complaint
 resolution, and production RBAC are outside this foundation slice.
+
+## Live location foundation
+
+The `live-location` backend module owns active-order tracking visibility,
+provider GPS update persistence, stale/offline state, and marker snapshots for
+assigned parties/admins.
+
+Current rules:
+
+- tracking starts only after provider departure;
+- only the assigned provider can publish GPS updates;
+- assigned customer/provider and authorized administrators can read active
+  tracking only before terminal order states;
+- the customer marker is the order point and the provider marker is the latest
+  provider GPS point;
+- stale state is explicit after 90 seconds without a fresh point;
+- stale/offline snapshots require clients to fetch a fresh browser GPS point
+  and rebuild the route, not animate along an assumed path.
+
+This slice is REST-backed. The `@tezhelp/maps` package exposes route and
+realtime gateway interfaces so a later WebSocket/route-provider task can attach
+without moving location policy into frontend code.
 
 ## Maps
 
