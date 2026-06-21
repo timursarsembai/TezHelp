@@ -25,6 +25,7 @@ describe("web shell localization", () => {
     expect(translate("ru", "marketplace.order.publish")).toContain("Опубликовать");
     expect(translate("kk", "marketplace.provider.offer")).toContain("жіберу");
     expect(translate("en", "marketplace.provider.discovery")).toContain("feed");
+    expect(translate("ru", "marketplace.lifecycle.departed")).toContain("выехал");
   });
 
   it("uses Russian as fallback locale", () => {

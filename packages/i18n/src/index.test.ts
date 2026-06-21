@@ -29,5 +29,7 @@ describe("i18n", () => {
     expect(translate("ru", "marketplace.provider.wallet")).toContain("Баланс");
     expect(translate("kk", "marketplace.order.publish")).toContain("жариялау");
     expect(translate("en", "marketplace.admin.commercialConfig")).toContain("commissions");
+    expect(translate("ru", "marketplace.lifecycle.completed")).toContain("заверш");
+    expect(translate("en", "marketplace.lifecycle.contactVisible")).toContain("Contacts");
   });
 });

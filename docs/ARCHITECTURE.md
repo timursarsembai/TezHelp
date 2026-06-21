@@ -278,6 +278,19 @@ GET /v1/admin/service-categories/:slug/commercial-config
 PATCH /v1/admin/service-categories/:slug/commercial-config
 ```
 
+Implemented active-order lifecycle endpoints include:
+
+```text
+GET /v1/orders/:orderId/contact
+POST /v1/orders/:orderId/cancel
+POST /v1/provider/orders/:orderId/depart
+POST /v1/provider/orders/:orderId/arrive
+POST /v1/provider/orders/:orderId/start-work
+POST /v1/provider/orders/:orderId/complete
+POST /v1/provider/orders/:orderId/cancel
+POST /v1/admin/orders/:orderId/cancel
+```
+
 Use stable error codes such as:
 
 ```json

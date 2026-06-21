@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   apiEnvSchema,
+  cancelOrderSchema,
   localeSchema,
+  orderLifecycleCommandSchema,
   providerDiscoveryPreferenceSchema,
   requestOtpSchema,
   serviceCategoryCommercialConfigSchema,
@@ -56,6 +58,16 @@ describe("validation schemas", () => {
     expect(requestOtpSchema.parse({ phone: "+77001234567" }).purpose).toBe("sign_in");
     expect(switchRoleSchema.parse({ role: "provider" }).role).toBe("provider");
     expect(() => requestOtpSchema.parse({ phone: "87001234567" })).toThrow();
+  });
+
+  it("validates active order lifecycle public contracts", () => {
+    expect(
+      orderLifecycleCommandSchema.parse({ idempotencyKey: "complete-123" }).idempotencyKey,
+    ).toBe("complete-123");
+    expect(
+      cancelOrderSchema.parse({ reason: "Customer request", idempotencyKey: "cancel-123" }).reason,
+    ).toBe("Customer request");
+    expect(() => cancelOrderSchema.parse({ reason: "no", idempotencyKey: "cancel-123" })).toThrow();
   });
 
   it("validates marketplace public contracts", () => {

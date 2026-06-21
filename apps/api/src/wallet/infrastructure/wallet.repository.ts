@@ -33,6 +33,14 @@ export interface LedgerEntryInput {
   readonly metadata?: Record<string, unknown>;
 }
 
+export interface CommissionReservationLedgerInput {
+  readonly providerUserId: string;
+  readonly reservationId: string;
+  readonly actorUserId: string;
+  readonly idempotencyKey: string;
+  readonly reason: string;
+}
+
 @Injectable()
 export class WalletRepository {
   constructor(private readonly database: DatabaseService) {}
@@ -199,6 +207,119 @@ export class WalletRepository {
     return this.toLedgerSummary(row);
   }
 
+  async captureCommissionReservation(
+    trx: Transaction<DatabaseSchema>,
+    input: CommissionReservationLedgerInput,
+  ): Promise<WalletLedgerEntrySummary> {
+    const existing = await this.findLedgerByIdempotency(
+      trx,
+      input.providerUserId,
+      input.idempotencyKey,
+    );
+    if (existing) {
+      return this.toLedgerSummary(existing);
+    }
+
+    const reservation = await this.lockReservation(trx, input);
+    if (reservation.state !== "reserved") {
+      throw new WalletApplicationError(
+        "COMMISSION_RESERVATION_NOT_RESERVED",
+        "Commission reservation is not reserved",
+        409,
+      );
+    }
+
+    const ledger = await this.applyLedgerEntry(trx, {
+      providerUserId: input.providerUserId,
+      entryType: "commission_capture",
+      amountKzt: reservation.amount_kzt,
+      availableDeltaKzt: 0,
+      reservedDeltaKzt: -reservation.amount_kzt,
+      actorUserId: input.actorUserId,
+      reason: input.reason,
+      idempotencyKey: input.idempotencyKey,
+      relatedOrderId: reservation.order_id,
+      relatedOfferId: reservation.offer_id,
+      relatedCommissionReservationId: reservation.id,
+    });
+
+    await trx
+      .updateTable("commission_reservations")
+      .set({ state: "captured", updated_at: new Date() })
+      .where("id", "=", reservation.id)
+      .execute();
+
+    return ledger;
+  }
+
+  async releaseCommissionReservation(
+    trx: Transaction<DatabaseSchema>,
+    input: CommissionReservationLedgerInput,
+  ): Promise<WalletLedgerEntrySummary> {
+    const existing = await this.findLedgerByIdempotency(
+      trx,
+      input.providerUserId,
+      input.idempotencyKey,
+    );
+    if (existing) {
+      return this.toLedgerSummary(existing);
+    }
+
+    const reservation = await this.lockReservation(trx, input);
+    if (reservation.state !== "reserved") {
+      throw new WalletApplicationError(
+        "COMMISSION_RESERVATION_NOT_RESERVED",
+        "Commission reservation is not reserved",
+        409,
+      );
+    }
+
+    const ledger = await this.applyLedgerEntry(trx, {
+      providerUserId: input.providerUserId,
+      entryType: "commission_release",
+      amountKzt: reservation.amount_kzt,
+      availableDeltaKzt: reservation.amount_kzt,
+      reservedDeltaKzt: -reservation.amount_kzt,
+      actorUserId: input.actorUserId,
+      reason: input.reason,
+      idempotencyKey: input.idempotencyKey,
+      relatedOrderId: reservation.order_id,
+      relatedOfferId: reservation.offer_id,
+      relatedCommissionReservationId: reservation.id,
+    });
+
+    await trx
+      .updateTable("commission_reservations")
+      .set({ state: "released", updated_at: new Date() })
+      .where("id", "=", reservation.id)
+      .execute();
+
+    return ledger;
+  }
+
+  async holdCommissionReservation(
+    trx: Transaction<DatabaseSchema>,
+    input: Omit<CommissionReservationLedgerInput, "idempotencyKey">,
+  ): Promise<void> {
+    const reservation = await this.lockReservation(trx, input);
+    if (reservation.state === "held_for_review") {
+      return;
+    }
+    if (reservation.state !== "reserved") {
+      throw new WalletApplicationError(
+        "COMMISSION_RESERVATION_NOT_RESERVED",
+        "Commission reservation is not reserved",
+        409,
+      );
+    }
+
+    await trx
+      .updateTable("commission_reservations")
+      .set({ state: "held_for_review", updated_at: new Date() })
+      .where("id", "=", reservation.id)
+      .execute();
+  }
+
   private toWalletSummary(row: {
     readonly provider_user_id: string;
     readonly available_balance_kzt: number;
@@ -211,6 +332,41 @@ export class WalletRepository {
       reservedBalanceKzt: row.reserved_balance_kzt,
       freeResponsesRemaining: row.free_responses_remaining,
     };
+  }
+
+  private async findLedgerByIdempotency(
+    trx: Transaction<DatabaseSchema>,
+    providerUserId: string,
+    idempotencyKey: string,
+  ) {
+    return trx
+      .selectFrom("wallet_ledger_entries")
+      .selectAll()
+      .where("provider_user_id", "=", providerUserId)
+      .where("idempotency_key", "=", idempotencyKey)
+      .executeTakeFirst();
+  }
+
+  private async lockReservation(
+    trx: Transaction<DatabaseSchema>,
+    input: Pick<CommissionReservationLedgerInput, "providerUserId" | "reservationId">,
+  ) {
+    const reservation = await trx
+      .selectFrom("commission_reservations")
+      .selectAll()
+      .where("id", "=", input.reservationId)
+      .where("provider_user_id", "=", input.providerUserId)
+      .forUpdate()
+      .executeTakeFirst();
+    if (!reservation) {
+      throw new WalletApplicationError(
+        "COMMISSION_RESERVATION_NOT_FOUND",
+        "Commission reservation was not found",
+        404,
+      );
+    }
+
+    return reservation;
   }
 
   private toLedgerSummary(row: {

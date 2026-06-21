@@ -87,6 +87,10 @@ Owns:
 - assigned provider
 - lifecycle timestamps
 
+Current lifecycle timestamps include provider departure, arrival, work started,
+completion, and cancellation. Terminal commands use an idempotency key so
+retries do not double-capture or double-release commission.
+
 ### Offer
 
 Owns:
@@ -117,6 +121,11 @@ Current wallet account state stores available balance, reserved balance, and
 free response credits. The first five provider responses are free account-wide;
 after that, offer publication charges the category response fee inside the same
 transaction as offer creation.
+
+Commission capture removes money from reserved balance after provider
+completion. Commission release returns reserved money to available balance after
+eligible cancellation. Held-for-review reservations keep money reserved for
+future administrative resolution.
 
 ### CommissionReservation
 
@@ -157,6 +166,8 @@ Owned by a completed order. One review per direction per order.
 - only the selected provider can transition provider states
 - completion captures commission exactly once
 - cancelled or completed orders cannot return to active status without an explicit administrative recovery workflow
+- customer cancellation after provider arrival holds commission for review
+- provider completion is the only normal completion path in MVP
 
 ### Provider
 

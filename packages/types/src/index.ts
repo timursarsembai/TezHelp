@@ -182,6 +182,21 @@ export interface OrderSummary {
   readonly images: ReadonlyArray<OrderImageSummary>;
   readonly createdAt: string;
   readonly publishedAt: string;
+  readonly selectedAt?: string;
+  readonly departedAt?: string;
+  readonly arrivedAt?: string;
+  readonly workStartedAt?: string;
+  readonly completedAt?: string;
+  readonly cancelledAt?: string;
+  readonly cancellationReason?: string;
+}
+
+export interface OrderContactSummary {
+  readonly orderId: string;
+  readonly viewerRole: "customer" | "provider";
+  readonly contactVisible: boolean;
+  readonly customerPhone?: string;
+  readonly providerPhone?: string;
 }
 
 export interface ProviderOrderDiscoveryPreference {

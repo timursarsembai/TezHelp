@@ -36,6 +36,12 @@ export type MessageKey =
   | "marketplace.provider.wallet"
   | "marketplace.admin.ledger"
   | "marketplace.admin.commercialConfig"
+  | "marketplace.lifecycle.departed"
+  | "marketplace.lifecycle.arrived"
+  | "marketplace.lifecycle.inProgress"
+  | "marketplace.lifecycle.completed"
+  | "marketplace.lifecycle.contactVisible"
+  | "marketplace.admin.activeOrderCancellation"
   | "admin.title"
   | "admin.authRequired"
   | "admin.authRequiredBody"
@@ -92,6 +98,12 @@ const ru: Dictionary = {
   "marketplace.provider.wallet": "Баланс и бесплатные отклики",
   "marketplace.admin.ledger": "Журнал кошелька",
   "marketplace.admin.commercialConfig": "Тарифы и комиссии категорий",
+  "marketplace.lifecycle.departed": "Исполнитель выехал",
+  "marketplace.lifecycle.arrived": "Исполнитель прибыл",
+  "marketplace.lifecycle.inProgress": "Работа началась",
+  "marketplace.lifecycle.completed": "Заказ завершён",
+  "marketplace.lifecycle.contactVisible": "Контакты открыты после выезда",
+  "marketplace.admin.activeOrderCancellation": "Отмена активного заказа",
   "admin.title": "Администрирование TezHelp",
   "admin.authRequired": "Требуется вход администратора",
   "admin.authRequiredBody":
@@ -148,6 +160,12 @@ const kk: Dictionary = {
   "marketplace.provider.wallet": "Баланс және тегін жауаптар",
   "marketplace.admin.ledger": "Әмиян журналы",
   "marketplace.admin.commercialConfig": "Санат тарифтері мен комиссиялары",
+  "marketplace.lifecycle.departed": "Орындаушы жолға шықты",
+  "marketplace.lifecycle.arrived": "Орындаушы келді",
+  "marketplace.lifecycle.inProgress": "Жұмыс басталды",
+  "marketplace.lifecycle.completed": "Тапсырыс аяқталды",
+  "marketplace.lifecycle.contactVisible": "Байланыс жолға шыққаннан кейін ашылады",
+  "marketplace.admin.activeOrderCancellation": "Белсенді тапсырысты тоқтату",
   "admin.title": "TezHelp әкімшілігі",
   "admin.authRequired": "Әкімші ретінде кіру қажет",
   "admin.authRequiredBody":
@@ -203,6 +221,12 @@ const en: Dictionary = {
   "marketplace.provider.wallet": "Balance and free responses",
   "marketplace.admin.ledger": "Wallet ledger",
   "marketplace.admin.commercialConfig": "Category tariffs and commissions",
+  "marketplace.lifecycle.departed": "Provider departed",
+  "marketplace.lifecycle.arrived": "Provider arrived",
+  "marketplace.lifecycle.inProgress": "Work started",
+  "marketplace.lifecycle.completed": "Order completed",
+  "marketplace.lifecycle.contactVisible": "Contacts open after departure",
+  "marketplace.admin.activeOrderCancellation": "Active order cancellation",
   "admin.title": "TezHelp administration",
   "admin.authRequired": "Administrator sign-in required",
   "admin.authRequiredBody":

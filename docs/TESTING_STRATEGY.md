@@ -25,6 +25,8 @@ Required for:
 - provider selection and commission reservation
 - order completion and commission capture
 - cancellation and reservation release/hold
+- contact visibility before and after departure
+- held-for-review customer cancellation after provider arrival
 - one-active-order enforcement
 - concurrent provider selection attempts
 - authorization at repository/use-case boundaries

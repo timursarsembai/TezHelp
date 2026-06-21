@@ -2,6 +2,8 @@ import { Test } from "@nestjs/testing";
 import { sql } from "kysely";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
+import type { ServiceCategorySlug } from "@tezhelp/types";
+
 import { DatabaseService } from "../foundation/database/database.service.js";
 import { OffersModule } from "../offers/offers.module.js";
 import {
@@ -10,6 +12,14 @@ import {
 } from "../offers/application/offers.use-cases.js";
 import { CreateOrderUseCase } from "./application/order.use-cases.js";
 import { SelectProviderUseCase } from "./application/select-provider.use-case.js";
+import {
+  CancelOrderUseCase,
+  CompleteOrderUseCase,
+  ConfirmProviderArrivalUseCase,
+  ConfirmProviderDepartureUseCase,
+  GetOrderContactUseCase,
+  StartOrderWorkUseCase,
+} from "./application/order-lifecycle.use-cases.js";
 import { OrdersModule } from "./orders.module.js";
 import {
   GetProviderWalletUseCase,
@@ -31,6 +41,12 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
   let createOrder: CreateOrderUseCase;
   let submitOffer: SubmitOfferUseCase;
   let selectProvider: SelectProviderUseCase;
+  let departOrder: ConfirmProviderDepartureUseCase;
+  let arriveOrder: ConfirmProviderArrivalUseCase;
+  let startOrderWork: StartOrderWorkUseCase;
+  let completeOrder: CompleteOrderUseCase;
+  let cancelOrder: CancelOrderUseCase;
+  let getOrderContact: GetOrderContactUseCase;
   let manualCredit: ManualWalletCreditUseCase;
   let getWallet: GetProviderWalletUseCase;
   let listProviderOrders: ListProviderOrdersUseCase;
@@ -52,6 +68,12 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
     createOrder = moduleRef.get(CreateOrderUseCase);
     submitOffer = moduleRef.get(SubmitOfferUseCase);
     selectProvider = moduleRef.get(SelectProviderUseCase);
+    departOrder = moduleRef.get(ConfirmProviderDepartureUseCase);
+    arriveOrder = moduleRef.get(ConfirmProviderArrivalUseCase);
+    startOrderWork = moduleRef.get(StartOrderWorkUseCase);
+    completeOrder = moduleRef.get(CompleteOrderUseCase);
+    cancelOrder = moduleRef.get(CancelOrderUseCase);
+    getOrderContact = moduleRef.get(GetOrderContactUseCase);
     manualCredit = moduleRef.get(ManualWalletCreditUseCase);
     getWallet = moduleRef.get(GetProviderWalletUseCase);
     listProviderOrders = moduleRef.get(ListProviderOrdersUseCase);
@@ -347,6 +369,119 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
     expect([firstOffer.id, secondOffer.id]).toContain(selected.selected_offer_id);
   });
 
+  it("moves through active lifecycle, reveals contact after departure, and captures commission", async () => {
+    const selected = await createSelectedOrder({
+      categorySlug: "tow_truck",
+      offerPriceKzt: 10_000,
+      idSuffix: "complete",
+    });
+
+    const beforeDepartureContact = await getOrderContact.execute({
+      viewerUserId: customerUserId,
+      orderId: selected.id,
+    });
+    const departed = await departOrder.execute({ providerUserId, orderId: selected.id });
+    const afterDepartureContact = await getOrderContact.execute({
+      viewerUserId: customerUserId,
+      orderId: selected.id,
+    });
+    const arrived = await arriveOrder.execute({ providerUserId, orderId: selected.id });
+    const inProgress = await startOrderWork.execute({ providerUserId, orderId: selected.id });
+    const completed = await completeOrder.execute({
+      providerUserId,
+      orderId: selected.id,
+      idempotencyKey: "complete-order-1",
+    });
+    const duplicateCompletion = await completeOrder.execute({
+      providerUserId,
+      orderId: selected.id,
+      idempotencyKey: "complete-order-1",
+    });
+    const wallet = await getWallet.execute(providerUserId);
+    const reservation = await database.db
+      .selectFrom("commission_reservations")
+      .select(["state"])
+      .where("id", "=", selected.commissionReservationId!)
+      .executeTakeFirstOrThrow();
+    const captureEntries = await database.db
+      .selectFrom("wallet_ledger_entries")
+      .select("id")
+      .where("provider_user_id", "=", providerUserId)
+      .where("entry_type", "=", "commission_capture")
+      .execute();
+
+    expect(beforeDepartureContact.contactVisible).toBe(false);
+    expect(beforeDepartureContact.customerPhone).toBeUndefined();
+    expect(departed.status).toBe("provider_en_route");
+    expect(afterDepartureContact.contactVisible).toBe(true);
+    expect(afterDepartureContact.customerPhone).toBe("+77001000001");
+    expect(afterDepartureContact.providerPhone).toBe("+77002000001");
+    expect(arrived.status).toBe("provider_arrived");
+    expect(inProgress.status).toBe("in_progress");
+    expect(completed.status).toBe("completed");
+    expect(duplicateCompletion.status).toBe("completed");
+    expect(wallet.availableBalanceKzt).toBe(2000);
+    expect(wallet.reservedBalanceKzt).toBe(0);
+    expect(reservation.state).toBe("captured");
+    expect(captureEntries).toHaveLength(1);
+  });
+
+  it("releases reserved commission when customer cancels before departure", async () => {
+    const selected = await createSelectedOrder({
+      categorySlug: "fuel_delivery",
+      offerPriceKzt: 10_000,
+      idSuffix: "cancel-before-departure",
+    });
+
+    const cancelled = await cancelOrder.execute({
+      actor: "customer",
+      actorUserId: customerUserId,
+      orderId: selected.id,
+      reason: "customer no longer needs service",
+      idempotencyKey: "customer-cancel-before-departure",
+    });
+    const wallet = await getWallet.execute(providerUserId);
+    const reservation = await database.db
+      .selectFrom("commission_reservations")
+      .select(["state"])
+      .where("id", "=", selected.commissionReservationId!)
+      .executeTakeFirstOrThrow();
+
+    expect(cancelled.status).toBe("cancelled_by_customer");
+    expect(wallet.availableBalanceKzt).toBe(3000);
+    expect(wallet.reservedBalanceKzt).toBe(0);
+    expect(reservation.state).toBe("released");
+  });
+
+  it("holds reserved commission when customer cancels after provider arrival", async () => {
+    const selected = await createSelectedOrder({
+      categorySlug: "wheel_replacement",
+      offerPriceKzt: 10_000,
+      idSuffix: "cancel-after-arrival",
+    });
+    await departOrder.execute({ providerUserId, orderId: selected.id });
+    await arriveOrder.execute({ providerUserId, orderId: selected.id });
+
+    const cancelled = await cancelOrder.execute({
+      actor: "customer",
+      actorUserId: customerUserId,
+      orderId: selected.id,
+      reason: "customer disputes service after arrival",
+      idempotencyKey: "customer-cancel-after-arrival",
+    });
+    const wallet = await getWallet.execute(providerUserId);
+    const reservation = await database.db
+      .selectFrom("commission_reservations")
+      .select(["state"])
+      .where("id", "=", selected.commissionReservationId!)
+      .executeTakeFirstOrThrow();
+
+    expect(cancelled.status).toBe("cancelled_by_customer");
+    expect(wallet.availableBalanceKzt).toBe(2000);
+    expect(wallet.reservedBalanceKzt).toBe(1000);
+    expect(reservation.state).toBe("held_for_review");
+  });
+
   async function approveProviderCategory(
     providerUserIdInput: string,
     categorySlug: string,
@@ -363,6 +498,47 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
       .executeTakeFirstOrThrow();
 
     return row.id;
+  }
+
+  async function createSelectedOrder(input: {
+    readonly categorySlug: ServiceCategorySlug;
+    readonly offerPriceKzt: number;
+    readonly idSuffix: string;
+  }) {
+    const serviceProfileId = await approveProviderCategory(providerUserId, input.categorySlug);
+    await manualCredit.execute({
+      providerUserId,
+      adminUserId,
+      amountKzt: 3000,
+      reason: `lifecycle credit ${input.idSuffix}`,
+      idempotencyKey: `credit-${input.idSuffix}`,
+    });
+    const order = await createOrder.execute({
+      customerUserId,
+      categorySlug: input.categorySlug,
+      latitude: 43.24,
+      longitude: 76.9,
+      addressLandmark: `Lifecycle ${input.idSuffix}`,
+      description: `Lifecycle order ${input.idSuffix}`,
+      images: [],
+      unlockingLawfulAccess: {},
+    });
+    const offer = await submitOffer.execute({
+      providerUserId,
+      orderId: order.id,
+      providerServiceProfileId: serviceProfileId,
+      priceKzt: input.offerPriceKzt,
+      arrivalMinutes: 20,
+      comment: `Lifecycle offer ${input.idSuffix}`,
+      idempotencyKey: `offer-${input.idSuffix}`,
+    });
+
+    return selectProvider.execute({
+      customerUserId,
+      orderId: order.id,
+      offerId: offer.id,
+      idempotencyKey: `select-${input.idSuffix}`,
+    });
   }
 });
 

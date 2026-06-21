@@ -15,5 +15,6 @@ describe("admin shell", () => {
   it("has localized commercial and ledger labels", () => {
     expect(translate("ru", "marketplace.admin.ledger")).toContain("кошелька");
     expect(translate("en", "marketplace.admin.commercialConfig")).toContain("tariffs");
+    expect(translate("ru", "marketplace.admin.activeOrderCancellation")).toContain("Отмена");
   });
 });

@@ -148,6 +148,19 @@ export const selectProviderSchema = z.object({
   idempotencyKey: idempotencyKeySchema,
 });
 
+export const orderLifecycleCommandSchema = z.object({
+  idempotencyKey: idempotencyKeySchema,
+});
+
+export const cancelOrderSchema = z.object({
+  reason: z.string().trim().min(3).max(1000),
+  idempotencyKey: idempotencyKeySchema,
+});
+
+export const adminCancelOrderSchema = cancelOrderSchema.extend({
+  holdCommissionForReview: z.boolean().default(false),
+});
+
 export const walletAdjustmentSchema = z.object({
   providerUserId: z.uuid(),
   amountKzt: positiveKztAmountSchema,

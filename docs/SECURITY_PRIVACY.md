@@ -109,6 +109,11 @@ with an approved, non-suspended service profile for the order category. The
 nearby filter uses the provider's saved discovery reference point; it is not yet
 live provider tracking.
 
+Phone contact visibility is server-side gated. The contact endpoint returns
+verified phones only to the assigned customer or assigned provider after provider
+departure and before terminal order statuses. Unrelated users receive a
+forbidden error.
+
 ## Financial security
 
 - append-only ledger
@@ -123,7 +128,8 @@ Manual wallet adjustments require an admin actor, reason, and idempotency key.
 Offer publication consumes free response credit or charges the response fee in
 the same transaction as the offer. Provider selection reserves commission in the
 same transaction as order assignment. Completion/capture and cancellation
-release or hold workflows are intentionally not implemented yet.
+release or hold workflows use append-only ledger entries and row-locked
+commission reservations.
 
 ## Audit
 

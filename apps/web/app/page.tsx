@@ -168,6 +168,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               value="12 000 KZT"
             />
             <MarketplaceField label={translate(locale, "marketplace.provider.wallet")} value="5" />
+            <MarketplaceField
+              label={translate(locale, "marketplace.lifecycle.departed")}
+              value={translate(locale, "marketplace.lifecycle.contactVisible")}
+            />
+            <MarketplaceField
+              label={translate(locale, "marketplace.lifecycle.completed")}
+              value="10%"
+            />
           </div>
 
           <aside className="rounded-lg border border-slate-200 bg-slate-50 p-4">

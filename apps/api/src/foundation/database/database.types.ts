@@ -263,6 +263,14 @@ interface OrdersTable {
   readonly commission_reservation_id: string | null;
   readonly published_at: Generated<Date>;
   readonly selected_at: NullableTimestampColumn;
+  readonly departed_at: NullableTimestampColumn;
+  readonly arrived_at: NullableTimestampColumn;
+  readonly work_started_at: NullableTimestampColumn;
+  readonly completed_at: NullableTimestampColumn;
+  readonly cancelled_at: NullableTimestampColumn;
+  readonly cancelled_by_user_id: string | null;
+  readonly cancellation_reason: string | null;
+  readonly terminal_idempotency_key: string | null;
   readonly created_at: Generated<Date>;
   readonly updated_at: TimestampColumn;
 }

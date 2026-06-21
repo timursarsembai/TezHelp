@@ -191,6 +191,13 @@ export class OrdersRepository {
       readonly commission_reservation_id: string | null;
       readonly created_at: Date;
       readonly published_at: Date;
+      readonly selected_at: Date | null;
+      readonly departed_at: Date | null;
+      readonly arrived_at: Date | null;
+      readonly work_started_at: Date | null;
+      readonly completed_at: Date | null;
+      readonly cancelled_at: Date | null;
+      readonly cancellation_reason: string | null;
     },
     images: ReadonlyArray<{
       readonly id: string;
@@ -215,6 +222,13 @@ export class OrdersRepository {
       images: images.map((image) => this.toImageSummary(image)),
       createdAt: row.created_at.toISOString(),
       publishedAt: row.published_at.toISOString(),
+      ...(row.selected_at ? { selectedAt: row.selected_at.toISOString() } : {}),
+      ...(row.departed_at ? { departedAt: row.departed_at.toISOString() } : {}),
+      ...(row.arrived_at ? { arrivedAt: row.arrived_at.toISOString() } : {}),
+      ...(row.work_started_at ? { workStartedAt: row.work_started_at.toISOString() } : {}),
+      ...(row.completed_at ? { completedAt: row.completed_at.toISOString() } : {}),
+      ...(row.cancelled_at ? { cancelledAt: row.cancelled_at.toISOString() } : {}),
+      ...(row.cancellation_reason ? { cancellationReason: row.cancellation_reason } : {}),
       ...(row.vehicle_make ? { vehicleMake: row.vehicle_make } : {}),
       ...(row.vehicle_model ? { vehicleModel: row.vehicle_model } : {}),
       ...(row.vehicle_year ? { vehicleYear: row.vehicle_year } : {}),

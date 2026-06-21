@@ -148,3 +148,17 @@ Reason:
 - wallet history must remain append-only and idempotent
 - PostGIS discovery belongs in the backend so web, admin, and future mobile
   clients do not duplicate location filtering or financial policy
+
+## ADR-017 - Provider-driven active order completion
+
+Status: accepted.
+
+Provider completion is the MVP completion path. Completion captures reserved
+commission immediately in the same transaction as the order terminal transition.
+
+Reason:
+
+- product specification excludes customer confirmation for MVP completion
+- commission capture must not be split from the terminal order transition
+- cancellation after provider arrival needs a distinct held-for-review state
+- phone reveal is authorized from order lifecycle state, not frontend state

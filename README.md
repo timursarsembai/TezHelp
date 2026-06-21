@@ -107,6 +107,27 @@ the selected offer price, reserves commission, and enforces one active assigned
 order per provider. Completion, cancellation, phone reveal, chat, live location,
 real payments, and production RBAC remain future work.
 
+## Active Order Lifecycle Foundation
+
+Implemented development endpoints:
+
+- `GET /v1/orders/:orderId/contact`
+- `POST /v1/orders/:orderId/cancel`
+- `POST /v1/provider/orders/:orderId/depart`
+- `POST /v1/provider/orders/:orderId/arrive`
+- `POST /v1/provider/orders/:orderId/start-work`
+- `POST /v1/provider/orders/:orderId/complete`
+- `POST /v1/provider/orders/:orderId/cancel`
+- `POST /v1/admin/orders/:orderId/cancel`
+
+This slice moves assigned orders through departure, arrival, work started, and
+provider completion. Completion captures the reserved commission atomically.
+Customer/provider/admin cancellation releases or holds the reservation according
+to the current cancellation matrix. Contact visibility opens only to assigned
+parties after provider departure and closes on terminal statuses. Chat, live
+tracking, production RBAC, activity sanctions, complaints, reviews, and real
+phone masking remain future work.
+
 ## Canonical Commands
 
 ```bash
@@ -165,9 +186,10 @@ access audit. The fourth migration adds category commercial configuration,
 orders, order status history, private order image metadata, provider discovery
 preferences, offers, wallet accounts, append-only wallet ledger entries, and
 commission reservations. The fifth migration adds the provider discovery
-reference point used by PostGIS radius queries. The migration command loads
-`.env.example` for local development defaults; production and CI should provide
-real environment variables explicitly.
+reference point used by PostGIS radius queries. The sixth migration adds active
+order lifecycle timestamps, cancellation metadata, and terminal idempotency keys.
+The migration command loads `.env.example` for local development defaults;
+production and CI should provide real environment variables explicitly.
 
 ## Quality Gates
 
