@@ -106,7 +106,7 @@ Implement Phase 9 as a small backend-first reputation slice:
 - [x] Update docs.
 - [x] Run quality gates.
 - [x] Commit.
-- [ ] Push.
+- [x] Push.
 
 ## Decision Log
 
