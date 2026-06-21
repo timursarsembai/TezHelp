@@ -27,6 +27,9 @@ Required for:
 - cancellation and reservation release/hold
 - contact visibility before and after departure
 - held-for-review customer cancellation after provider arrival
+- order chat participant authorization
+- private chat attachment signed URL audit
+- message report idempotency
 - one-active-order enforcement
 - concurrent provider selection attempts
 - authorization at repository/use-case boundaries
@@ -62,6 +65,7 @@ Additional flows:
 - vehicle unlocking verification
 - admin moderation
 - manual wallet credit
+- order chat dispute evidence labels
 - responsive mobile viewport
 
 ## Concurrency tests
@@ -82,6 +86,7 @@ Explicitly test:
 - location access after order completion
 - provider phone access before departure
 - cross-order chat access
+- private attachment access by unrelated users
 - admin permission boundaries
 - upload type spoofing
 - OTP rate limits

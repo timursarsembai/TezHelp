@@ -6,4 +6,5 @@ test("admin shell renders auth-required foundation state", async ({ page }) => {
 
   await expect(page.locator("body")).toContainText("Администрирование TezHelp");
   await expect(page.locator("body")).toContainText("Требуется вход администратора");
+  await expect(page.locator("body")).toContainText("Чат заказа для разбора спора");
 });

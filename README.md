@@ -104,8 +104,8 @@ This slice publishes Almaty orders, lets eligible approved providers discover
 orders through optional PostGIS radius filtering, submits one offer per provider
 per order, consumes free response credits or a response fee atomically, freezes
 the selected offer price, reserves commission, and enforces one active assigned
-order per provider. Completion, cancellation, phone reveal, chat, live location,
-real payments, and production RBAC remain future work.
+order per provider. Completion, cancellation, phone reveal, live location, real
+payments, and production RBAC remain future work.
 
 ## Active Order Lifecycle Foundation
 
@@ -122,11 +122,29 @@ Implemented development endpoints:
 
 This slice moves assigned orders through departure, arrival, work started, and
 provider completion. Completion captures the reserved commission atomically.
-Customer/provider/admin cancellation releases or holds the reservation according
-to the current cancellation matrix. Contact visibility opens only to assigned
-parties after provider departure and closes on terminal statuses. Chat, live
+Customer/provider/admin cancellation releases or holds the reservation
+according to the current cancellation matrix. Contact visibility opens only to
+assigned parties after provider departure and closes on terminal statuses. Live
 tracking, production RBAC, activity sanctions, complaints, reviews, and real
 phone masking remain future work.
+
+## Chat and Attachments Foundation
+
+Implemented development endpoints:
+
+- `GET /v1/orders/:orderId/chat`
+- `POST /v1/orders/:orderId/chat/messages`
+- `POST /v1/orders/:orderId/chat/messages/:messageId/report`
+- `GET /v1/orders/:orderId/chat/attachments/:attachmentId/access-url`
+- `GET /v1/admin/orders/:orderId/chat`
+- `GET /v1/admin/orders/:orderId/chat/attachments/:attachmentId/access-url`
+
+This slice creates one conversation per selected order, allows assigned
+customer/provider text messages and private photo/voice attachment metadata,
+returns short-lived audited signed URLs for attachment reads, stores idempotent
+message reports for dispute review, and provides an internal use case for
+system event messages. Realtime delivery, browser upload orchestration, malware
+scanning, complaint resolution, and production RBAC remain future work.
 
 ## Canonical Commands
 
@@ -159,7 +177,7 @@ The MVP remains a modular monolith with a standalone NestJS backend.
 
 - `apps/web`: customer/provider responsive web shell.
 - `apps/admin`: separate protected administration shell.
-- `apps/api`: NestJS API foundation with configuration, database, health, audit, identity, service catalog, provider-services, moderation, orders, offers, wallet, and commissions modules.
+- `apps/api`: NestJS API foundation with configuration, database, health, audit, identity, service catalog, provider-services, moderation, orders, offers, wallet, commissions, and chat modules.
 - `packages/*`: shared UI, public contracts, validation, i18n, API client, maps, and config.
 - `infrastructure/docker`: local PostGIS, Redis, and S3-compatible object storage.
 
@@ -188,6 +206,8 @@ preferences, offers, wallet accounts, append-only wallet ledger entries, and
 commission reservations. The fifth migration adds the provider discovery
 reference point used by PostGIS radius queries. The sixth migration adds active
 order lifecycle timestamps, cancellation metadata, and terminal idempotency keys.
+The seventh migration adds order conversations, chat messages, private
+photo/voice attachment metadata, message reports, and attachment access audit.
 The migration command loads `.env.example` for local development defaults;
 production and CI should provide real environment variables explicitly.
 
@@ -252,3 +272,5 @@ Start with:
 10. `docs/plans/2026-06-20-identity-foundation.md`
 11. `docs/plans/2026-06-21-provider-moderation.md`
 12. `docs/plans/2026-06-21-orders-offers-wallet.md`
+13. `docs/plans/2026-06-21-active-order-lifecycle.md`
+14. `docs/plans/2026-06-21-chat-attachments.md`

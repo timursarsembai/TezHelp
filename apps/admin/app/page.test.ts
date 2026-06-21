@@ -17,4 +17,9 @@ describe("admin shell", () => {
     expect(translate("en", "marketplace.admin.commercialConfig")).toContain("tariffs");
     expect(translate("ru", "marketplace.admin.activeOrderCancellation")).toContain("Отмена");
   });
+
+  it("has localized dispute chat labels", () => {
+    expect(translate("ru", "admin.chat.disputeReview")).toContain("спора");
+    expect(translate("en", "chat.attachmentAccess")).toContain("audited");
+  });
 });

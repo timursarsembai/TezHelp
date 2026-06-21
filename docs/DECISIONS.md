@@ -162,3 +162,21 @@ Reason:
 - commission capture must not be split from the terminal order transition
 - cancellation after provider arrival needs a distinct held-for-review state
 - phone reveal is authorized from order lifecycle state, not frontend state
+
+## ADR-018 - Order chat and private attachment access
+
+Status: accepted.
+
+Implement order conversation, messages, reports, and private attachment metadata
+inside a dedicated `chat` module instead of extending `orders`.
+
+Reason:
+
+- chat history is dispute evidence and needs its own retention/access audit
+- object storage keys must not authorize private photo or voice reads
+- signed attachment reads must be short-lived and auditable for both
+  participants and admins
+- system event messages need a narrow future hook from order lifecycle without
+  mixing lifecycle policy into chat persistence
+- realtime delivery and upload processing can be added later through ports
+  without changing the core conversation model

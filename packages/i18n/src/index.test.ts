@@ -32,4 +32,10 @@ describe("i18n", () => {
     expect(translate("ru", "marketplace.lifecycle.completed")).toContain("заверш");
     expect(translate("en", "marketplace.lifecycle.contactVisible")).toContain("Contacts");
   });
+
+  it("has localized chat and dispute evidence strings", () => {
+    expect(translate("ru", "chat.disputeEvidence")).toContain("споров");
+    expect(translate("kk", "chat.title")).toContain("чаты");
+    expect(translate("en", "admin.chat.disputeReview")).toContain("dispute");
+  });
 });

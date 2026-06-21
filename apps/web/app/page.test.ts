@@ -28,6 +28,12 @@ describe("web shell localization", () => {
     expect(translate("ru", "marketplace.lifecycle.departed")).toContain("выехал");
   });
 
+  it("has localized chat and dispute evidence shell text", () => {
+    expect(translate("ru", "chat.title")).toContain("Чат");
+    expect(translate("kk", "chat.disputeEvidence")).toContain("дауды");
+    expect(translate("en", "chat.attachmentAccess")).toContain("audited");
+  });
+
   it("uses Russian as fallback locale", () => {
     expect(resolveLocale(undefined)).toBe("ru");
   });

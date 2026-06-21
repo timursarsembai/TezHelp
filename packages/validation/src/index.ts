@@ -161,6 +161,47 @@ export const adminCancelOrderSchema = cancelOrderSchema.extend({
   holdCommissionForReview: z.boolean().default(false),
 });
 
+export const chatAttachmentMetadataSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("photo"),
+    privateObjectKey: z.string().trim().min(8).max(512),
+    originalFilename: z.string().trim().min(1).max(255),
+    contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+    sizeBytes: z
+      .number()
+      .int()
+      .positive()
+      .max(20 * 1024 * 1024),
+  }),
+  z.object({
+    kind: z.literal("voice"),
+    privateObjectKey: z.string().trim().min(8).max(512),
+    originalFilename: z.string().trim().min(1).max(255),
+    contentType: z.enum(["audio/webm", "audio/ogg", "audio/mpeg"]),
+    sizeBytes: z
+      .number()
+      .int()
+      .positive()
+      .max(10 * 1024 * 1024),
+    durationSeconds: z.number().int().positive().max(180),
+  }),
+]);
+
+export const sendChatMessageSchema = z.discriminatedUnion("messageType", [
+  z.object({
+    messageType: z.literal("text"),
+    text: z.string().trim().min(1).max(4000),
+  }),
+  z.object({
+    messageType: z.literal("attachment"),
+    attachment: chatAttachmentMetadataSchema,
+  }),
+]);
+
+export const reportChatMessageSchema = z.object({
+  reason: z.string().trim().min(3).max(1000),
+});
+
 export const walletAdjustmentSchema = z.object({
   providerUserId: z.uuid(),
   amountKzt: positiveKztAmountSchema,

@@ -60,6 +60,12 @@ export type WalletLedgerEntryType =
 
 export type CommissionReservationState = "reserved" | "captured" | "released" | "held_for_review";
 
+export type ChatSenderRole = "customer" | "provider" | "admin" | "system";
+
+export type ChatMessageType = "text" | "attachment" | "system";
+
+export type ChatAttachmentKind = "photo" | "voice";
+
 export type ProviderGeneralDocumentType = "face_photo" | "identity_document";
 
 export interface ServiceCategorySummary {
@@ -258,6 +264,41 @@ export interface CommissionReservationSummary {
   readonly providerUserId: string;
   readonly amountKzt: number;
   readonly state: CommissionReservationState;
+}
+
+export interface ChatAttachmentSummary {
+  readonly id: string;
+  readonly messageId: string;
+  readonly kind: ChatAttachmentKind;
+  readonly originalFilename: string;
+  readonly contentType: string;
+  readonly sizeBytes: number;
+  readonly durationSeconds?: number;
+  readonly createdAt: string;
+}
+
+export interface ChatMessageSummary {
+  readonly id: string;
+  readonly orderId: string;
+  readonly senderUserId?: string;
+  readonly senderRole: ChatSenderRole;
+  readonly messageType: ChatMessageType;
+  readonly textBody?: string;
+  readonly systemEventType?: string;
+  readonly deliveredAt: string;
+  readonly createdAt: string;
+  readonly attachment?: ChatAttachmentSummary;
+}
+
+export interface OrderConversationSummary {
+  readonly orderId: string;
+  readonly disputeEvidenceNotice: string;
+  readonly messages: ReadonlyArray<ChatMessageSummary>;
+}
+
+export interface ChatAttachmentAccessUrlResponse {
+  readonly url: string;
+  readonly expiresAt: string;
 }
 
 export interface IdentityUserSummary {

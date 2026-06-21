@@ -42,6 +42,10 @@ export type MessageKey =
   | "marketplace.lifecycle.completed"
   | "marketplace.lifecycle.contactVisible"
   | "marketplace.admin.activeOrderCancellation"
+  | "chat.title"
+  | "chat.disputeEvidence"
+  | "chat.attachmentAccess"
+  | "admin.chat.disputeReview"
   | "admin.title"
   | "admin.authRequired"
   | "admin.authRequiredBody"
@@ -104,6 +108,10 @@ const ru: Dictionary = {
   "marketplace.lifecycle.completed": "Заказ завершён",
   "marketplace.lifecycle.contactVisible": "Контакты открыты после выезда",
   "marketplace.admin.activeOrderCancellation": "Отмена активного заказа",
+  "chat.title": "Чат заказа",
+  "chat.disputeEvidence": "Переписка хранится для разбора споров",
+  "chat.attachmentAccess": "Фото и голос открываются по аудируемой ссылке",
+  "admin.chat.disputeReview": "Чат заказа для разбора спора",
   "admin.title": "Администрирование TezHelp",
   "admin.authRequired": "Требуется вход администратора",
   "admin.authRequiredBody":
@@ -166,6 +174,10 @@ const kk: Dictionary = {
   "marketplace.lifecycle.completed": "Тапсырыс аяқталды",
   "marketplace.lifecycle.contactVisible": "Байланыс жолға шыққаннан кейін ашылады",
   "marketplace.admin.activeOrderCancellation": "Белсенді тапсырысты тоқтату",
+  "chat.title": "Тапсырыс чаты",
+  "chat.disputeEvidence": "Хат алмасу дауды қарау үшін сақталады",
+  "chat.attachmentAccess": "Фото мен дауыс аудителетін сілтемемен ашылады",
+  "admin.chat.disputeReview": "Дауды қарауға арналған тапсырыс чаты",
   "admin.title": "TezHelp әкімшілігі",
   "admin.authRequired": "Әкімші ретінде кіру қажет",
   "admin.authRequiredBody":
@@ -227,6 +239,10 @@ const en: Dictionary = {
   "marketplace.lifecycle.completed": "Order completed",
   "marketplace.lifecycle.contactVisible": "Contacts open after departure",
   "marketplace.admin.activeOrderCancellation": "Active order cancellation",
+  "chat.title": "Order chat",
+  "chat.disputeEvidence": "Conversation is retained for dispute review",
+  "chat.attachmentAccess": "Photos and voice are opened through audited links",
+  "admin.chat.disputeReview": "Order chat for dispute review",
   "admin.title": "TezHelp administration",
   "admin.authRequired": "Administrator sign-in required",
   "admin.authRequiredBody":

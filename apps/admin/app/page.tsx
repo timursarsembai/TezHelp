@@ -65,6 +65,14 @@ export default function AdminHomePage() {
                   {translate(locale, "marketplace.lifecycle.contactVisible")}
                 </p>
               </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 md:col-span-2">
+                <p className="text-sm font-semibold text-slate-950">
+                  {translate(locale, "admin.chat.disputeReview")}
+                </p>
+                <p className="mt-3 text-base font-semibold text-slate-700">
+                  {translate(locale, "chat.attachmentAccess")}
+                </p>
+              </div>
             </div>
           </section>
 

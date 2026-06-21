@@ -291,6 +291,17 @@ POST /v1/provider/orders/:orderId/cancel
 POST /v1/admin/orders/:orderId/cancel
 ```
 
+Implemented chat and attachment endpoints include:
+
+```text
+GET /v1/orders/:orderId/chat
+POST /v1/orders/:orderId/chat/messages
+POST /v1/orders/:orderId/chat/messages/:messageId/report
+GET /v1/orders/:orderId/chat/attachments/:attachmentId/access-url
+GET /v1/admin/orders/:orderId/chat
+GET /v1/admin/orders/:orderId/chat/attachments/:attachmentId/access-url
+```
+
 Use stable error codes such as:
 
 ```json
@@ -376,6 +387,30 @@ The current auth path for these endpoints is development-only:
 admin moderation endpoints. Production startup rejects the development-auth
 configuration. A later identity/RBAC task must replace these headers before
 production use.
+
+## Chat and attachments foundation
+
+The `chat` backend module owns order conversation records, chat messages,
+private photo/voice attachment metadata, message reports, and attachment access
+audit.
+
+Current rules:
+
+- one conversation is created per order when chat is first used;
+- only the order customer, assigned provider, or authorized admin can read a
+  conversation;
+- only the assigned customer/provider can send user messages, and only while
+  the selected order is active;
+- private object keys never authorize access;
+- signed attachment reads are short-lived and always recorded in
+  `chat_attachment_access_audit`;
+- message reports are idempotent per reporter/message and retained for dispute
+  review;
+- system event messages are recorded through an internal use case so order
+  lifecycle hooks can be attached without putting chat policy into `orders`.
+
+Realtime WebSocket delivery, upload orchestration, malware scanning, complaint
+resolution, and production RBAC are outside this foundation slice.
 
 ## Maps
 

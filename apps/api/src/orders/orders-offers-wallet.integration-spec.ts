@@ -4,6 +4,15 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import type { ServiceCategorySlug } from "@tezhelp/types";
 
+import {
+  GetAdminOrderConversationUseCase,
+  GetChatAttachmentAccessUrlUseCase,
+  GetOrderConversationUseCase,
+  RecordChatSystemMessageUseCase,
+  ReportChatMessageUseCase,
+  SendChatMessageUseCase,
+} from "../chat/application/chat.use-cases.js";
+import { ChatModule } from "../chat/chat.module.js";
 import { DatabaseService } from "../foundation/database/database.service.js";
 import { OffersModule } from "../offers/offers.module.js";
 import {
@@ -47,6 +56,12 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
   let completeOrder: CompleteOrderUseCase;
   let cancelOrder: CancelOrderUseCase;
   let getOrderContact: GetOrderContactUseCase;
+  let getConversation: GetOrderConversationUseCase;
+  let sendChatMessage: SendChatMessageUseCase;
+  let getChatAttachmentAccessUrl: GetChatAttachmentAccessUrlUseCase;
+  let reportChatMessage: ReportChatMessageUseCase;
+  let recordChatSystemMessage: RecordChatSystemMessageUseCase;
+  let getAdminConversation: GetAdminOrderConversationUseCase;
   let manualCredit: ManualWalletCreditUseCase;
   let getWallet: GetProviderWalletUseCase;
   let listProviderOrders: ListProviderOrdersUseCase;
@@ -60,7 +75,7 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
   beforeEach(async () => {
     await closeModule?.();
     const moduleRef = await Test.createTestingModule({
-      imports: [WalletModule, OrdersModule, OffersModule],
+      imports: [WalletModule, OrdersModule, OffersModule, ChatModule],
     }).compile();
     closeModule = () => moduleRef.close();
 
@@ -74,12 +89,23 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
     completeOrder = moduleRef.get(CompleteOrderUseCase);
     cancelOrder = moduleRef.get(CancelOrderUseCase);
     getOrderContact = moduleRef.get(GetOrderContactUseCase);
+    getConversation = moduleRef.get(GetOrderConversationUseCase);
+    sendChatMessage = moduleRef.get(SendChatMessageUseCase);
+    getChatAttachmentAccessUrl = moduleRef.get(GetChatAttachmentAccessUrlUseCase);
+    reportChatMessage = moduleRef.get(ReportChatMessageUseCase);
+    recordChatSystemMessage = moduleRef.get(RecordChatSystemMessageUseCase);
+    getAdminConversation = moduleRef.get(GetAdminOrderConversationUseCase);
     manualCredit = moduleRef.get(ManualWalletCreditUseCase);
     getWallet = moduleRef.get(GetProviderWalletUseCase);
     listProviderOrders = moduleRef.get(ListProviderOrdersUseCase);
 
     await sql`
       truncate table
+        chat_attachment_access_audit,
+        chat_message_reports,
+        chat_attachments,
+        chat_messages,
+        order_conversations,
         commission_reservations,
         offers,
         wallet_ledger_entries,
@@ -480,6 +506,137 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
     expect(wallet.availableBalanceKzt).toBe(2000);
     expect(wallet.reservedBalanceKzt).toBe(1000);
     expect(reservation.state).toBe("held_for_review");
+  });
+
+  it("allows assigned participants and admin to use audited order chat attachments", async () => {
+    const selected = await createSelectedOrder({
+      categorySlug: "tow_truck",
+      offerPriceKzt: 10_000,
+      idSuffix: "chat",
+    });
+
+    const textMessage = await sendChatMessage.execute({
+      orderId: selected.id,
+      senderUserId: customerUserId,
+      message: { messageType: "text", text: "Please keep price changes in chat" },
+    });
+    const attachmentMessage = await sendChatMessage.execute({
+      orderId: selected.id,
+      senderUserId: providerUserId,
+      message: {
+        messageType: "attachment",
+        attachment: {
+          kind: "photo",
+          privateObjectKey: "orders/chat/photo.webp",
+          originalFilename: "photo.webp",
+          contentType: "image/webp",
+          sizeBytes: 1024,
+        },
+      },
+    });
+    const conversation = await getConversation.execute({
+      orderId: selected.id,
+      viewerUserId: customerUserId,
+    });
+    const signed = await getChatAttachmentAccessUrl.execute({
+      orderId: selected.id,
+      actorUserId: customerUserId,
+      attachmentId: attachmentMessage.attachment!.id,
+    });
+    const adminConversation = await getAdminConversation.execute(selected.id);
+    await reportChatMessage.execute({
+      orderId: selected.id,
+      messageId: textMessage.id,
+      reporterUserId: providerUserId,
+      reason: "dispute evidence",
+    });
+    await reportChatMessage.execute({
+      orderId: selected.id,
+      messageId: textMessage.id,
+      reporterUserId: providerUserId,
+      reason: "updated dispute evidence",
+    });
+    const systemMessage = await recordChatSystemMessage.execute({
+      orderId: selected.id,
+      systemEventType: "provider_departed",
+    });
+    const audits = await database.db
+      .selectFrom("chat_attachment_access_audit")
+      .select("id")
+      .where("attachment_id", "=", attachmentMessage.attachment!.id)
+      .execute();
+    const reports = await database.db
+      .selectFrom("chat_message_reports")
+      .select(["id", "reason"])
+      .where("message_id", "=", textMessage.id)
+      .where("reporter_user_id", "=", providerUserId)
+      .execute();
+
+    const conversationAfterSystemEvent = await getConversation.execute({
+      orderId: selected.id,
+      viewerUserId: providerUserId,
+    });
+
+    expect(conversation.messages).toHaveLength(2);
+    expect(conversation.disputeEvidenceNotice).toContain("dispute");
+    expect(attachmentMessage.attachment?.kind).toBe("photo");
+    expect(systemMessage.messageType).toBe("system");
+    expect(systemMessage.systemEventType).toBe("provider_departed");
+    expect(conversationAfterSystemEvent.messages).toHaveLength(3);
+    expect(signed.url).toContain("orders/chat/photo.webp");
+    expect(adminConversation.messages).toHaveLength(2);
+    expect(audits).toHaveLength(1);
+    expect(reports).toHaveLength(1);
+    expect(reports[0]?.reason).toBe("updated dispute evidence");
+  });
+
+  it("rejects chat from unrelated users and outside active selected order states", async () => {
+    const selected = await createSelectedOrder({
+      categorySlug: "jump_start",
+      offerPriceKzt: 10_000,
+      idSuffix: "chat-forbidden",
+    });
+    const draftLikeOrder = await createOrder.execute({
+      customerUserId,
+      categorySlug: "fuel_delivery",
+      latitude: 43.24,
+      longitude: 76.9,
+      addressLandmark: "Before selection",
+      description: "Before selection chat",
+      images: [],
+      unlockingLawfulAccess: {},
+    });
+
+    await expect(
+      getConversation.execute({
+        orderId: selected.id,
+        viewerUserId: secondCustomerUserId,
+      }),
+    ).rejects.toMatchObject({ code: "CHAT_FORBIDDEN" });
+    await expect(
+      sendChatMessage.execute({
+        orderId: draftLikeOrder.id,
+        senderUserId: customerUserId,
+        message: { messageType: "text", text: "Too early" },
+      }),
+    ).rejects.toMatchObject({ code: "CHAT_NOT_SENDABLE" });
+
+    await departOrder.execute({ providerUserId, orderId: selected.id });
+    await arriveOrder.execute({ providerUserId, orderId: selected.id });
+    await startOrderWork.execute({ providerUserId, orderId: selected.id });
+    await completeOrder.execute({
+      providerUserId,
+      orderId: selected.id,
+      idempotencyKey: "complete-chat-forbidden",
+    });
+
+    await expect(
+      sendChatMessage.execute({
+        orderId: selected.id,
+        senderUserId: customerUserId,
+        message: { messageType: "text", text: "Too late" },
+      }),
+    ).rejects.toMatchObject({ code: "CHAT_NOT_SENDABLE" });
   });
 
   async function approveProviderCategory(

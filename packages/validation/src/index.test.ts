@@ -3,11 +3,14 @@ import { describe, expect, it } from "vitest";
 import {
   apiEnvSchema,
   cancelOrderSchema,
+  chatAttachmentMetadataSchema,
   localeSchema,
   orderLifecycleCommandSchema,
   providerDiscoveryPreferenceSchema,
+  reportChatMessageSchema,
   requestOtpSchema,
   serviceCategoryCommercialConfigSchema,
+  sendChatMessageSchema,
   switchRoleSchema,
 } from "./index";
 
@@ -86,5 +89,49 @@ describe("validation schemas", () => {
         operationalMinimumKzt: 3000,
       }),
     ).toThrow();
+  });
+
+  it("validates chat message and attachment public contracts", () => {
+    const parsedTextMessage = sendChatMessageSchema.parse({
+      messageType: "text",
+      text: "  hello  ",
+    });
+    expect(parsedTextMessage.messageType).toBe("text");
+    if (parsedTextMessage.messageType === "text") {
+      expect(parsedTextMessage.text).toBe("hello");
+    }
+    expect(
+      chatAttachmentMetadataSchema.parse({
+        kind: "photo",
+        privateObjectKey: "orders/chat/photo.webp",
+        originalFilename: "photo.webp",
+        contentType: "image/webp",
+        sizeBytes: 1024,
+      }).kind,
+    ).toBe("photo");
+    expect(
+      chatAttachmentMetadataSchema.parse({
+        kind: "voice",
+        privateObjectKey: "orders/chat/voice.ogg",
+        originalFilename: "voice.ogg",
+        contentType: "audio/ogg",
+        sizeBytes: 1024,
+        durationSeconds: 120,
+      }).kind,
+    ).toBe("voice");
+    expect(() => sendChatMessageSchema.parse({ messageType: "text", text: "" })).toThrow();
+    expect(() =>
+      chatAttachmentMetadataSchema.parse({
+        kind: "voice",
+        privateObjectKey: "orders/chat/voice.ogg",
+        originalFilename: "voice.ogg",
+        contentType: "audio/ogg",
+        sizeBytes: 1024,
+        durationSeconds: 181,
+      }),
+    ).toThrow();
+    expect(reportChatMessageSchema.parse({ reason: "dispute evidence" }).reason).toBe(
+      "dispute evidence",
+    );
   });
 });

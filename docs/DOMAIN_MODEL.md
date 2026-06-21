@@ -139,7 +139,19 @@ Owns:
 
 ### Conversation
 
-Owned by an order. Participants are the assigned customer, assigned provider, and authorized administrators.
+Owned by an order.
+
+Owns:
+
+- text messages
+- system event messages
+- private photo/voice attachment metadata
+- message reports for dispute review
+- attachment access audit
+
+Participants are the order customer, assigned provider, and authorized
+administrators. Attachment object keys are metadata only; signed URL creation is
+the controlled access path.
 
 ### LiveLocationSession
 
@@ -191,6 +203,17 @@ Owned by a completed order. One review per direction per order.
 - tracking ends after completion or cancellation
 - stale data is labeled and never presented as current
 
+### Conversation
+
+- user messages can be sent only while a selected order is active
+- readable conversation history remains available after terminal order states
+  for dispute evidence
+- every private attachment read is audited
+- photos must be JPEG, PNG, or WebP and no larger than 20 MB
+- voice messages must be WebM, Ogg, or MPEG audio, no larger than 10 MB, and no
+  longer than 180 seconds
+- reports are idempotent per reporter/message
+
 ## Important domain services or policies
 
 Recommended narrow policies:
@@ -200,6 +223,7 @@ Recommended narrow policies:
 - `ProviderSelectionPolicy`
 - `OrderTransitionPolicy`
 - `CancellationPolicy`
+- `ChatPolicy`
 - `ProviderActivityPolicy`
 - `ProviderReliabilityCalculator`
 - `UnlockingVerificationPolicy`

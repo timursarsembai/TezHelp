@@ -93,6 +93,13 @@ URL use cases and write `provider_document_access_audit`. Raw object keys are
 not an authorization mechanism. The current development signer is replaceable by
 a production S3-compatible presigner before real document uploads are enabled.
 
+Chat attachments are stored as private photo/voice metadata linked to an order
+conversation. Assigned participants and authorized administrators receive only
+short-lived signed read URLs, and every signed URL creation writes
+`chat_attachment_access_audit`. Conversation history and attachment access may
+be dispute evidence, so retention and deletion policies must account for active
+complaint windows before production use.
+
 ## Location security
 
 - start after departure
@@ -148,6 +155,10 @@ Audit at least:
 
 Phase 2 additionally writes moderation decision history for provider service
 profiles and audits signed document-review URL creation.
+
+The chat foundation additionally audits signed attachment URL creation and
+stores message reports idempotently per reporter/message for later dispute
+review.
 
 Audit records are immutable to ordinary administrators.
 

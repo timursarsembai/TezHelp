@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 
+import { ChatModule } from "../chat/chat.module.js";
 import { AuditModule } from "../foundation/audit/audit.module.js";
 import { ConfigurationModule } from "../foundation/configuration/configuration.module.js";
 import { DatabaseModule } from "../foundation/database/database.module.js";
@@ -27,6 +28,7 @@ import { WalletModule } from "../wallet/wallet.module.js";
     WalletModule,
     OrdersModule,
     OffersModule,
+    ChatModule,
   ],
 })
 export class ApiRootModule {}

@@ -66,6 +66,9 @@ export type WalletLedgerEntryType =
   | "commission_release"
   | "commission_capture";
 export type CommissionReservationState = "reserved" | "captured" | "released" | "held_for_review";
+export type ChatSenderRole = "customer" | "provider" | "admin" | "system";
+export type ChatMessageType = "text" | "attachment" | "system";
+export type ChatAttachmentKind = "photo" | "voice";
 
 interface UsersTable {
   readonly id: Generated<string>;
@@ -354,6 +357,54 @@ interface CommissionReservationsTable {
   readonly updated_at: TimestampColumn;
 }
 
+interface OrderConversationsTable {
+  readonly order_id: string;
+  readonly created_at: Generated<Date>;
+  readonly updated_at: TimestampColumn;
+}
+
+interface ChatMessagesTable {
+  readonly id: Generated<string>;
+  readonly order_id: string;
+  readonly sender_user_id: string | null;
+  readonly sender_role: ChatSenderRole;
+  readonly message_type: ChatMessageType;
+  readonly text_body: string | null;
+  readonly system_event_type: string | null;
+  readonly delivered_at: Generated<Date>;
+  readonly created_at: Generated<Date>;
+}
+
+interface ChatAttachmentsTable {
+  readonly id: Generated<string>;
+  readonly message_id: string;
+  readonly order_id: string;
+  readonly attachment_kind: ChatAttachmentKind;
+  readonly private_object_key: string;
+  readonly original_filename: string;
+  readonly content_type: string;
+  readonly size_bytes: number;
+  readonly duration_seconds: number | null;
+  readonly created_at: Generated<Date>;
+}
+
+interface ChatMessageReportsTable {
+  readonly id: Generated<string>;
+  readonly message_id: string;
+  readonly reporter_user_id: string;
+  readonly reason: string;
+  readonly created_at: Generated<Date>;
+}
+
+interface ChatAttachmentAccessAuditTable {
+  readonly id: Generated<string>;
+  readonly attachment_id: string;
+  readonly actor_user_id: string | null;
+  readonly access_action: string;
+  readonly reason: string;
+  readonly occurred_at: Generated<Date>;
+}
+
 export interface DatabaseSchema {
   readonly audit_events: AuditEventsTable;
   readonly users: UsersTable;
@@ -379,6 +430,11 @@ export interface DatabaseSchema {
   readonly wallet_ledger_entries: WalletLedgerEntriesTable;
   readonly offers: OffersTable;
   readonly commission_reservations: CommissionReservationsTable;
+  readonly order_conversations: OrderConversationsTable;
+  readonly chat_messages: ChatMessagesTable;
+  readonly chat_attachments: ChatAttachmentsTable;
+  readonly chat_message_reports: ChatMessageReportsTable;
+  readonly chat_attachment_access_audit: ChatAttachmentAccessAuditTable;
 }
 
 export type TezHelpDatabase = Kysely<DatabaseSchema>;
