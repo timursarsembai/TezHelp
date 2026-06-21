@@ -43,6 +43,21 @@ export default function AdminHomePage() {
                 </Button>
               </div>
             </div>
+
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-semibold text-slate-950">
+                  {translate(locale, "marketplace.admin.commercialConfig")}
+                </p>
+                <p className="mt-3 text-2xl font-bold text-slate-950">100 KZT</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-semibold text-slate-950">
+                  {translate(locale, "marketplace.admin.ledger")}
+                </p>
+                <p className="mt-3 text-2xl font-bold text-slate-950">0</p>
+              </div>
+            </div>
           </section>
 
           <aside className="rounded-lg bg-white p-5 shadow-sm" role="status">

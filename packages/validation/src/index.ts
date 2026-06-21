@@ -18,6 +18,11 @@ export const providerModerationStatusSchema = z.enum([
   "rejected",
   "suspended",
 ]);
+export const commissionStrategySchema = z.enum(["percentage", "fixed", "combined", "zero"]);
+
+const idempotencyKeySchema = z.string().trim().min(8).max(120);
+const kztAmountSchema = z.number().int().nonnegative().max(100_000_000);
+const positiveKztAmountSchema = z.number().int().positive().max(100_000_000);
 
 export const phoneNumberSchema = z
   .string()
@@ -93,6 +98,69 @@ export const moderationDecisionSchema = z.object({
 export const adminModerationQueueSchema = z.object({
   status: providerModerationStatusSchema.optional(),
   categorySlug: serviceCategorySlugSchema.optional(),
+});
+
+export const orderImageMetadataSchema = z.object({
+  privateObjectKey: z.string().trim().min(8).max(512),
+  originalFilename: z.string().trim().min(1).max(255),
+  contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+  sizeBytes: z
+    .number()
+    .int()
+    .positive()
+    .max(20 * 1024 * 1024),
+});
+
+export const createOrderSchema = z.object({
+  categorySlug: serviceCategorySlugSchema,
+  latitude: z.number().min(43.0).max(44.0),
+  longitude: z.number().min(76.0).max(77.5),
+  addressLandmark: z.string().trim().min(3).max(240),
+  vehicleMake: z.string().trim().min(1).max(80).optional(),
+  vehicleModel: z.string().trim().min(1).max(80).optional(),
+  vehicleYear: z.number().int().min(1950).max(2100).optional(),
+  description: z.string().trim().min(5).max(2000),
+  images: z.array(orderImageMetadataSchema).max(5).default([]),
+  unlockingLawfulAccess: z.record(z.string(), z.unknown()).default({}),
+});
+
+export const providerDiscoveryPreferenceSchema = z.object({
+  nearbyEnabled: z.boolean(),
+  radiusMeters: z.number().int().min(3000).max(100_000),
+  referenceLatitude: z.number().min(43.0).max(44.0).default(43.2389),
+  referenceLongitude: z.number().min(76.0).max(77.5).default(76.8897),
+});
+
+export const submitOfferSchema = z.object({
+  providerServiceProfileId: z.uuid(),
+  priceKzt: positiveKztAmountSchema,
+  arrivalMinutes: z
+    .number()
+    .int()
+    .positive()
+    .max(24 * 60),
+  comment: z.string().trim().min(1).max(1000),
+  idempotencyKey: idempotencyKeySchema,
+});
+
+export const selectProviderSchema = z.object({
+  offerId: z.uuid(),
+  idempotencyKey: idempotencyKeySchema,
+});
+
+export const walletAdjustmentSchema = z.object({
+  providerUserId: z.uuid(),
+  amountKzt: positiveKztAmountSchema,
+  reason: z.string().trim().min(3).max(1000),
+  idempotencyKey: idempotencyKeySchema,
+});
+
+export const serviceCategoryCommercialConfigSchema = z.object({
+  responseFeeKzt: kztAmountSchema,
+  commissionStrategy: commissionStrategySchema,
+  commissionPercentageBps: z.number().int().min(0).max(10_000),
+  commissionFixedKzt: kztAmountSchema,
+  operationalMinimumKzt: kztAmountSchema,
 });
 
 export const apiEnvSchema = z

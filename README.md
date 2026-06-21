@@ -3,7 +3,7 @@
 TezHelp is a marketplace for emergency roadside services in Kazakhstan. This
 repository is a production-oriented foundation: mobile-first web, separate
 admin web, standalone NestJS API, shared packages, local infrastructure, and the
-Phase 2 provider moderation foundation.
+provider moderation plus first orders/offers/wallet foundation.
 
 ## Requirements
 
@@ -81,6 +81,32 @@ moderation endpoints use `x-tezhelp-admin-user-id`. Both are local/test
 adapters only and are rejected in production through the same development-auth
 environment guard.
 
+## Orders, Offers, Wallet Foundation
+
+Implemented development endpoints:
+
+- `POST /v1/orders`
+- `GET /v1/orders/:orderId`
+- `POST /v1/orders/:orderId/select-provider`
+- `GET /v1/orders/:orderId/offers`
+- `GET /v1/provider/orders`
+- `GET /v1/provider/order-discovery-preferences`
+- `PATCH /v1/provider/order-discovery-preferences`
+- `POST /v1/provider/orders/:orderId/offers`
+- `GET /v1/provider/wallet`
+- `GET /v1/provider/wallet/ledger`
+- `POST /v1/admin/wallet/manual-credit`
+- `POST /v1/admin/wallet/manual-debit-correction`
+- `GET /v1/admin/service-categories/:slug/commercial-config`
+- `PATCH /v1/admin/service-categories/:slug/commercial-config`
+
+This slice publishes Almaty orders, lets eligible approved providers discover
+orders through optional PostGIS radius filtering, submits one offer per provider
+per order, consumes free response credits or a response fee atomically, freezes
+the selected offer price, reserves commission, and enforces one active assigned
+order per provider. Completion, cancellation, phone reveal, chat, live location,
+real payments, and production RBAC remain future work.
+
 ## Canonical Commands
 
 ```bash
@@ -112,7 +138,7 @@ The MVP remains a modular monolith with a standalone NestJS backend.
 
 - `apps/web`: customer/provider responsive web shell.
 - `apps/admin`: separate protected administration shell.
-- `apps/api`: NestJS API foundation with configuration, database, health, audit, identity, service catalog, provider-services, and moderation modules.
+- `apps/api`: NestJS API foundation with configuration, database, health, audit, identity, service catalog, provider-services, moderation, orders, offers, wallet, and commissions modules.
 - `packages/*`: shared UI, public contracts, validation, i18n, API client, maps, and config.
 - `infrastructure/docker`: local PostGIS, Redis, and S3-compatible object storage.
 
@@ -135,9 +161,13 @@ users, auth links, customer/provider profiles, OTP challenges, sessions, and
 security events. The third migration adds service categories, localized category
 labels, configurable category tax allowances and document rules, provider
 service profiles, private document metadata, moderation history, and document
-access audit. The migration command loads `.env.example` for local
-development defaults; production and CI should provide real environment
-variables explicitly.
+access audit. The fourth migration adds category commercial configuration,
+orders, order status history, private order image metadata, provider discovery
+preferences, offers, wallet accounts, append-only wallet ledger entries, and
+commission reservations. The fifth migration adds the provider discovery
+reference point used by PostGIS radius queries. The migration command loads
+`.env.example` for local development defaults; production and CI should provide
+real environment variables explicitly.
 
 ## Quality Gates
 
@@ -199,3 +229,4 @@ Start with:
 9. `docs/plans/2026-06-19-bootstrap-foundation.md`
 10. `docs/plans/2026-06-20-identity-foundation.md`
 11. `docs/plans/2026-06-21-provider-moderation.md`
+12. `docs/plans/2026-06-21-orders-offers-wallet.md`

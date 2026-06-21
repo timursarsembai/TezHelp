@@ -131,3 +131,20 @@ Reason:
 - future automatic verification can attach through adapters without turning the
   provider module into a god service
 - approval must remain independent per service category
+
+## ADR-016 - Transactional orders, offers, and wallet slice
+
+Status: accepted.
+
+Implement the first marketplace transaction slice as one modular-monolith
+transactional workflow across `orders`, `offers`, `wallet`, and `commissions`.
+
+Reason:
+
+- offer publication must atomically consume a free response credit or response
+  fee
+- provider selection must atomically freeze accepted price, reserve commission,
+  and enforce one active order per provider
+- wallet history must remain append-only and idempotent
+- PostGIS discovery belongs in the backend so web, admin, and future mobile
+  clients do not duplicate location filtering or financial policy

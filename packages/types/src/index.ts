@@ -31,6 +31,35 @@ export type ProviderModerationStatus =
   | "rejected"
   | "suspended";
 
+export type CommissionStrategy = "percentage" | "fixed" | "combined" | "zero";
+
+export type OrderStatus =
+  | "draft"
+  | "published"
+  | "receiving_offers"
+  | "provider_selected"
+  | "provider_en_route"
+  | "provider_arrived"
+  | "in_progress"
+  | "completed"
+  | "cancelled_by_customer"
+  | "cancelled_by_provider"
+  | "cancelled_by_admin"
+  | "disputed";
+
+export type OfferStatus = "active" | "accepted" | "unavailable" | "retracted";
+
+export type WalletLedgerEntryType =
+  | "manual_credit"
+  | "manual_debit_correction"
+  | "response_fee_charge"
+  | "response_fee_reversal"
+  | "commission_reserve"
+  | "commission_release"
+  | "commission_capture";
+
+export type CommissionReservationState = "reserved" | "captured" | "released" | "held_for_review";
+
 export type ProviderGeneralDocumentType = "face_photo" | "identity_document";
 
 export interface ServiceCategorySummary {
@@ -38,8 +67,17 @@ export interface ServiceCategorySummary {
   readonly enabled: boolean;
   readonly name: string;
   readonly description: string;
+  readonly commercialConfig: ServiceCategoryCommercialConfig;
   readonly allowedTaxStatuses: ReadonlyArray<ProviderTaxStatus>;
   readonly requiredDocuments: ReadonlyArray<ServiceCategoryDocumentRule>;
+}
+
+export interface ServiceCategoryCommercialConfig {
+  readonly responseFeeKzt: number;
+  readonly commissionStrategy: CommissionStrategy;
+  readonly commissionPercentageBps: number;
+  readonly commissionFixedKzt: number;
+  readonly operationalMinimumKzt: number;
 }
 
 export interface ServiceCategoryDocumentRule {
@@ -112,6 +150,99 @@ export interface ProviderModerationQueueItem {
 export interface SignedDocumentUrlResponse {
   readonly url: string;
   readonly expiresAt: string;
+}
+
+export interface OrderImageSummary {
+  readonly id: string;
+  readonly originalFilename: string;
+  readonly contentType: string;
+  readonly sizeBytes: number;
+  readonly sortOrder: number;
+}
+
+export interface OrderSummary {
+  readonly id: string;
+  readonly customerUserId: string;
+  readonly categorySlug: ServiceCategorySlug;
+  readonly status: OrderStatus;
+  readonly city: string;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly addressLandmark: string;
+  readonly vehicleMake?: string;
+  readonly vehicleModel?: string;
+  readonly vehicleYear?: number;
+  readonly description: string;
+  readonly acceptedPriceKzt?: number;
+  readonly assignedProviderUserId?: string;
+  readonly assignedProviderServiceProfileId?: string;
+  readonly selectedOfferId?: string;
+  readonly commissionReservationId?: string;
+  readonly offerCount: number;
+  readonly images: ReadonlyArray<OrderImageSummary>;
+  readonly createdAt: string;
+  readonly publishedAt: string;
+}
+
+export interface ProviderOrderDiscoveryPreference {
+  readonly nearbyEnabled: boolean;
+  readonly radiusMeters: number;
+  readonly referenceLatitude: number;
+  readonly referenceLongitude: number;
+}
+
+export interface ProviderOrderDiscoveryItem {
+  readonly order: OrderSummary;
+  readonly providerServiceProfileId: string;
+  readonly offerCount: number;
+  readonly distanceMeters?: number;
+}
+
+export interface OfferSummary {
+  readonly id: string;
+  readonly orderId: string;
+  readonly providerUserId: string;
+  readonly providerServiceProfileId: string;
+  readonly priceKzt: number;
+  readonly arrivalMinutes: number;
+  readonly comment: string;
+  readonly status: OfferStatus;
+  readonly responseFeeKzt: number;
+  readonly freeResponseCreditUsed: boolean;
+  readonly offerCountBeforeSubmission?: number;
+  readonly createdAt: string;
+}
+
+export interface WalletSummary {
+  readonly providerUserId: string;
+  readonly availableBalanceKzt: number;
+  readonly reservedBalanceKzt: number;
+  readonly freeResponsesRemaining: number;
+}
+
+export interface WalletLedgerEntrySummary {
+  readonly id: string;
+  readonly providerUserId: string;
+  readonly entryType: WalletLedgerEntryType;
+  readonly amountKzt: number;
+  readonly availableDeltaKzt: number;
+  readonly reservedDeltaKzt: number;
+  readonly resultingAvailableBalanceKzt: number;
+  readonly resultingReservedBalanceKzt: number;
+  readonly reason: string;
+  readonly relatedOrderId?: string;
+  readonly relatedOfferId?: string;
+  readonly relatedCommissionReservationId?: string;
+  readonly createdAt: string;
+}
+
+export interface CommissionReservationSummary {
+  readonly id: string;
+  readonly orderId: string;
+  readonly offerId: string;
+  readonly providerUserId: string;
+  readonly amountKzt: number;
+  readonly state: CommissionReservationState;
 }
 
 export interface IdentityUserSummary {

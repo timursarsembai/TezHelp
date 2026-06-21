@@ -42,6 +42,30 @@ export type ProviderModerationStatus =
   | "approved"
   | "rejected"
   | "suspended";
+export type CommissionStrategy = "percentage" | "fixed" | "combined" | "zero";
+export type OrderStatus =
+  | "draft"
+  | "published"
+  | "receiving_offers"
+  | "provider_selected"
+  | "provider_en_route"
+  | "provider_arrived"
+  | "in_progress"
+  | "completed"
+  | "cancelled_by_customer"
+  | "cancelled_by_provider"
+  | "cancelled_by_admin"
+  | "disputed";
+export type OfferStatus = "active" | "accepted" | "unavailable" | "retracted";
+export type WalletLedgerEntryType =
+  | "manual_credit"
+  | "manual_debit_correction"
+  | "response_fee_charge"
+  | "response_fee_reversal"
+  | "commission_reserve"
+  | "commission_release"
+  | "commission_capture";
+export type CommissionReservationState = "reserved" | "captured" | "released" | "held_for_review";
 
 interface UsersTable {
   readonly id: Generated<string>;
@@ -117,6 +141,11 @@ interface ServiceCategoriesTable {
   readonly slug: string;
   readonly enabled: Generated<boolean>;
   readonly sort_order: number;
+  readonly response_fee_kzt: Generated<number>;
+  readonly commission_strategy: Generated<CommissionStrategy>;
+  readonly commission_percentage_bps: Generated<number>;
+  readonly commission_fixed_kzt: Generated<number>;
+  readonly operational_minimum_kzt: Generated<number>;
   readonly created_at: Generated<Date>;
   readonly updated_at: TimestampColumn;
 }
@@ -204,6 +233,119 @@ interface ProviderDocumentAccessAuditTable {
   readonly occurred_at: Generated<Date>;
 }
 
+interface ProviderOrderDiscoveryPreferencesTable {
+  readonly provider_user_id: string;
+  readonly nearby_enabled: Generated<boolean>;
+  readonly radius_meters: Generated<number>;
+  readonly reference_latitude: Generated<string>;
+  readonly reference_longitude: Generated<string>;
+  readonly updated_at: TimestampColumn;
+}
+
+interface OrdersTable {
+  readonly id: Generated<string>;
+  readonly customer_user_id: string;
+  readonly category_slug: string;
+  readonly status: Generated<OrderStatus>;
+  readonly city: Generated<string>;
+  readonly location: ColumnType<string, string, string>;
+  readonly address_landmark: string;
+  readonly vehicle_make: string | null;
+  readonly vehicle_model: string | null;
+  readonly vehicle_year: number | null;
+  readonly description: string;
+  readonly unlocking_lawful_access: JsonColumn;
+  readonly unlocking_verification_status: Generated<"not_required" | "pending">;
+  readonly assigned_provider_user_id: string | null;
+  readonly assigned_provider_service_profile_id: string | null;
+  readonly accepted_price_kzt: number | null;
+  readonly selected_offer_id: string | null;
+  readonly commission_reservation_id: string | null;
+  readonly published_at: Generated<Date>;
+  readonly selected_at: NullableTimestampColumn;
+  readonly created_at: Generated<Date>;
+  readonly updated_at: TimestampColumn;
+}
+
+interface OrderStatusHistoryTable {
+  readonly id: Generated<string>;
+  readonly order_id: string;
+  readonly from_status: OrderStatus | null;
+  readonly to_status: OrderStatus;
+  readonly actor_user_id: string | null;
+  readonly reason: string;
+  readonly metadata: JsonColumn;
+  readonly occurred_at: Generated<Date>;
+}
+
+interface OrderImagesTable {
+  readonly id: Generated<string>;
+  readonly order_id: string;
+  readonly private_object_key: string;
+  readonly original_filename: string;
+  readonly content_type: string;
+  readonly size_bytes: number;
+  readonly sort_order: number;
+  readonly created_at: Generated<Date>;
+}
+
+interface WalletAccountsTable {
+  readonly provider_user_id: string;
+  readonly available_balance_kzt: Generated<number>;
+  readonly reserved_balance_kzt: Generated<number>;
+  readonly free_responses_remaining: Generated<number>;
+  readonly created_at: Generated<Date>;
+  readonly updated_at: TimestampColumn;
+}
+
+interface WalletLedgerEntriesTable {
+  readonly id: Generated<string>;
+  readonly provider_user_id: string;
+  readonly entry_type: WalletLedgerEntryType;
+  readonly amount_kzt: number;
+  readonly available_delta_kzt: number;
+  readonly reserved_delta_kzt: number;
+  readonly resulting_available_balance_kzt: number;
+  readonly resulting_reserved_balance_kzt: number;
+  readonly idempotency_key: string;
+  readonly actor_user_id: string | null;
+  readonly reason: string;
+  readonly related_order_id: string | null;
+  readonly related_offer_id: string | null;
+  readonly related_commission_reservation_id: string | null;
+  readonly metadata: JsonColumn;
+  readonly created_at: Generated<Date>;
+}
+
+interface OffersTable {
+  readonly id: Generated<string>;
+  readonly order_id: string;
+  readonly provider_user_id: string;
+  readonly provider_service_profile_id: string;
+  readonly price_kzt: number;
+  readonly arrival_minutes: number;
+  readonly comment: string;
+  readonly status: Generated<OfferStatus>;
+  readonly response_fee_kzt: number;
+  readonly free_response_credit_used: Generated<boolean>;
+  readonly response_fee_ledger_entry_id: string | null;
+  readonly idempotency_key: string;
+  readonly created_at: Generated<Date>;
+  readonly updated_at: TimestampColumn;
+}
+
+interface CommissionReservationsTable {
+  readonly id: Generated<string>;
+  readonly order_id: string;
+  readonly offer_id: string;
+  readonly provider_user_id: string;
+  readonly amount_kzt: number;
+  readonly state: Generated<CommissionReservationState>;
+  readonly idempotency_key: string;
+  readonly created_at: Generated<Date>;
+  readonly updated_at: TimestampColumn;
+}
+
 export interface DatabaseSchema {
   readonly audit_events: AuditEventsTable;
   readonly users: UsersTable;
@@ -221,9 +363,18 @@ export interface DatabaseSchema {
   readonly provider_documents: ProviderDocumentsTable;
   readonly provider_moderation_events: ProviderModerationEventsTable;
   readonly provider_document_access_audit: ProviderDocumentAccessAuditTable;
+  readonly provider_order_discovery_preferences: ProviderOrderDiscoveryPreferencesTable;
+  readonly orders: OrdersTable;
+  readonly order_status_history: OrderStatusHistoryTable;
+  readonly order_images: OrderImagesTable;
+  readonly wallet_accounts: WalletAccountsTable;
+  readonly wallet_ledger_entries: WalletLedgerEntriesTable;
+  readonly offers: OffersTable;
+  readonly commission_reservations: CommissionReservationsTable;
 }
 
 export type TezHelpDatabase = Kysely<DatabaseSchema>;
 export type NewAuditEvent = Insertable<AuditEventsTable>;
 export type NewProviderDocument = Insertable<ProviderDocumentsTable>;
 export type NewProviderModerationEvent = Insertable<ProviderModerationEventsTable>;
+export type NewWalletLedgerEntry = Insertable<WalletLedgerEntriesTable>;

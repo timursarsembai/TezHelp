@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { apiEnvSchema, localeSchema, requestOtpSchema, switchRoleSchema } from "./index";
+import {
+  apiEnvSchema,
+  localeSchema,
+  providerDiscoveryPreferenceSchema,
+  requestOtpSchema,
+  serviceCategoryCommercialConfigSchema,
+  switchRoleSchema,
+} from "./index";
 
 describe("validation schemas", () => {
   it("accepts the three supported locales", () => {
@@ -49,5 +56,23 @@ describe("validation schemas", () => {
     expect(requestOtpSchema.parse({ phone: "+77001234567" }).purpose).toBe("sign_in");
     expect(switchRoleSchema.parse({ role: "provider" }).role).toBe("provider");
     expect(() => requestOtpSchema.parse({ phone: "87001234567" })).toThrow();
+  });
+
+  it("validates marketplace public contracts", () => {
+    const preference = providerDiscoveryPreferenceSchema.parse({
+      nearbyEnabled: true,
+      radiusMeters: 10_000,
+    });
+    expect(preference.referenceLatitude).toBe(43.2389);
+    expect(preference.referenceLongitude).toBe(76.8897);
+    expect(() =>
+      serviceCategoryCommercialConfigSchema.parse({
+        responseFeeKzt: 100,
+        commissionStrategy: "percentage",
+        commissionPercentageBps: 20_000,
+        commissionFixedKzt: 0,
+        operationalMinimumKzt: 3000,
+      }),
+    ).toThrow();
   });
 });

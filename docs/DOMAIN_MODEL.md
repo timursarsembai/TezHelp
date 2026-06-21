@@ -99,6 +99,10 @@ Owns:
 - availability
 - response fee transaction reference
 
+Current rule: one provider can create only one offer per order. Duplicate
+idempotency keys return the original offer only when the command payload is the
+same.
+
 ### Wallet
 
 Owns:
@@ -108,6 +112,11 @@ Owns:
 - cached reserved balance
 
 Ledger entries are immutable.
+
+Current wallet account state stores available balance, reserved balance, and
+free response credits. The first five provider responses are free account-wide;
+after that, offer publication charges the category response fee inside the same
+transaction as offer creation.
 
 ### CommissionReservation
 
@@ -208,7 +217,14 @@ Initial percentage commission:
 commission = acceptedPrice * 10 / 100
 ```
 
-The rounding rule must be documented and tested before production. For whole-tenge prices and 10%, integer outcomes are common but not guaranteed for arbitrary values.
+Current implementation floors percentage commission in integer KZT:
+
+```text
+commission = floor(acceptedPriceKzt * percentageBps / 10000)
+```
+
+Fixed and combined commission strategies are available through category
+commercial configuration. All values are integer tenge.
 
 ## Active order definition
 

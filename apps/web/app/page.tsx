@@ -142,6 +142,51 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
         </div>
       </section>
+
+      <section
+        className="mt-4 rounded-lg bg-white p-5 shadow-sm"
+        aria-labelledby="marketplace-title"
+      >
+        <div className="max-w-3xl">
+          <p className="text-sm font-semibold text-brand-blue">
+            {translate(locale, "marketplace.order.title")}
+          </p>
+          <h2 className="mt-2 text-2xl font-bold" id="marketplace-title">
+            {translate(locale, "marketplace.order.publish")}
+          </h2>
+        </div>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <MarketplaceField label={translate(locale, "marketplace.order.title")} value="Алматы" />
+            <MarketplaceField
+              label={translate(locale, "marketplace.provider.discovery")}
+              value="5 км"
+            />
+            <MarketplaceField
+              label={translate(locale, "marketplace.provider.offer")}
+              value="12 000 KZT"
+            />
+            <MarketplaceField label={translate(locale, "marketplace.provider.wallet")} value="5" />
+          </div>
+
+          <aside className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm font-semibold text-slate-950">
+              {translate(locale, "marketplace.provider.wallet")}
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase text-slate-500">KZT</p>
+                <p className="mt-1 text-2xl font-bold text-slate-950">3 000</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase text-slate-500">free</p>
+                <p className="mt-1 text-2xl font-bold text-slate-950">5</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
     </ResponsiveShell>
   );
 }
@@ -187,5 +232,14 @@ function IdentitySelect({
         ))}
       </select>
     </label>
+  );
+}
+
+function MarketplaceField({ label, value }: { readonly label: string; readonly value: string }) {
+  return (
+    <div className="min-h-24 rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <p className="text-xs font-semibold uppercase text-slate-500">{label}</p>
+      <p className="mt-3 text-lg font-bold text-slate-950">{value}</p>
+    </div>
   );
 }

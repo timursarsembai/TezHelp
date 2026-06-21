@@ -11,4 +11,9 @@ describe("admin shell", () => {
     expect(translate("ru", "admin.moderation.queue")).toContain("Очередь");
     expect(translate("en", "admin.moderation.suspend")).toContain("Suspend");
   });
+
+  it("has localized commercial and ledger labels", () => {
+    expect(translate("ru", "marketplace.admin.ledger")).toContain("кошелька");
+    expect(translate("en", "marketplace.admin.commercialConfig")).toContain("tariffs");
+  });
 });

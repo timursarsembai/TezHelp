@@ -7,8 +7,11 @@ import { HealthModule } from "../foundation/health/health.module.js";
 import { HttpFoundationModule } from "../foundation/http/http-foundation.module.js";
 import { IdentityModule } from "../identity/identity.module.js";
 import { ModerationModule } from "../moderation/moderation.module.js";
+import { OffersModule } from "../offers/offers.module.js";
+import { OrdersModule } from "../orders/orders.module.js";
 import { ProviderServicesModule } from "../provider-services/provider-services.module.js";
 import { ServiceCatalogModule } from "../service-catalog/service-catalog.module.js";
+import { WalletModule } from "../wallet/wallet.module.js";
 
 @Module({
   imports: [
@@ -21,6 +24,9 @@ import { ServiceCatalogModule } from "../service-catalog/service-catalog.module.
     ServiceCatalogModule,
     ProviderServicesModule,
     ModerationModule,
+    WalletModule,
+    OrdersModule,
+    OffersModule,
   ],
 })
 export class ApiRootModule {}

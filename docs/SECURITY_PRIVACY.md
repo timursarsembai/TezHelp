@@ -103,6 +103,12 @@ a production S3-compatible presigner before real document uploads are enabled.
 - never infer fictional movement
 - do not expose location to unrelated providers
 
+Current order discovery stores exact customer order coordinates as PostGIS
+geography. Published order discovery exposes those coordinates only to providers
+with an approved, non-suspended service profile for the order category. The
+nearby filter uses the provider's saved discovery reference point; it is not yet
+live provider tracking.
+
 ## Financial security
 
 - append-only ledger
@@ -112,6 +118,12 @@ a production S3-compatible presigner before real document uploads are enabled.
 - dual review may be introduced for large adjustments
 - reconciliation jobs
 - alert on negative or inconsistent balances
+
+Manual wallet adjustments require an admin actor, reason, and idempotency key.
+Offer publication consumes free response credit or charges the response fee in
+the same transaction as the offer. Provider selection reserves commission in the
+same transaction as order assignment. Completion/capture and cancellation
+release or hold workflows are intentionally not implemented yet.
 
 ## Audit
 

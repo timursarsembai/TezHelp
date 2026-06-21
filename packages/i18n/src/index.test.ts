@@ -24,4 +24,10 @@ describe("i18n", () => {
     expect(translate("kk", "providerModeration.categorySelection")).toContain("санаттары");
     expect(translate("en", "admin.moderation.queue")).toContain("queue");
   });
+
+  it("has localized marketplace shell strings", () => {
+    expect(translate("ru", "marketplace.provider.wallet")).toContain("Баланс");
+    expect(translate("kk", "marketplace.order.publish")).toContain("жариялау");
+    expect(translate("en", "marketplace.admin.commercialConfig")).toContain("commissions");
+  });
 });

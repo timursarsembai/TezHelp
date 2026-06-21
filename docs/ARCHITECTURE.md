@@ -224,6 +224,19 @@ Examples:
 - unique response per provider per order, if product policy requires it
 - unique active commission reservation per order
 
+Current marketplace transaction slice:
+
+- `orders` owns order publication, status history, image metadata, and provider
+  selection orchestration.
+- `offers` owns provider discovery and offer publication.
+- `wallet` owns provider balances and append-only ledger entries.
+- `commissions` owns integer KZT commission calculation and reservation state.
+- Provider selection locks the order, selected offer, provider wallet, and
+  reservation state in one transaction, freezes accepted price, reserves
+  commission, and marks other active offers unavailable.
+- Provider discovery uses PostGIS straight-line distance against the saved
+  provider discovery reference point only when the nearby filter is enabled.
+
 Critical workflows must tolerate retries.
 
 ## API design
@@ -244,6 +257,25 @@ Possible route grouping:
 /v1/provider-service-profiles
 /v1/provider/wallet
 /v1/admin
+```
+
+Implemented marketplace endpoints include:
+
+```text
+POST /v1/orders
+GET /v1/orders/:orderId
+POST /v1/orders/:orderId/select-provider
+GET /v1/orders/:orderId/offers
+GET /v1/provider/orders
+GET /v1/provider/order-discovery-preferences
+PATCH /v1/provider/order-discovery-preferences
+POST /v1/provider/orders/:orderId/offers
+GET /v1/provider/wallet
+GET /v1/provider/wallet/ledger
+POST /v1/admin/wallet/manual-credit
+POST /v1/admin/wallet/manual-debit-correction
+GET /v1/admin/service-categories/:slug/commercial-config
+PATCH /v1/admin/service-categories/:slug/commercial-config
 ```
 
 Use stable error codes such as:

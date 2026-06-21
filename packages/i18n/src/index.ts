@@ -29,6 +29,13 @@ export type MessageKey =
   | "providerModeration.perCategoryStatus"
   | "providerModeration.rejectionReason"
   | "providerModeration.resubmit"
+  | "marketplace.order.title"
+  | "marketplace.order.publish"
+  | "marketplace.provider.discovery"
+  | "marketplace.provider.offer"
+  | "marketplace.provider.wallet"
+  | "marketplace.admin.ledger"
+  | "marketplace.admin.commercialConfig"
   | "admin.title"
   | "admin.authRequired"
   | "admin.authRequiredBody"
@@ -78,6 +85,13 @@ const ru: Dictionary = {
   "providerModeration.perCategoryStatus": "Статус по каждой категории",
   "providerModeration.rejectionReason": "Причина отказа",
   "providerModeration.resubmit": "Отправить повторно",
+  "marketplace.order.title": "Заказ помощи на дороге",
+  "marketplace.order.publish": "Опубликовать заказ",
+  "marketplace.provider.discovery": "Лента доступных заказов",
+  "marketplace.provider.offer": "Отправить отклик",
+  "marketplace.provider.wallet": "Баланс и бесплатные отклики",
+  "marketplace.admin.ledger": "Журнал кошелька",
+  "marketplace.admin.commercialConfig": "Тарифы и комиссии категорий",
   "admin.title": "Администрирование TezHelp",
   "admin.authRequired": "Требуется вход администратора",
   "admin.authRequiredBody":
@@ -127,6 +141,13 @@ const kk: Dictionary = {
   "providerModeration.perCategoryStatus": "Әр санаттың мәртебесі",
   "providerModeration.rejectionReason": "Бас тарту себебі",
   "providerModeration.resubmit": "Қайта жіберу",
+  "marketplace.order.title": "Жолдағы көмекке тапсырыс",
+  "marketplace.order.publish": "Тапсырысты жариялау",
+  "marketplace.provider.discovery": "Қолжетімді тапсырыстар лентасы",
+  "marketplace.provider.offer": "Ұсыныс жіберу",
+  "marketplace.provider.wallet": "Баланс және тегін жауаптар",
+  "marketplace.admin.ledger": "Әмиян журналы",
+  "marketplace.admin.commercialConfig": "Санат тарифтері мен комиссиялары",
   "admin.title": "TezHelp әкімшілігі",
   "admin.authRequired": "Әкімші ретінде кіру қажет",
   "admin.authRequiredBody":
@@ -175,6 +196,13 @@ const en: Dictionary = {
   "providerModeration.perCategoryStatus": "Per-category status",
   "providerModeration.rejectionReason": "Rejection reason",
   "providerModeration.resubmit": "Resubmit",
+  "marketplace.order.title": "Roadside assistance order",
+  "marketplace.order.publish": "Publish order",
+  "marketplace.provider.discovery": "Available order feed",
+  "marketplace.provider.offer": "Submit offer",
+  "marketplace.provider.wallet": "Balance and free responses",
+  "marketplace.admin.ledger": "Wallet ledger",
+  "marketplace.admin.commercialConfig": "Category tariffs and commissions",
   "admin.title": "TezHelp administration",
   "admin.authRequired": "Administrator sign-in required",
   "admin.authRequiredBody":

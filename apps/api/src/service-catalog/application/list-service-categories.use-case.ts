@@ -12,3 +12,24 @@ export class ListServiceCategoriesUseCase {
     return this.repository.listCategories(locale);
   }
 }
+
+@Injectable()
+export class GetServiceCategoryCommercialConfigUseCase {
+  constructor(private readonly repository: ServiceCatalogRepository) {}
+
+  async execute(slug: ServiceCategorySummary["slug"]) {
+    return this.repository.getCommercialConfig(slug);
+  }
+}
+
+@Injectable()
+export class UpdateServiceCategoryCommercialConfigUseCase {
+  constructor(private readonly repository: ServiceCatalogRepository) {}
+
+  async execute(
+    slug: ServiceCategorySummary["slug"],
+    input: ServiceCategorySummary["commercialConfig"],
+  ) {
+    return this.repository.updateCommercialConfig(slug, input);
+  }
+}
