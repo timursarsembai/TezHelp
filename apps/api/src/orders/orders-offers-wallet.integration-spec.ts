@@ -25,6 +25,15 @@ import {
   ListProviderOrdersUseCase,
   SubmitOfferUseCase,
 } from "../offers/application/offers.use-cases.js";
+import {
+  AppealProviderSanctionUseCase,
+  CreateProviderSanctionUseCase,
+  GetCustomerReliabilityUseCase,
+  LiftProviderSanctionUseCase,
+  ListProviderSanctionsUseCase,
+  SubmitOrderReviewUseCase,
+} from "../reputation/application/reputation.use-cases.js";
+import { ReputationModule } from "../reputation/reputation.module.js";
 import { CreateOrderUseCase } from "./application/order.use-cases.js";
 import { SelectProviderUseCase } from "./application/select-provider.use-case.js";
 import {
@@ -71,6 +80,12 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
   let publishProviderLocation: PublishProviderLocationUseCase;
   let getOrderLiveLocation: GetOrderLiveLocationUseCase;
   let getAdminOrderLiveLocation: GetAdminOrderLiveLocationUseCase;
+  let submitOrderReview: SubmitOrderReviewUseCase;
+  let getCustomerReliability: GetCustomerReliabilityUseCase;
+  let createProviderSanction: CreateProviderSanctionUseCase;
+  let listProviderSanctions: ListProviderSanctionsUseCase;
+  let appealProviderSanction: AppealProviderSanctionUseCase;
+  let liftProviderSanction: LiftProviderSanctionUseCase;
   let manualCredit: ManualWalletCreditUseCase;
   let getWallet: GetProviderWalletUseCase;
   let listProviderOrders: ListProviderOrdersUseCase;
@@ -84,7 +99,14 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
   beforeEach(async () => {
     await closeModule?.();
     const moduleRef = await Test.createTestingModule({
-      imports: [WalletModule, OrdersModule, OffersModule, ChatModule, LiveLocationModule],
+      imports: [
+        WalletModule,
+        OrdersModule,
+        OffersModule,
+        ChatModule,
+        LiveLocationModule,
+        ReputationModule,
+      ],
     }).compile();
     closeModule = () => moduleRef.close();
 
@@ -107,12 +129,21 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
     publishProviderLocation = moduleRef.get(PublishProviderLocationUseCase);
     getOrderLiveLocation = moduleRef.get(GetOrderLiveLocationUseCase);
     getAdminOrderLiveLocation = moduleRef.get(GetAdminOrderLiveLocationUseCase);
+    submitOrderReview = moduleRef.get(SubmitOrderReviewUseCase);
+    getCustomerReliability = moduleRef.get(GetCustomerReliabilityUseCase);
+    createProviderSanction = moduleRef.get(CreateProviderSanctionUseCase);
+    listProviderSanctions = moduleRef.get(ListProviderSanctionsUseCase);
+    appealProviderSanction = moduleRef.get(AppealProviderSanctionUseCase);
+    liftProviderSanction = moduleRef.get(LiftProviderSanctionUseCase);
     manualCredit = moduleRef.get(ManualWalletCreditUseCase);
     getWallet = moduleRef.get(GetProviderWalletUseCase);
     listProviderOrders = moduleRef.get(ListProviderOrdersUseCase);
 
     await sql`
       truncate table
+        provider_sanction_events,
+        provider_sanctions,
+        order_reviews,
         live_location_updates,
         live_location_sessions,
         chat_attachment_access_audit,
@@ -765,6 +796,147 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
         resumed: false,
       }),
     ).rejects.toMatchObject({ code: "LIVE_LOCATION_NOT_TRACKABLE" });
+  });
+
+  it("records completed-order reviews and derives provider/customer reputation", async () => {
+    const selected = await createSelectedOrder({
+      categorySlug: "tow_truck",
+      offerPriceKzt: 10_000,
+      idSuffix: "reputation",
+    });
+    await departOrder.execute({ providerUserId, orderId: selected.id });
+    await arriveOrder.execute({ providerUserId, orderId: selected.id });
+    await startOrderWork.execute({ providerUserId, orderId: selected.id });
+    await completeOrder.execute({
+      providerUserId,
+      orderId: selected.id,
+      idempotencyKey: "complete-reputation",
+    });
+
+    const customerToProvider = await submitOrderReview.execute({
+      orderId: selected.id,
+      reviewerUserId: customerUserId,
+      rating: 5,
+      comment: "clean service",
+    });
+    const providerToCustomer = await submitOrderReview.execute({
+      orderId: selected.id,
+      reviewerUserId: providerUserId,
+      rating: 4,
+      comment: "clear instructions",
+    });
+    const serviceProfile = await database.db
+      .selectFrom("provider_service_profiles")
+      .select(["rating_average", "rating_count"])
+      .where("id", "=", selected.assignedProviderServiceProfileId!)
+      .executeTakeFirstOrThrow();
+    const reliability = await getCustomerReliability.execute({
+      orderId: selected.id,
+      providerUserId,
+    });
+
+    expect(customerToProvider.direction).toBe("customer_to_provider");
+    expect(providerToCustomer.direction).toBe("provider_to_customer");
+    expect(serviceProfile.rating_average).toBe("5.00");
+    expect(serviceProfile.rating_count).toBe(1);
+    expect(reliability.customerUserId).toBe(customerUserId);
+    expect(reliability.completedOrders).toBeGreaterThanOrEqual(1);
+    expect(reliability.providerReviewAverage).toBe("4.00");
+    expect(reliability.providerReviewCount).toBe(1);
+    await expect(
+      submitOrderReview.execute({
+        orderId: selected.id,
+        reviewerUserId: customerUserId,
+        rating: 3,
+      }),
+    ).rejects.toMatchObject({ code: "REVIEW_ALREADY_EXISTS" });
+  });
+
+  it("rejects reviews before completion", async () => {
+    const selected = await createSelectedOrder({
+      categorySlug: "jump_start",
+      offerPriceKzt: 10_000,
+      idSuffix: "early-review",
+    });
+
+    await expect(
+      submitOrderReview.execute({
+        orderId: selected.id,
+        reviewerUserId: customerUserId,
+        rating: 5,
+      }),
+    ).rejects.toMatchObject({ code: "REVIEW_ORDER_NOT_COMPLETED" });
+  });
+
+  it("blocks offers while an active provider sanction exists and records appeal history", async () => {
+    const serviceProfileId = await approveProviderCategory(providerUserId, "fuel_delivery");
+    const sanction = await createProviderSanction.execute({
+      providerUserId,
+      adminUserId,
+      serviceProfileId,
+      sanctionType: "temporary_block",
+      reason: "manual review in progress",
+    });
+    const order = await createOrder.execute({
+      customerUserId,
+      categorySlug: "fuel_delivery",
+      latitude: 43.24,
+      longitude: 76.9,
+      addressLandmark: "Sanction test",
+      description: "Need fuel delivery after sanction",
+      images: [],
+      unlockingLawfulAccess: {},
+    });
+
+    await expect(
+      submitOffer.execute({
+        providerUserId,
+        orderId: order.id,
+        providerServiceProfileId: serviceProfileId,
+        priceKzt: 7000,
+        arrivalMinutes: 25,
+        comment: "blocked while sanctioned",
+        idempotencyKey: "offer-sanction-blocked",
+      }),
+    ).rejects.toMatchObject({ code: "PROVIDER_SANCTIONED" });
+
+    const listed = await listProviderSanctions.execute(providerUserId);
+    const appealed = await appealProviderSanction.execute({
+      sanctionId: sanction.id,
+      providerUserId,
+      reason: "documents were updated",
+    });
+    const lifted = await liftProviderSanction.execute({
+      sanctionId: sanction.id,
+      adminUserId,
+      reason: "appeal accepted",
+    });
+    await manualCredit.execute({
+      providerUserId,
+      adminUserId,
+      amountKzt: 3000,
+      reason: "post sanction lift credit",
+      idempotencyKey: "credit-sanction-lifted",
+    });
+    const offer = await submitOffer.execute({
+      providerUserId,
+      orderId: order.id,
+      providerServiceProfileId: serviceProfileId,
+      priceKzt: 7000,
+      arrivalMinutes: 25,
+      comment: "available after lift",
+      idempotencyKey: "offer-sanction-lifted",
+    });
+
+    expect(listed).toHaveLength(1);
+    expect(appealed.appealStatus).toBe("submitted");
+    expect(lifted.liftReason).toBe("appeal accepted");
+    expect(lifted.events?.map((event) => event.eventType)).toEqual([
+      "applied",
+      "appealed",
+      "lifted",
+    ]);
+    expect(offer.status).toBe("active");
   });
 
   async function approveProviderCategory(

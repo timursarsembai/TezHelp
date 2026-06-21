@@ -51,6 +51,11 @@ export type MessageKey =
   | "maps.providerMarker"
   | "maps.staleState"
   | "admin.maps.activeOrderTracking"
+  | "reputation.review"
+  | "reputation.customerReliability"
+  | "reputation.providerRating"
+  | "admin.sanctions.title"
+  | "admin.sanctions.appeals"
   | "admin.title"
   | "admin.authRequired"
   | "admin.authRequiredBody"
@@ -122,6 +127,11 @@ const ru: Dictionary = {
   "maps.providerMarker": "Метка исполнителя",
   "maps.staleState": "Показана последняя известная точка",
   "admin.maps.activeOrderTracking": "Отслеживание активного заказа",
+  "reputation.review": "Отзыв после завершения заказа",
+  "reputation.customerReliability": "Надежность клиента",
+  "reputation.providerRating": "Рейтинг исполнителя по категории",
+  "admin.sanctions.title": "Санкции исполнителей",
+  "admin.sanctions.appeals": "Апелляции по санкциям",
   "admin.title": "Администрирование TezHelp",
   "admin.authRequired": "Требуется вход администратора",
   "admin.authRequiredBody":
@@ -193,6 +203,11 @@ const kk: Dictionary = {
   "maps.providerMarker": "Орындаушы белгісі",
   "maps.staleState": "Соңғы белгілі нүкте көрсетілді",
   "admin.maps.activeOrderTracking": "Белсенді тапсырысты бақылау",
+  "reputation.review": "Тапсырыс аяқталғаннан кейінгі пікір",
+  "reputation.customerReliability": "Клиент сенімділігі",
+  "reputation.providerRating": "Санат бойынша орындаушы рейтингі",
+  "admin.sanctions.title": "Орындаушылар санкциялары",
+  "admin.sanctions.appeals": "Санкциялар бойынша апелляциялар",
   "admin.title": "TezHelp әкімшілігі",
   "admin.authRequired": "Әкімші ретінде кіру қажет",
   "admin.authRequiredBody":
@@ -263,6 +278,11 @@ const en: Dictionary = {
   "maps.providerMarker": "Provider marker",
   "maps.staleState": "Last known point is shown",
   "admin.maps.activeOrderTracking": "Active order tracking",
+  "reputation.review": "Review after completed order",
+  "reputation.customerReliability": "Customer reliability",
+  "reputation.providerRating": "Provider rating by category",
+  "admin.sanctions.title": "Provider sanctions",
+  "admin.sanctions.appeals": "Sanction appeals",
   "admin.title": "TezHelp administration",
   "admin.authRequired": "Administrator sign-in required",
   "admin.authRequiredBody":

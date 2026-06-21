@@ -32,6 +32,11 @@ Required for:
 - message report idempotency
 - live location publication after departure
 - live location stale/offline visibility
+- completed-order review uniqueness
+- provider service rating recalculation
+- customer reliability visibility and derived counters
+- active provider sanctions blocking offer publication
+- sanction appeal and lift history
 - one-active-order enforcement
 - concurrent provider selection attempts
 - authorization at repository/use-case boundaries

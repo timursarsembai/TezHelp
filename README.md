@@ -3,7 +3,8 @@
 TezHelp is a marketplace for emergency roadside services in Kazakhstan. This
 repository is a production-oriented foundation: mobile-first web, separate
 admin web, standalone NestJS API, shared packages, local infrastructure, and the
-provider moderation plus first orders/offers/wallet foundation.
+provider moderation, orders/offers/wallet, chat, live location, and first
+reputation/sanctions foundations.
 
 ## Requirements
 
@@ -161,6 +162,26 @@ and marks waiting/current/stale/offline state without inferring movement.
 Realtime WebSocket delivery, real browser geolocation loops, route calculation,
 location retention jobs, and production RBAC remain future work.
 
+## Reputation and Sanctions Foundation
+
+Implemented development endpoints:
+
+- `POST /v1/orders/:orderId/reviews`
+- `GET /v1/provider/orders/:orderId/customer-reliability`
+- `GET /v1/provider/sanctions`
+- `POST /v1/provider/sanctions/:sanctionId/appeal`
+- `POST /v1/admin/providers/:providerUserId/sanctions`
+- `POST /v1/admin/provider-sanctions/:sanctionId/lift`
+
+This slice allows one customer-to-provider and one provider-to-customer review
+after order completion, updates category-specific provider rating from real
+reviews, derives customer reliability indicators from order history, records
+manual provider sanctions with append-only events, accepts provider appeals, and
+blocks new offer publication while an active provider or service-profile
+sanction exists. Automatic activity-score penalties, seven-cancellation
+automation, complaint workflows, ranking changes, and production RBAC remain
+future work.
+
 ## Canonical Commands
 
 ```bash
@@ -192,7 +213,7 @@ The MVP remains a modular monolith with a standalone NestJS backend.
 
 - `apps/web`: customer/provider responsive web shell.
 - `apps/admin`: separate protected administration shell.
-- `apps/api`: NestJS API foundation with configuration, database, health, audit, identity, service catalog, provider-services, moderation, orders, offers, wallet, commissions, chat, and live-location modules.
+- `apps/api`: NestJS API foundation with configuration, database, health, audit, identity, service catalog, provider-services, moderation, orders, offers, wallet, commissions, chat, live-location, and reputation modules.
 - `packages/*`: shared UI, public contracts, validation, i18n, API client, maps, and config.
 - `infrastructure/docker`: local PostGIS, Redis, and S3-compatible object storage.
 
@@ -225,6 +246,8 @@ The seventh migration adds order conversations, chat messages, private
 photo/voice attachment metadata, message reports, and attachment access audit.
 The eighth migration adds live location sessions and provider GPS updates with
 PostGIS point indexes.
+The ninth migration adds completed-order reviews, manual provider sanctions,
+and provider sanction events.
 The migration command loads `.env.example` for local development defaults;
 production and CI should provide real environment variables explicitly.
 
@@ -292,3 +315,4 @@ Start with:
 13. `docs/plans/2026-06-21-active-order-lifecycle.md`
 14. `docs/plans/2026-06-21-chat-attachments.md`
 15. `docs/plans/2026-06-22-live-location-foundation.md`
+16. `docs/plans/2026-06-22-reputation-sanctions-foundation.md`

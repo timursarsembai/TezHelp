@@ -442,6 +442,30 @@ This slice is REST-backed. The `@tezhelp/maps` package exposes route and
 realtime gateway interfaces so a later WebSocket/route-provider task can attach
 without moving location policy into frontend code.
 
+## Reputation and sanctions foundation
+
+The `reputation` backend module owns completed-order reviews, customer
+reliability summaries, manual provider sanctions, provider sanction appeals,
+and sanction event history.
+
+Current rules:
+
+- reviews are accepted only for completed orders;
+- each order has at most one `customer_to_provider` review and one
+  `provider_to_customer` review;
+- customer-to-provider reviews update the assigned provider service profile
+  rating, keeping rating category-specific;
+- customer reliability shown to a provider is derived from real order history
+  and visible only to providers involved with that order;
+- admin-applied sanctions are scoped either provider-wide or to one provider
+  service profile;
+- active sanctions block new offer publication until lifted or expired;
+- sanction applications, appeals, and lifts are stored as event history.
+
+Activity-score deltas, automatic seven-cancellation blocking, complaint
+resolution, ranking changes, and production RBAC are outside this foundation
+slice.
+
 ## Maps
 
 Use replaceable interfaces:

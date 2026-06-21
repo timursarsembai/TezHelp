@@ -70,6 +70,19 @@ export type LiveLocationTrackingState = "active" | "stopped";
 
 export type LiveLocationVisibilityState = "hidden" | "waiting" | "current" | "stale" | "offline";
 
+export type ReviewDirection = "customer_to_provider" | "provider_to_customer";
+
+export type ProviderSanctionType = "temporary_block" | "indefinite_block" | "manual_restriction";
+
+export type ProviderSanctionAppealStatus = "none" | "submitted" | "accepted" | "rejected";
+
+export type ProviderSanctionEventType =
+  | "applied"
+  | "appealed"
+  | "lifted"
+  | "appeal_accepted"
+  | "appeal_rejected";
+
 export type ProviderGeneralDocumentType = "face_photo" | "identity_document";
 
 export interface ServiceCategorySummary {
@@ -329,6 +342,62 @@ export interface LiveLocationSnapshot {
   readonly pollAfterMs: number;
   readonly resumeRequired: boolean;
   readonly routeRebuildRequired: boolean;
+}
+
+export interface OrderReviewSummary {
+  readonly id: string;
+  readonly orderId: string;
+  readonly direction: ReviewDirection;
+  readonly reviewerUserId: string;
+  readonly revieweeUserId: string;
+  readonly providerServiceProfileId?: string;
+  readonly rating: number;
+  readonly comment?: string;
+  readonly createdAt: string;
+}
+
+export interface CustomerReliabilitySummary {
+  readonly customerUserId: string;
+  readonly totalPublishedOrders: number;
+  readonly completedOrders: number;
+  readonly cancelledByCustomerOrders: number;
+  readonly cancellationsBeforeSelection: number;
+  readonly cancellationsAfterSelection: number;
+  readonly cancellationsAfterDeparture: number;
+  readonly cancellationsAfterArrival: number;
+  readonly cancellationRatePercent: number;
+  readonly providerReviewAverage?: string;
+  readonly providerReviewCount: number;
+}
+
+export interface ProviderSanctionEventSummary {
+  readonly id: string;
+  readonly sanctionId: string;
+  readonly actorUserId?: string;
+  readonly eventType: ProviderSanctionEventType;
+  readonly reason: string;
+  readonly occurredAt: string;
+}
+
+export interface ProviderSanctionSummary {
+  readonly id: string;
+  readonly providerUserId: string;
+  readonly serviceProfileId?: string;
+  readonly sanctionType: ProviderSanctionType;
+  readonly reason: string;
+  readonly startsAt: string;
+  readonly endsAt?: string;
+  readonly liftedAt?: string;
+  readonly liftedByUserId?: string;
+  readonly liftReason?: string;
+  readonly createdByUserId: string;
+  readonly appealStatus: ProviderSanctionAppealStatus;
+  readonly appealReason?: string;
+  readonly appealSubmittedAt?: string;
+  readonly appealDecidedAt?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly events?: ReadonlyArray<ProviderSanctionEventSummary>;
 }
 
 export interface IdentityUserSummary {

@@ -202,6 +202,44 @@ export const reportChatMessageSchema = z.object({
   reason: z.string().trim().min(3).max(1000),
 });
 
+export const providerSanctionTypeSchema = z.enum([
+  "temporary_block",
+  "indefinite_block",
+  "manual_restriction",
+]);
+
+export const submitOrderReviewSchema = z.object({
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().trim().min(1).max(1000).optional(),
+});
+
+export const createProviderSanctionSchema = z
+  .object({
+    serviceProfileId: z.uuid().optional(),
+    sanctionType: providerSanctionTypeSchema,
+    reason: z.string().trim().min(3).max(1000),
+    startsAt: z.iso.datetime().optional(),
+    endsAt: z.iso.datetime().optional(),
+  })
+  .refine(
+    (value) =>
+      !value.startsAt ||
+      !value.endsAt ||
+      new Date(value.endsAt).getTime() > new Date(value.startsAt).getTime(),
+    {
+      message: "Sanction end time must be after start time",
+      path: ["endsAt"],
+    },
+  );
+
+export const appealProviderSanctionSchema = z.object({
+  reason: z.string().trim().min(3).max(1000),
+});
+
+export const liftProviderSanctionSchema = z.object({
+  reason: z.string().trim().min(3).max(1000),
+});
+
 export const liveLocationUpdateSchema = z.object({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),

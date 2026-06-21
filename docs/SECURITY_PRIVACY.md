@@ -168,6 +168,10 @@ The chat foundation additionally audits signed attachment URL creation and
 stores message reports idempotently per reporter/message for later dispute
 review.
 
+The reputation foundation records provider sanction applications, appeals, and
+lifts as sanction events. Customer reliability summaries are derived from order
+history and are visible only to providers involved with that order.
+
 Audit records are immutable to ordinary administrators.
 
 ## Secrets

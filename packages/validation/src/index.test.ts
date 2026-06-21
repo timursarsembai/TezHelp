@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   apiEnvSchema,
+  appealProviderSanctionSchema,
   cancelOrderSchema,
   chatAttachmentMetadataSchema,
+  createProviderSanctionSchema,
+  liftProviderSanctionSchema,
   localeSchema,
   liveLocationUpdateSchema,
   orderLifecycleCommandSchema,
@@ -12,6 +15,7 @@ import {
   requestOtpSchema,
   serviceCategoryCommercialConfigSchema,
   sendChatMessageSchema,
+  submitOrderReviewSchema,
   switchRoleSchema,
 } from "./index";
 
@@ -157,5 +161,36 @@ describe("validation schemas", () => {
     expect(() =>
       liveLocationUpdateSchema.parse({ latitude: 43, longitude: 76, accuracyMeters: 5001 }),
     ).toThrow();
+  });
+
+  it("validates review and sanction public contracts", () => {
+    expect(submitOrderReviewSchema.parse({ rating: 5, comment: "  solid work  " }).comment).toBe(
+      "solid work",
+    );
+    expect(() => submitOrderReviewSchema.parse({ rating: 6 })).toThrow();
+
+    const sanction = createProviderSanctionSchema.parse({
+      sanctionType: "temporary_block",
+      serviceProfileId: "11111111-1111-4111-8111-111111111111",
+      reason: "manual moderation decision",
+      startsAt: "2026-06-22T10:00:00.000Z",
+      endsAt: "2026-06-23T10:00:00.000Z",
+    });
+    expect(sanction.sanctionType).toBe("temporary_block");
+    expect(() =>
+      createProviderSanctionSchema.parse({
+        sanctionType: "temporary_block",
+        reason: "manual moderation decision",
+        startsAt: "2026-06-23T10:00:00.000Z",
+        endsAt: "2026-06-22T10:00:00.000Z",
+      }),
+    ).toThrow();
+
+    expect(appealProviderSanctionSchema.parse({ reason: "documents updated" }).reason).toBe(
+      "documents updated",
+    );
+    expect(liftProviderSanctionSchema.parse({ reason: "appeal accepted" }).reason).toBe(
+      "appeal accepted",
+    );
   });
 });

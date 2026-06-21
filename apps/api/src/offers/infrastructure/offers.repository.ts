@@ -376,6 +376,29 @@ export class OffersRepository {
     if (profile.user_status === "blocked" || profile.availability_status === "suspended") {
       throw new OfferApplicationError("PROVIDER_NOT_ELIGIBLE", "Provider is blocked", 403);
     }
+
+    const now = new Date();
+    const activeSanction = await trx
+      .selectFrom("provider_sanctions")
+      .select("id")
+      .where("provider_user_id", "=", input.providerUserId)
+      .where("lifted_at", "is", null)
+      .where("starts_at", "<=", now)
+      .where((eb) => eb.or([eb("ends_at", "is", null), eb("ends_at", ">", now)]))
+      .where((eb) =>
+        eb.or([
+          eb("service_profile_id", "is", null),
+          eb("service_profile_id", "=", input.providerServiceProfileId),
+        ]),
+      )
+      .executeTakeFirst();
+    if (activeSanction) {
+      throw new OfferApplicationError(
+        "PROVIDER_SANCTIONED",
+        "Provider has an active sanction",
+        403,
+      );
+    }
   }
 
   private toOfferSummary(row: {

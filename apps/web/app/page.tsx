@@ -184,6 +184,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               label={translate(locale, "maps.liveTracking")}
               value={translate(locale, "maps.staleState")}
             />
+            <MarketplaceField
+              label={translate(locale, "reputation.review")}
+              value={translate(locale, "reputation.providerRating")}
+            />
+            <MarketplaceField
+              label={translate(locale, "reputation.customerReliability")}
+              value={translate(locale, "marketplace.provider.discovery")}
+            />
           </div>
 
           <aside className="rounded-lg border border-slate-200 bg-slate-50 p-4">
@@ -206,6 +214,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <div className="mt-4 grid gap-2 text-sm font-semibold text-slate-700">
               <span>{translate(locale, "maps.customerMarker")}</span>
               <span>{translate(locale, "maps.providerMarker")}</span>
+              <span>{translate(locale, "reputation.customerReliability")}</span>
             </div>
           </aside>
         </div>

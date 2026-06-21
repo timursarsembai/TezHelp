@@ -71,6 +71,15 @@ export type ChatSenderRole = "customer" | "provider" | "admin" | "system";
 export type ChatMessageType = "text" | "attachment" | "system";
 export type ChatAttachmentKind = "photo" | "voice";
 export type LiveLocationTrackingState = "active" | "stopped";
+export type ReviewDirection = "customer_to_provider" | "provider_to_customer";
+export type ProviderSanctionType = "temporary_block" | "indefinite_block" | "manual_restriction";
+export type ProviderSanctionAppealStatus = "none" | "submitted" | "accepted" | "rejected";
+export type ProviderSanctionEventType =
+  | "applied"
+  | "appealed"
+  | "lifted"
+  | "appeal_accepted"
+  | "appeal_rejected";
 
 interface UsersTable {
   readonly id: Generated<string>;
@@ -437,6 +446,48 @@ interface LiveLocationUpdatesTable {
   readonly resumed: Generated<boolean>;
 }
 
+interface OrderReviewsTable {
+  readonly id: Generated<string>;
+  readonly order_id: string;
+  readonly direction: ReviewDirection;
+  readonly reviewer_user_id: string;
+  readonly reviewee_user_id: string;
+  readonly provider_service_profile_id: string | null;
+  readonly rating: number;
+  readonly comment: string | null;
+  readonly created_at: Generated<Date>;
+}
+
+interface ProviderSanctionsTable {
+  readonly id: Generated<string>;
+  readonly provider_user_id: string;
+  readonly service_profile_id: string | null;
+  readonly sanction_type: ProviderSanctionType;
+  readonly reason: string;
+  readonly starts_at: TimestampColumn;
+  readonly ends_at: NullableTimestampColumn;
+  readonly lifted_at: NullableTimestampColumn;
+  readonly lifted_by_user_id: string | null;
+  readonly lift_reason: string | null;
+  readonly created_by_user_id: string;
+  readonly appeal_status: Generated<ProviderSanctionAppealStatus>;
+  readonly appeal_reason: string | null;
+  readonly appeal_submitted_at: NullableTimestampColumn;
+  readonly appeal_decided_at: NullableTimestampColumn;
+  readonly created_at: Generated<Date>;
+  readonly updated_at: TimestampColumn;
+}
+
+interface ProviderSanctionEventsTable {
+  readonly id: Generated<string>;
+  readonly sanction_id: string;
+  readonly actor_user_id: string | null;
+  readonly event_type: ProviderSanctionEventType;
+  readonly reason: string;
+  readonly metadata: JsonColumn;
+  readonly occurred_at: Generated<Date>;
+}
+
 export interface DatabaseSchema {
   readonly audit_events: AuditEventsTable;
   readonly users: UsersTable;
@@ -469,6 +520,9 @@ export interface DatabaseSchema {
   readonly chat_attachment_access_audit: ChatAttachmentAccessAuditTable;
   readonly live_location_sessions: LiveLocationSessionsTable;
   readonly live_location_updates: LiveLocationUpdatesTable;
+  readonly order_reviews: OrderReviewsTable;
+  readonly provider_sanctions: ProviderSanctionsTable;
+  readonly provider_sanction_events: ProviderSanctionEventsTable;
 }
 
 export type TezHelpDatabase = Kysely<DatabaseSchema>;

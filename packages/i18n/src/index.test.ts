@@ -44,4 +44,10 @@ describe("i18n", () => {
     expect(translate("kk", "maps.providerMarker")).toContain("Орындаушы");
     expect(translate("en", "admin.maps.activeOrderTracking")).toContain("tracking");
   });
+
+  it("has localized reputation and sanction strings", () => {
+    expect(translate("ru", "reputation.customerReliability")).toContain("Надежность");
+    expect(translate("kk", "reputation.providerRating")).toContain("рейтинг");
+    expect(translate("en", "admin.sanctions.appeals")).toContain("appeals");
+  });
 });

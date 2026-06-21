@@ -198,3 +198,23 @@ Reason:
 - stale or paused browser tracking must not produce inferred movement
 - route and realtime providers should attach through replaceable interfaces
 - a small REST foundation is testable in the current Docker/CI stack
+
+## ADR-020 - Backend-owned reputation and manual sanctions
+
+Status: accepted.
+
+Implement Phase 9 first as a backend-owned reputation module with completed
+order reviews, derived customer reliability, manual provider sanctions, and
+sanction event history. Keep automatic activity-score penalties and
+seven-cancellation blocking out of this slice until exact product rules are
+accepted.
+
+Reason:
+
+- review eligibility depends on authoritative order state
+- provider rating must remain category/service-profile specific
+- customer reliability should be derived from real order history before adding
+  counter caches
+- active sanctions must be enforced by offer publication, not by frontend UI
+- sanction appeal/lift history must be auditable and independent from provider
+  moderation decisions

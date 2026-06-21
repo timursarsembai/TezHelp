@@ -171,6 +171,24 @@ Owns:
 
 Owned by a completed order. One review per direction per order.
 
+Customer-to-provider reviews reference the assigned provider service profile and
+update category-specific provider rating. Provider-to-customer reviews feed the
+customer reliability summary and do not reference a provider service profile.
+
+### ProviderSanction
+
+Owned by a provider profile and optionally scoped to one provider service
+profile.
+
+Owns:
+
+- sanction type
+- reason
+- active time window
+- lift reason and actor
+- appeal status and reason
+- immutable event history
+
 ## Key invariants
 
 ### Order
@@ -188,6 +206,8 @@ Owned by a completed order. One review per direction per order.
 - one active order maximum
 - provider can respond only through an approved service profile
 - provider cannot respond while blocked or assigned to an active order
+- provider cannot respond while an active provider-wide or matching
+  service-profile sanction exists
 - provider must satisfy balance eligibility
 
 ### Wallet
@@ -218,6 +238,15 @@ Owned by a completed order. One review per direction per order.
   longer than 180 seconds
 - reports are idempotent per reporter/message
 
+### Reputation
+
+- reviews are allowed only after order completion
+- only assigned order counterparties can review each other
+- provider rating is service-profile/category specific
+- one review per order per direction
+- active sanctions block new offer publication until lifted or expired
+- sanction event history is append-only
+
 ## Important domain services or policies
 
 Recommended narrow policies:
@@ -228,6 +257,7 @@ Recommended narrow policies:
 - `OrderTransitionPolicy`
 - `CancellationPolicy`
 - `ChatPolicy`
+- `ReputationPolicy`
 - `LiveLocationPolicy`
 - `ProviderActivityPolicy`
 - `ProviderReliabilityCalculator`
