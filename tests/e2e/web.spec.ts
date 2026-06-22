@@ -2,7 +2,14 @@ import { expect, test } from "@playwright/test";
 
 test("web mobile shell renders localized identity entry points", async ({ page }) => {
   test.setTimeout(15_000);
-  await page.goto("/?locale=ru", { waitUntil: "domcontentloaded" });
+  const response = await page.goto("/?locale=ru", { waitUntil: "domcontentloaded" });
+  const headers = response?.headers() ?? {};
+
+  expect(headers["x-content-type-options"]).toBe("nosniff");
+  expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+  expect(headers["x-frame-options"]).toBe("DENY");
+  expect(headers["permissions-policy"]).toContain("geolocation=(self)");
+  expect(headers["content-security-policy-report-only"]).toContain("frame-ancestors 'none'");
 
   await expect(page.getByRole("heading", { name: "TezHelp" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Помощь на дороге рядом" })).toBeVisible();

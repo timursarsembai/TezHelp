@@ -204,6 +204,21 @@ Audit records are immutable to ordinary administrators.
 - security headers
 - dependency scanning
 
+Current application header baseline:
+
+- web and admin responses set `X-Content-Type-Options: nosniff`,
+  `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`,
+  and `Permissions-Policy`
+- web and admin set `Content-Security-Policy-Report-Only` as a compatibility
+  baseline while the production nonce and asset policy are still pending
+- API JSON endpoints set an enforcing API-safe `Content-Security-Policy`;
+  Swagger UI under `/docs` is excluded from that API-only CSP because it needs a
+  separate documentation-page policy
+
+Before production, replace the report-only browser CSP with an enforced CSP that
+accounts for Next.js runtime assets, map tiles, routing, upload, realtime, and
+monitoring providers.
+
 ## Privacy by design
 
 - collect only necessary data
