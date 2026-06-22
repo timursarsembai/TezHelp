@@ -12,6 +12,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <ResponsiveShell
+      skipLabel={translate(locale, "common.skipToContent")}
       status={translate(locale, "common.status.foundation")}
       title={translate(locale, "app.brand")}
     >

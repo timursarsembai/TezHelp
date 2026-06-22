@@ -6,6 +6,7 @@ export default function AdminHomePage() {
 
   return (
     <ResponsiveShell
+      skipLabel={translate(locale, "common.skipToContent")}
       status={translate(locale, "common.status.foundation")}
       title={translate(locale, "admin.title")}
     >

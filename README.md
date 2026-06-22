@@ -336,3 +336,4 @@ Start with:
 16. `docs/plans/2026-06-22-reputation-sanctions-foundation.md`
 17. `docs/plans/2026-06-22-public-provider-reliability.md`
 18. `infrastructure/operations/incident-response.md`
+19. `docs/ACCESSIBILITY_PERFORMANCE.md`

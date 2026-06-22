@@ -37,21 +37,43 @@ export function Button({ className, variant = "primary", type = "button", ...pro
 export interface ShellProps extends HTMLAttributes<HTMLElement> {
   readonly title: string;
   readonly status: string;
+  readonly skipLabel?: string;
   readonly children: ReactNode;
 }
 
-export function ResponsiveShell({ title, status, children, className, ...props }: ShellProps) {
+export function ResponsiveShell({
+  title,
+  status,
+  skipLabel = "Skip to main content",
+  children,
+  className,
+  ...props
+}: ShellProps) {
   return (
-    <main className={cn("min-h-dvh bg-app-background text-app-text", className)} {...props}>
+    <div className={cn("min-h-dvh bg-app-background text-app-text", className)} {...props}>
+      <a
+        className="sr-only fixed left-4 top-4 z-50 rounded-md bg-white px-4 py-2 text-sm font-semibold text-brand-blue shadow-md focus:not-sr-only focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-brand-orange"
+        href="#main-content"
+      >
+        {skipLabel}
+      </a>
       <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col px-4 py-4 sm:px-6 lg:px-8">
-        <header className="flex items-center justify-between gap-4 border-b border-slate-200 pb-4">
+        <header
+          className="flex items-center justify-between gap-4 border-b border-slate-200 pb-4"
+          role="banner"
+        >
           <h1 className="text-xl font-bold">{title}</h1>
-          <span className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-brand-success shadow-sm">
+          <span
+            className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-brand-success shadow-sm"
+            role="status"
+          >
             {status}
           </span>
         </header>
-        <div className="flex flex-1 flex-col py-6">{children}</div>
+        <main className="flex flex-1 flex-col py-6" id="main-content" tabIndex={-1}>
+          {children}
+        </main>
       </div>
-    </main>
+    </div>
   );
 }

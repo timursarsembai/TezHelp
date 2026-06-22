@@ -77,6 +77,8 @@ Additional flows:
 - order chat dispute evidence labels
 - active-order tracking labels
 - responsive mobile viewport
+- accessibility landmarks and keyboard skip-link behavior
+- lightweight foundation resource budgets
 
 ## Concurrency tests
 
@@ -143,6 +145,17 @@ pnpm ops:validate
 
 The validation checks that the incident-response runbook keeps required
 severity, triage, privacy, rollback, communication, and postmortem sections.
+
+## Accessibility and performance tests
+
+The current e2e smoke suite checks:
+
+- web/admin security headers
+- `banner`, `main`, and `status` landmarks
+- keyboard access to the skip link and main content
+- reduced-motion media query availability
+- no initial image/audio/video resources in the foundation shells
+- conservative resource-count budgets for scripts, styles, and total resources
 
 ## Restore tests
 

@@ -72,6 +72,7 @@ export type MessageKey =
   | "admin.moderation.suspend"
   | "admin.moderation.audit"
   | "common.status.foundation"
+  | "common.skipToContent"
   | "common.language";
 
 type Dictionary = Readonly<Record<MessageKey, string>>;
@@ -152,6 +153,7 @@ const ru: Dictionary = {
   "admin.moderation.suspend": "Приостановить категорию",
   "admin.moderation.audit": "История аудита",
   "common.status.foundation": "Foundation готов",
+  "common.skipToContent": "Перейти к содержанию",
   "common.language": "Язык",
 };
 
@@ -231,6 +233,7 @@ const kk: Dictionary = {
   "admin.moderation.suspend": "Санатты тоқтату",
   "admin.moderation.audit": "Аудит тарихы",
   "common.status.foundation": "Foundation дайын",
+  "common.skipToContent": "Мазмұнға өту",
   "common.language": "Тіл",
 };
 
@@ -309,6 +312,7 @@ const en: Dictionary = {
   "admin.moderation.suspend": "Suspend category",
   "admin.moderation.audit": "Audit history",
   "common.status.foundation": "Foundation ready",
+  "common.skipToContent": "Skip to main content",
   "common.language": "Language",
 };
 
