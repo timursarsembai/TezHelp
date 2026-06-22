@@ -18,6 +18,7 @@
     "test:e2e": "node scripts/run-e2e.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "ops:validate": "node scripts/validate-operations-runbook.mjs",
     "db:migrate": "pnpm --filter @tezhelp/api db:migrate",
     "db:backup:validate": "node scripts/validate-postgres-backup.mjs",
     "infra:up": "docker compose --env-file .env.example -f infrastructure/docker/docker-compose.yml up -d",

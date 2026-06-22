@@ -128,9 +128,21 @@ pnpm test
 pnpm test:integration
 pnpm test:e2e
 pnpm build
+pnpm ops:validate
 ```
 
 CI must run the relevant set for each pull request.
+
+## Operations runbook tests
+
+Operational runbooks are validated with:
+
+```bash
+pnpm ops:validate
+```
+
+The validation checks that the incident-response runbook keeps required
+severity, triage, privacy, rollback, communication, and postmortem sections.
 
 ## Restore tests
 

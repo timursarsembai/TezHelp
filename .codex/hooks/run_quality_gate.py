@@ -14,7 +14,7 @@ import sys
 from quality_gate_lib import git_root, repository_fingerprint
 
 
-CORE_SCRIPTS = ["format:check", "lint", "typecheck", "test", "build"]
+CORE_SCRIPTS = ["format:check", "ops:validate", "lint", "typecheck", "test", "build"]
 FULL_SCRIPTS = ["test:integration", "test:e2e"]
 
 

@@ -30,6 +30,7 @@ jobs:
       - run: pnpm infra:up
       - run: pnpm db:migrate
       - run: pnpm format:check
+      - run: pnpm ops:validate
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test

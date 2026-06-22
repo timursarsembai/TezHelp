@@ -22,6 +22,10 @@ const servers = [
 const children = [];
 
 async function main() {
+  if (process.platform === "win32") {
+    await Promise.all(servers.map((server) => stopWindowsPort(server.port)));
+  }
+
   for (const server of servers) {
     children.push(startServer(server));
   }

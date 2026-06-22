@@ -192,6 +192,19 @@ Audit records are immutable to ordinary administrators.
   and private object availability
 - local backup artifacts under `backups/` must never be committed
 
+## Incident response
+
+- incident notes must use correlation IDs, route names, timestamps, and stable
+  error codes instead of personal data
+- logs that may contain personal data must stay in Kazakhstan-hosted systems
+- SEV-1 includes unauthorized live-location access, wallet/ledger integrity
+  risk, account takeover, and private document/chat/phone exposure
+- rollback must not rewrite applied migrations, ledger history, or unaudited
+  order state
+- the baseline runbook lives at
+  `infrastructure/operations/incident-response.md` and is validated with
+  `pnpm ops:validate`
+
 ## Web security
 
 - CSRF protection where cookie authentication is used

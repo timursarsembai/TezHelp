@@ -195,6 +195,7 @@ pnpm test
 pnpm test:integration
 pnpm test:e2e
 pnpm build
+pnpm ops:validate
 ```
 
 Docker-dependent commands:
@@ -267,6 +268,7 @@ Root checks:
 
 ```bash
 pnpm format:check
+pnpm ops:validate
 pnpm lint
 pnpm typecheck
 pnpm test
@@ -305,6 +307,9 @@ agent environment; developers should install normal Python 3.
 - Docker not found: install Docker Desktop or run the non-Docker checks only.
 - Backup validation fails because Docker is stopped: run `pnpm infra:up`, then
   retry `pnpm db:backup:validate`.
+- Operations runbook validation fails: check
+  `infrastructure/operations/incident-response.md` for the missing required
+  section named by `pnpm ops:validate`.
 - API env validation fails: copy values from `.env.example` into your local environment.
 - MinIO readiness fails: rerun `pnpm infra:up` and wait for `minio-init` to create the private bucket.
 - Playwright browsers missing: run `pnpm exec playwright install chromium`.
@@ -330,3 +335,4 @@ Start with:
 15. `docs/plans/2026-06-22-live-location-foundation.md`
 16. `docs/plans/2026-06-22-reputation-sanctions-foundation.md`
 17. `docs/plans/2026-06-22-public-provider-reliability.md`
+18. `infrastructure/operations/incident-response.md`
