@@ -90,7 +90,7 @@ script, docs, and ignored backup path.
 - [x] Add root script.
 - [x] Update docs.
 - [x] Run quality gates.
-- [ ] Commit and push.
+- [x] Commit and push.
 
 ## Decision Log
 
@@ -123,4 +123,18 @@ Validation completed locally:
 - `pnpm build`
 - `.codex/hooks/run_quality_gate.py --full`
 
-Pending commit, push, and CI verification.
+Committed and pushed to `origin/main` as
+`8ef2034 chore: add backup restore validation`.
+
+GitHub Actions CI passed for run `27939197656`:
+
+- `pnpm infra:up`
+- `pnpm db:migrate`
+- `pnpm format:check`
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm test`
+- `pnpm test:integration`
+- `pnpm build`
+- `pnpm exec playwright install --with-deps chromium`
+- `pnpm test:e2e`
