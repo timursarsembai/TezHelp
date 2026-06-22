@@ -318,6 +318,9 @@ agent environment; developers should install normal Python 3.
 
 - `pnpm` not found: run `corepack enable pnpm`, then open a new terminal.
 - Docker not found: install Docker Desktop or run the non-Docker checks only.
+- API dev startup fails on a busy port: set `PORT` before
+  `pnpm --filter @tezhelp/api dev`, or stop the process already listening on
+  `4000`.
 - Backup validation fails because Docker is stopped: run `pnpm infra:up`, then
   retry `pnpm db:backup:validate`.
 - Operations runbook validation fails: check

@@ -81,7 +81,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["scripts/**/*.mjs"],
+    files: ["scripts/**/*.mjs", "apps/api/scripts/**/*.mjs"],
     languageOptions: {
       globals: {
         Buffer: "readonly",
