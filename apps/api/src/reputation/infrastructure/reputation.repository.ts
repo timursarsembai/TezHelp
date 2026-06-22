@@ -49,7 +49,7 @@ interface ProviderSanctionRow {
   readonly lifted_at: Date | null;
   readonly lifted_by_user_id: string | null;
   readonly lift_reason: string | null;
-  readonly created_by_user_id: string;
+  readonly created_by_user_id: string | null;
   readonly appeal_status: ProviderSanctionAppealStatus;
   readonly appeal_reason: string | null;
   readonly appeal_submitted_at: Date | null;
@@ -602,10 +602,10 @@ export class ReputationRepository {
       sanctionType: row.sanction_type,
       reason: row.reason,
       startsAt: row.starts_at.toISOString(),
-      createdByUserId: row.created_by_user_id,
       appealStatus: row.appeal_status,
       createdAt: row.created_at.toISOString(),
       updatedAt: row.updated_at.toISOString(),
+      ...(row.created_by_user_id ? { createdByUserId: row.created_by_user_id } : {}),
       ...(row.service_profile_id ? { serviceProfileId: row.service_profile_id } : {}),
       ...(row.ends_at ? { endsAt: row.ends_at.toISOString() } : {}),
       ...(row.lifted_at ? { liftedAt: row.lifted_at.toISOString() } : {}),

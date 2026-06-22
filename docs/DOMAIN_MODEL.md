@@ -250,6 +250,10 @@ Owns:
 - one review per order per direction
 - provider-caused cancellations increment service-profile cancellation count
 - customer/admin cancellations do not increment provider cancellation count
+- provider-caused cancellations decrement internal provider activity score
+- seven consecutive provider-caused cancellations reset the consecutive counter
+  and create an automatic provider-wide sanction
+- completed provider orders reset the consecutive provider-cancellation counter
 - active sanctions block new offer publication until lifted or expired
 - sanction event history is append-only
 

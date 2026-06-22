@@ -109,6 +109,9 @@ interface CustomerProfilesTable {
 interface ProviderProfilesTable {
   readonly user_id: string;
   readonly activity_score: Generated<number>;
+  readonly consecutive_provider_cancellations: Generated<number>;
+  readonly cancellation_block_episode_count: Generated<number>;
+  readonly activity_score_updated_at: NullableTimestampColumn;
   readonly availability_status: Generated<"inactive" | "available" | "suspended">;
   readonly display_name: string | null;
   readonly iin: string | null;
@@ -469,7 +472,7 @@ interface ProviderSanctionsTable {
   readonly lifted_at: NullableTimestampColumn;
   readonly lifted_by_user_id: string | null;
   readonly lift_reason: string | null;
-  readonly created_by_user_id: string;
+  readonly created_by_user_id: string | null;
   readonly appeal_status: Generated<ProviderSanctionAppealStatus>;
   readonly appeal_reason: string | null;
   readonly appeal_submitted_at: NullableTimestampColumn;

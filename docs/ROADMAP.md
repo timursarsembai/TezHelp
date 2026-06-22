@@ -133,7 +133,7 @@ Deliver:
 - two-way reviews
 - service-specific provider rating
 - customer indicators
-- activity score
+- activity score foundation
 - public reliability
 - consecutive-cancellation blocks
 - administrative appeal and override audit

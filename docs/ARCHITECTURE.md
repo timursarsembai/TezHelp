@@ -458,8 +458,9 @@ without moving location policy into frontend code.
 ## Reputation and sanctions foundation
 
 The `reputation` backend module owns completed-order reviews, customer
-reliability summaries, manual provider sanctions, provider sanction appeals,
-sanction event history, and public provider service reliability summaries.
+reliability summaries, provider activity policy, manual and automatic provider
+sanctions, provider sanction appeals, sanction event history, and public
+provider service reliability summaries.
 
 Current rules:
 
@@ -472,15 +473,20 @@ Current rules:
   and visible only to providers involved with that order;
 - admin-applied sanctions are scoped either provider-wide or to one provider
   service profile;
+- provider-caused cancellations update the provider activity score and
+  consecutive-cancellation counter inside the same order cancellation
+  transaction;
+- seven consecutive provider-caused cancellations create an automatic
+  provider-wide sanction: 24 hours for the first episode, seven days for the
+  second, and indefinite from the third episode;
 - active sanctions block new offer publication until lifted or expired;
 - sanction applications, appeals, and lifts are stored as event history.
 - public provider reliability exposes aggregate rating, completed orders,
   provider-caused cancellations, active sanction presence, and current offer
   eligibility without exposing sanction reasons or private documents.
 
-Activity-score deltas, automatic seven-cancellation blocking, complaint
-resolution, ranking changes, and production RBAC are outside this foundation
-slice.
+Ranking changes, complaint resolution, activity history UI, and production RBAC
+are outside this foundation slice.
 
 ## Maps
 

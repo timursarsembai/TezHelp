@@ -408,7 +408,7 @@ export interface ProviderSanctionSummary {
   readonly liftedAt?: string;
   readonly liftedByUserId?: string;
   readonly liftReason?: string;
-  readonly createdByUserId: string;
+  readonly createdByUserId?: string;
   readonly appealStatus: ProviderSanctionAppealStatus;
   readonly appealReason?: string;
   readonly appealSubmittedAt?: string;

@@ -37,6 +37,7 @@ Required for:
 - customer reliability visibility and derived counters
 - public provider reliability counters and eligibility
 - active provider sanctions blocking offer publication
+- automatic seven-cancellation provider sanctions
 - sanction appeal and lift history
 - one-active-order enforcement
 - concurrent provider selection attempts

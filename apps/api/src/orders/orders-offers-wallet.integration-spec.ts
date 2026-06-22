@@ -955,6 +955,84 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
     expect(offer.status).toBe("active");
   });
 
+  it("automatically blocks a provider after seven consecutive provider cancellations", async () => {
+    const cancellationCategories: ReadonlyArray<ServiceCategorySlug> = [
+      "jump_start",
+      "engine_start_assistance",
+      "wheel_replacement",
+      "wheel_inflation",
+      "mobile_tire_service",
+      "fuel_delivery",
+      "tow_truck",
+    ];
+
+    for (const [index, categorySlug] of cancellationCategories.entries()) {
+      const selected = await createSelectedOrder({
+        categorySlug,
+        offerPriceKzt: 10_000,
+        idSuffix: `automatic-block-${index + 1}`,
+      });
+      await cancelOrder.execute({
+        actor: "provider",
+        actorUserId: providerUserId,
+        orderId: selected.id,
+        reason: "provider cancelled assigned order",
+        idempotencyKey: `provider-automatic-block-${index + 1}`,
+      });
+    }
+
+    const profile = await database.db
+      .selectFrom("provider_profiles")
+      .select([
+        "activity_score",
+        "consecutive_provider_cancellations",
+        "cancellation_block_episode_count",
+      ])
+      .where("user_id", "=", providerUserId)
+      .executeTakeFirstOrThrow();
+    const sanctions = await listProviderSanctions.execute(providerUserId);
+    const blockedServiceProfileId = await approveProviderCategory(
+      providerUserId,
+      "vehicle_unlocking",
+    );
+    const blockedOrder = await createOrder.execute({
+      customerUserId,
+      categorySlug: "vehicle_unlocking",
+      latitude: 43.24,
+      longitude: 76.9,
+      addressLandmark: "Automatic sanction",
+      description: "Offer should be blocked by automatic sanction",
+      images: [],
+      unlockingLawfulAccess: {},
+    });
+
+    expect(profile.activity_score).toBe(65);
+    expect(profile.consecutive_provider_cancellations).toBe(0);
+    expect(profile.cancellation_block_episode_count).toBe(1);
+    expect(sanctions).toHaveLength(1);
+    expect(sanctions[0]).toMatchObject({
+      providerUserId,
+      sanctionType: "temporary_block",
+      reason: "automatic_consecutive_provider_cancellations",
+      appealStatus: "none",
+    });
+    expect(sanctions[0]?.createdByUserId).toBeUndefined();
+    expect(sanctions[0]?.endsAt).toBeDefined();
+    expect(sanctions[0]?.events?.map((event) => event.eventType)).toEqual(["applied"]);
+    expect(sanctions[0]?.events?.[0]?.actorUserId).toBeUndefined();
+    await expect(
+      submitOffer.execute({
+        providerUserId,
+        orderId: blockedOrder.id,
+        providerServiceProfileId: blockedServiceProfileId,
+        priceKzt: 8000,
+        arrivalMinutes: 20,
+        comment: "blocked by automatic sanction",
+        idempotencyKey: "offer-automatic-sanction-blocked",
+      }),
+    ).rejects.toMatchObject({ code: "PROVIDER_SANCTIONED" });
+  });
+
   it("increments public provider cancellation counters only for provider cancellations", async () => {
     const customerCancelled = await createSelectedOrder({
       categorySlug: "wheel_inflation",

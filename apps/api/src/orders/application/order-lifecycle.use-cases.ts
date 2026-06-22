@@ -6,6 +6,10 @@ import type { OrderContactSummary, OrderStatus, OrderSummary } from "@tezhelp/ty
 import { DatabaseService } from "../../foundation/database/database.service.js";
 import type { DatabaseSchema } from "../../foundation/database/database.types.js";
 import { WalletRepository } from "../../wallet/infrastructure/wallet.repository.js";
+import {
+  ProviderActivityPolicy,
+  type ProviderCancellationStage,
+} from "../../reputation/domain/provider-activity-policy.js";
 import { OrderApplicationError } from "../domain/order-errors.js";
 import {
   type CancellationActor,
@@ -144,6 +148,7 @@ export class CompleteOrderUseCase {
           .where("id", "=", order.assigned_provider_service_profile_id)
           .execute();
       }
+      await resetProviderCancellationStreak(trx, input.providerUserId, now);
       await this.orders.appendStatusHistory(trx, {
         orderId: input.orderId,
         fromStatus: order.status,
@@ -232,6 +237,13 @@ export class CancelOrderUseCase {
           }))
           .where("id", "=", order.assigned_provider_service_profile_id)
           .execute();
+        await applyProviderCancellationActivity(trx, {
+          providerUserId: input.actorUserId,
+          orderId: input.orderId,
+          serviceProfileId: order.assigned_provider_service_profile_id,
+          stage: resolveProviderCancellationStage(order.status),
+          now,
+        });
       }
       await this.orders.appendStatusHistory(trx, {
         orderId: input.orderId,
@@ -475,6 +487,142 @@ async function applyCancellationCommissionAction(
     actorUserId: input.actorUserId,
     reason: "order_cancelled_commission_held_for_review",
   });
+}
+
+async function resetProviderCancellationStreak(
+  trx: Transaction<DatabaseSchema>,
+  providerUserId: string,
+  now: Date,
+): Promise<void> {
+  const profile = await trx
+    .selectFrom("provider_profiles")
+    .select([
+      "activity_score",
+      "consecutive_provider_cancellations",
+      "cancellation_block_episode_count",
+    ])
+    .where("user_id", "=", providerUserId)
+    .forUpdate()
+    .executeTakeFirst();
+  if (!profile) {
+    throw new OrderApplicationError(
+      "ORDER_PROVIDER_PROFILE_NOT_FOUND",
+      "Assigned provider profile was not found",
+      409,
+    );
+  }
+
+  const impact = ProviderActivityPolicy.resolveCompletionImpact();
+  if (profile.consecutive_provider_cancellations === impact.nextConsecutiveProviderCancellations) {
+    return;
+  }
+
+  await trx
+    .updateTable("provider_profiles")
+    .set({
+      consecutive_provider_cancellations: impact.nextConsecutiveProviderCancellations,
+      updated_at: now,
+    })
+    .where("user_id", "=", providerUserId)
+    .execute();
+}
+
+async function applyProviderCancellationActivity(
+  trx: Transaction<DatabaseSchema>,
+  input: {
+    readonly providerUserId: string;
+    readonly orderId: string;
+    readonly serviceProfileId: string;
+    readonly stage: ProviderCancellationStage;
+    readonly now: Date;
+  },
+): Promise<void> {
+  const profile = await trx
+    .selectFrom("provider_profiles")
+    .select([
+      "activity_score",
+      "consecutive_provider_cancellations",
+      "cancellation_block_episode_count",
+    ])
+    .where("user_id", "=", input.providerUserId)
+    .forUpdate()
+    .executeTakeFirst();
+  if (!profile) {
+    throw new OrderApplicationError(
+      "ORDER_PROVIDER_PROFILE_NOT_FOUND",
+      "Assigned provider profile was not found",
+      409,
+    );
+  }
+
+  const impact = ProviderActivityPolicy.resolveProviderCancellationImpact(
+    {
+      activityScore: profile.activity_score,
+      consecutiveProviderCancellations: profile.consecutive_provider_cancellations,
+      cancellationBlockEpisodeCount: profile.cancellation_block_episode_count,
+    },
+    input.stage,
+    input.now,
+  );
+
+  await trx
+    .updateTable("provider_profiles")
+    .set({
+      activity_score: impact.nextActivityScore,
+      consecutive_provider_cancellations: impact.nextConsecutiveProviderCancellations,
+      cancellation_block_episode_count: impact.nextCancellationBlockEpisodeCount,
+      activity_score_updated_at: input.now,
+      updated_at: input.now,
+    })
+    .where("user_id", "=", input.providerUserId)
+    .execute();
+
+  if (!impact.automaticSanction) {
+    return;
+  }
+
+  const sanction = await trx
+    .insertInto("provider_sanctions")
+    .values({
+      provider_user_id: input.providerUserId,
+      service_profile_id: null,
+      sanction_type: impact.automaticSanction.sanctionType,
+      reason: impact.automaticSanction.reason,
+      starts_at: impact.automaticSanction.startsAt,
+      ends_at: impact.automaticSanction.endsAt,
+      created_by_user_id: null,
+      updated_at: input.now,
+    })
+    .returning("id")
+    .executeTakeFirstOrThrow();
+
+  await trx
+    .insertInto("provider_sanction_events")
+    .values({
+      sanction_id: sanction.id,
+      actor_user_id: null,
+      event_type: "applied",
+      reason: impact.automaticSanction.reason,
+      metadata: {
+        automation: "provider_activity",
+        episodeNumber: impact.automaticSanction.episodeNumber,
+        threshold: ProviderActivityPolicy.consecutiveCancellationThreshold,
+        orderId: input.orderId,
+        serviceProfileId: input.serviceProfileId,
+        stage: input.stage,
+        previousActivityScore: profile.activity_score,
+        nextActivityScore: impact.nextActivityScore,
+      },
+    })
+    .execute();
+}
+
+function resolveProviderCancellationStage(status: OrderStatus): ProviderCancellationStage {
+  if (status === "provider_en_route" || status === "provider_arrived" || status === "in_progress") {
+    return "after_departure";
+  }
+
+  return "before_departure";
 }
 
 function expectedCancelledStatus(actor: CancellationActor): OrderStatus {

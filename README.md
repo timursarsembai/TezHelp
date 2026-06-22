@@ -3,8 +3,8 @@
 TezHelp is a marketplace for emergency roadside services in Kazakhstan. This
 repository is a production-oriented foundation: mobile-first web, separate
 admin web, standalone NestJS API, shared packages, local infrastructure, and the
-provider moderation, orders/offers/wallet, chat, live location, and first
-reputation/sanctions foundations.
+provider moderation, orders/offers/wallet, chat, live location, reputation,
+sanctions, and provider activity foundations.
 
 ## Requirements
 
@@ -181,9 +181,15 @@ manual provider sanctions with append-only events, accepts provider appeals, and
 blocks new offer publication while an active provider or service-profile
 sanction exists. The public provider reliability endpoint exposes only aggregate
 service-profile trust signals and boolean offer eligibility; sanction reasons
-and event history remain private. Automatic activity-score penalties,
-seven-cancellation automation, complaint workflows, ranking changes, and
-production RBAC remain future work.
+and event history remain private.
+
+Provider-caused cancellations now update internal activity counters in the same
+transaction as order cancellation. The MVP activity constants are `-5` before
+departure and `-12` after departure. Seven consecutive provider-caused
+cancellations create an automatic provider-wide sanction: 24 hours for the first
+episode, seven days for the second, and indefinite from the third episode.
+Complaint workflows, ranking changes, activity history UI, and production RBAC
+remain future work.
 
 ## Error Monitoring Foundation
 
@@ -272,6 +278,8 @@ The eighth migration adds live location sessions and provider GPS updates with
 PostGIS point indexes.
 The ninth migration adds completed-order reviews, manual provider sanctions,
 and provider sanction events.
+The tenth migration adds provider activity counters, activity score constraints,
+and system-created automatic sanctions.
 The migration command loads `.env.example` for local development defaults;
 production and CI should provide real environment variables explicitly.
 
@@ -351,7 +359,8 @@ Start with:
 15. `docs/plans/2026-06-22-live-location-foundation.md`
 16. `docs/plans/2026-06-22-reputation-sanctions-foundation.md`
 17. `docs/plans/2026-06-22-public-provider-reliability.md`
-18. `infrastructure/operations/incident-response.md`
-19. `docs/ACCESSIBILITY_PERFORMANCE.md`
-20. `docs/ERROR_MONITORING.md`
-21. `infrastructure/deployment/kazakhstan-readiness.md`
+18. `docs/plans/2026-06-23-provider-activity-automation.md`
+19. `infrastructure/operations/incident-response.md`
+20. `docs/ACCESSIBILITY_PERFORMANCE.md`
+21. `docs/ERROR_MONITORING.md`
+22. `infrastructure/deployment/kazakhstan-readiness.md`
