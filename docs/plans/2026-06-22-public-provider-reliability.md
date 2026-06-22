@@ -99,7 +99,7 @@ orders and provider cancellation increments are monotonic aggregate facts.
 - [x] Add tests.
 - [x] Update docs.
 - [x] Run quality gates.
-- [ ] Commit and push.
+- [x] Commit and push.
 
 ## Decision Log
 
