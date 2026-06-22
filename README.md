@@ -168,6 +168,7 @@ Implemented development endpoints:
 
 - `POST /v1/orders/:orderId/reviews`
 - `GET /v1/provider/orders/:orderId/customer-reliability`
+- `GET /v1/providers/service-profiles/:serviceProfileId/reliability`
 - `GET /v1/provider/sanctions`
 - `POST /v1/provider/sanctions/:sanctionId/appeal`
 - `POST /v1/admin/providers/:providerUserId/sanctions`
@@ -178,9 +179,11 @@ after order completion, updates category-specific provider rating from real
 reviews, derives customer reliability indicators from order history, records
 manual provider sanctions with append-only events, accepts provider appeals, and
 blocks new offer publication while an active provider or service-profile
-sanction exists. Automatic activity-score penalties, seven-cancellation
-automation, complaint workflows, ranking changes, and production RBAC remain
-future work.
+sanction exists. The public provider reliability endpoint exposes only aggregate
+service-profile trust signals and boolean offer eligibility; sanction reasons
+and event history remain private. Automatic activity-score penalties,
+seven-cancellation automation, complaint workflows, ranking changes, and
+production RBAC remain future work.
 
 ## Canonical Commands
 
@@ -316,3 +319,4 @@ Start with:
 14. `docs/plans/2026-06-21-chat-attachments.md`
 15. `docs/plans/2026-06-22-live-location-foundation.md`
 16. `docs/plans/2026-06-22-reputation-sanctions-foundation.md`
+17. `docs/plans/2026-06-22-public-provider-reliability.md`

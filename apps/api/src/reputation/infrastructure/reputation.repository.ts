@@ -5,11 +5,14 @@ import type { Kysely } from "kysely";
 
 import type {
   CustomerReliabilitySummary,
+  Locale,
   OrderReviewSummary,
   OrderStatus,
   ProviderSanctionEventSummary,
   ProviderSanctionSummary,
   ProviderSanctionType,
+  PublicProviderReliabilitySummary,
+  ServiceCategorySlug,
 } from "@tezhelp/types";
 
 import { DatabaseService } from "../../foundation/database/database.service.js";
@@ -185,6 +188,76 @@ export class ReputationRepository {
       Number(reviews?.average_rating ?? 0),
       Number(reviews?.review_count ?? 0),
     );
+  }
+
+  async getPublicProviderReliability(input: {
+    readonly serviceProfileId: string;
+    readonly locale: Locale;
+  }): Promise<PublicProviderReliabilitySummary> {
+    const row = await this.database.db
+      .selectFrom("provider_service_profiles")
+      .innerJoin("service_category_translations", (join) =>
+        join
+          .onRef(
+            "service_category_translations.category_slug",
+            "=",
+            "provider_service_profiles.category_slug",
+          )
+          .on("service_category_translations.locale", "=", input.locale),
+      )
+      .select([
+        "provider_service_profiles.id",
+        "provider_service_profiles.provider_user_id",
+        "provider_service_profiles.category_slug",
+        "provider_service_profiles.moderation_status",
+        "provider_service_profiles.suspended_at",
+        "provider_service_profiles.rating_average",
+        "provider_service_profiles.rating_count",
+        "provider_service_profiles.completed_order_count",
+        "provider_service_profiles.cancellation_count",
+        "service_category_translations.name as category_name",
+      ])
+      .where("provider_service_profiles.id", "=", input.serviceProfileId)
+      .executeTakeFirst();
+    if (!row) {
+      throw new ReputationApplicationError(
+        "PUBLIC_RELIABILITY_NOT_FOUND",
+        "Provider service profile reliability was not found",
+        404,
+      );
+    }
+
+    const now = new Date();
+    const activeSanction = await this.database.db
+      .selectFrom("provider_sanctions")
+      .select("id")
+      .where("provider_user_id", "=", row.provider_user_id)
+      .where("lifted_at", "is", null)
+      .where("starts_at", "<=", now)
+      .where((eb) => eb.or([eb("ends_at", "is", null), eb("ends_at", ">", now)]))
+      .where((eb) =>
+        eb.or([eb("service_profile_id", "is", null), eb("service_profile_id", "=", row.id)]),
+      )
+      .executeTakeFirst();
+    const completedAndCancelled = row.completed_order_count + row.cancellation_count;
+
+    return {
+      serviceProfileId: row.id,
+      providerUserId: row.provider_user_id,
+      categorySlug: row.category_slug as ServiceCategorySlug,
+      categoryName: row.category_name,
+      ratingCount: row.rating_count,
+      completedOrderCount: row.completed_order_count,
+      providerCancellationCount: row.cancellation_count,
+      providerCancellationRatePercent:
+        completedAndCancelled === 0
+          ? 0
+          : Math.round((row.cancellation_count / completedAndCancelled) * 100),
+      activeSanction: Boolean(activeSanction),
+      offerEligible:
+        row.moderation_status === "approved" && row.suspended_at === null && !activeSanction,
+      ...(row.rating_average ? { ratingAverage: row.rating_average } : {}),
+    };
   }
 
   async createSanction(input: {

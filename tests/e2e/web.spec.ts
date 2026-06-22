@@ -16,4 +16,5 @@ test("web mobile shell renders localized identity entry points", async ({ page }
   await expect(page.locator("body")).toContainText("Метка исполнителя");
   await expect(page.locator("body")).toContainText("Отзыв после завершения заказа");
   await expect(page.locator("body")).toContainText("Надежность клиента");
+  await expect(page.locator("body")).toContainText("Публичная надежность исполнителя");
 });

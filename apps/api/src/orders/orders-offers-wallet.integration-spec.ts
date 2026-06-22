@@ -29,6 +29,7 @@ import {
   AppealProviderSanctionUseCase,
   CreateProviderSanctionUseCase,
   GetCustomerReliabilityUseCase,
+  GetPublicProviderReliabilityUseCase,
   LiftProviderSanctionUseCase,
   ListProviderSanctionsUseCase,
   SubmitOrderReviewUseCase,
@@ -82,6 +83,7 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
   let getAdminOrderLiveLocation: GetAdminOrderLiveLocationUseCase;
   let submitOrderReview: SubmitOrderReviewUseCase;
   let getCustomerReliability: GetCustomerReliabilityUseCase;
+  let getPublicProviderReliability: GetPublicProviderReliabilityUseCase;
   let createProviderSanction: CreateProviderSanctionUseCase;
   let listProviderSanctions: ListProviderSanctionsUseCase;
   let appealProviderSanction: AppealProviderSanctionUseCase;
@@ -131,6 +133,7 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
     getAdminOrderLiveLocation = moduleRef.get(GetAdminOrderLiveLocationUseCase);
     submitOrderReview = moduleRef.get(SubmitOrderReviewUseCase);
     getCustomerReliability = moduleRef.get(GetCustomerReliabilityUseCase);
+    getPublicProviderReliability = moduleRef.get(GetPublicProviderReliabilityUseCase);
     createProviderSanction = moduleRef.get(CreateProviderSanctionUseCase);
     listProviderSanctions = moduleRef.get(ListProviderSanctionsUseCase);
     appealProviderSanction = moduleRef.get(AppealProviderSanctionUseCase);
@@ -834,6 +837,10 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
       orderId: selected.id,
       providerUserId,
     });
+    const publicReliability = await getPublicProviderReliability.execute({
+      serviceProfileId: selected.assignedProviderServiceProfileId!,
+      locale: "ru",
+    });
 
     expect(customerToProvider.direction).toBe("customer_to_provider");
     expect(providerToCustomer.direction).toBe("provider_to_customer");
@@ -843,6 +850,9 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
     expect(reliability.completedOrders).toBeGreaterThanOrEqual(1);
     expect(reliability.providerReviewAverage).toBe("4.00");
     expect(reliability.providerReviewCount).toBe(1);
+    expect(publicReliability.ratingAverage).toBe("5.00");
+    expect(publicReliability.completedOrderCount).toBe(1);
+    expect(publicReliability.offerEligible).toBe(true);
     await expect(
       submitOrderReview.execute({
         orderId: selected.id,
@@ -901,6 +911,10 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
     ).rejects.toMatchObject({ code: "PROVIDER_SANCTIONED" });
 
     const listed = await listProviderSanctions.execute(providerUserId);
+    const reliabilityWhileSanctioned = await getPublicProviderReliability.execute({
+      serviceProfileId,
+      locale: "en",
+    });
     const appealed = await appealProviderSanction.execute({
       sanctionId: sanction.id,
       providerUserId,
@@ -929,6 +943,8 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
     });
 
     expect(listed).toHaveLength(1);
+    expect(reliabilityWhileSanctioned.activeSanction).toBe(true);
+    expect(reliabilityWhileSanctioned.offerEligible).toBe(false);
     expect(appealed.appealStatus).toBe("submitted");
     expect(lifted.liftReason).toBe("appeal accepted");
     expect(lifted.events?.map((event) => event.eventType)).toEqual([
@@ -937,6 +953,54 @@ describeWithInfrastructure("orders, offers, wallet, and selection integration", 
       "lifted",
     ]);
     expect(offer.status).toBe("active");
+  });
+
+  it("increments public provider cancellation counters only for provider cancellations", async () => {
+    const customerCancelled = await createSelectedOrder({
+      categorySlug: "wheel_inflation",
+      offerPriceKzt: 10_000,
+      idSuffix: "customer-cancel-counter",
+    });
+    await cancelOrder.execute({
+      actor: "customer",
+      actorUserId: customerUserId,
+      orderId: customerCancelled.id,
+      reason: "customer changed plan",
+      idempotencyKey: "customer-cancel-counter",
+    });
+    const afterCustomerCancellation = await getPublicProviderReliability.execute({
+      serviceProfileId: customerCancelled.assignedProviderServiceProfileId!,
+      locale: "en",
+    });
+
+    const providerCancelled = await createSelectedOrder({
+      categorySlug: "mobile_tire_service",
+      offerPriceKzt: 10_000,
+      idSuffix: "provider-cancel-counter",
+    });
+    await cancelOrder.execute({
+      actor: "provider",
+      actorUserId: providerUserId,
+      orderId: providerCancelled.id,
+      reason: "provider cannot continue",
+      idempotencyKey: "provider-cancel-counter",
+    });
+    await cancelOrder.execute({
+      actor: "provider",
+      actorUserId: providerUserId,
+      orderId: providerCancelled.id,
+      reason: "provider cannot continue",
+      idempotencyKey: "provider-cancel-counter",
+    });
+    const afterProviderCancellation = await getPublicProviderReliability.execute({
+      serviceProfileId: providerCancelled.assignedProviderServiceProfileId!,
+      locale: "en",
+    });
+
+    expect(afterCustomerCancellation.providerCancellationCount).toBe(0);
+    expect(afterCustomerCancellation.providerCancellationRatePercent).toBe(0);
+    expect(afterProviderCancellation.providerCancellationCount).toBe(1);
+    expect(afterProviderCancellation.providerCancellationRatePercent).toBe(100);
   });
 
   async function approveProviderCategory(

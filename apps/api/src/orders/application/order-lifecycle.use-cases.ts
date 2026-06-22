@@ -223,6 +223,16 @@ export class CancelOrderUseCase {
         .where("order_id", "=", input.orderId)
         .where("status", "=", "active")
         .execute();
+      if (input.actor === "provider" && order.assigned_provider_service_profile_id) {
+        await trx
+          .updateTable("provider_service_profiles")
+          .set((eb) => ({
+            cancellation_count: eb("cancellation_count", "+", 1),
+            updated_at: now,
+          }))
+          .where("id", "=", order.assigned_provider_service_profile_id)
+          .execute();
+      }
       await this.orders.appendStatusHistory(trx, {
         orderId: input.orderId,
         fromStatus: order.status,

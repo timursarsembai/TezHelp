@@ -192,6 +192,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               label={translate(locale, "reputation.customerReliability")}
               value={translate(locale, "marketplace.provider.discovery")}
             />
+            <MarketplaceField
+              label={translate(locale, "reputation.publicReliability")}
+              value={translate(locale, "reputation.cancellationRate")}
+            />
           </div>
 
           <aside className="rounded-lg border border-slate-200 bg-slate-50 p-4">
@@ -215,6 +219,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               <span>{translate(locale, "maps.customerMarker")}</span>
               <span>{translate(locale, "maps.providerMarker")}</span>
               <span>{translate(locale, "reputation.customerReliability")}</span>
+              <span>{translate(locale, "reputation.completedOrders")}</span>
             </div>
           </aside>
         </div>

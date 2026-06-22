@@ -218,3 +218,24 @@ Reason:
 - active sanctions must be enforced by offer publication, not by frontend UI
 - sanction appeal/lift history must be auditable and independent from provider
   moderation decisions
+
+## ADR-021 - Public provider reliability without private sanction details
+
+Status: accepted.
+
+Expose provider service reliability as an aggregate public summary owned by the
+backend. The summary includes category rating, completed order count,
+provider-caused cancellation count/rate, active sanction presence, and current
+offer eligibility, but not sanction reasons, sanction events, private documents,
+phone numbers, or admin actor details.
+
+Reason:
+
+- customers need trust signals before selecting a provider
+- reliability must be derived from authoritative backend counters and reviews
+- provider-caused cancellation counters are different from customer/admin
+  cancellations
+- active sanctions should affect public eligibility without leaking moderation
+  history
+- activity-score formulas and automatic cancellation blocks still need accepted
+  product values before implementation

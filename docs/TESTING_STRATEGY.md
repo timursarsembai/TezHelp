@@ -35,6 +35,7 @@ Required for:
 - completed-order review uniqueness
 - provider service rating recalculation
 - customer reliability visibility and derived counters
+- public provider reliability counters and eligibility
 - active provider sanctions blocking offer publication
 - sanction appeal and lift history
 - one-active-order enforcement

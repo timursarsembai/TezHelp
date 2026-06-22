@@ -54,6 +54,9 @@ export type MessageKey =
   | "reputation.review"
   | "reputation.customerReliability"
   | "reputation.providerRating"
+  | "reputation.publicReliability"
+  | "reputation.completedOrders"
+  | "reputation.cancellationRate"
   | "admin.sanctions.title"
   | "admin.sanctions.appeals"
   | "admin.title"
@@ -130,6 +133,9 @@ const ru: Dictionary = {
   "reputation.review": "Отзыв после завершения заказа",
   "reputation.customerReliability": "Надежность клиента",
   "reputation.providerRating": "Рейтинг исполнителя по категории",
+  "reputation.publicReliability": "Публичная надежность исполнителя",
+  "reputation.completedOrders": "Завершенные заказы",
+  "reputation.cancellationRate": "Доля отмен исполнителем",
   "admin.sanctions.title": "Санкции исполнителей",
   "admin.sanctions.appeals": "Апелляции по санкциям",
   "admin.title": "Администрирование TezHelp",
@@ -206,6 +212,9 @@ const kk: Dictionary = {
   "reputation.review": "Тапсырыс аяқталғаннан кейінгі пікір",
   "reputation.customerReliability": "Клиент сенімділігі",
   "reputation.providerRating": "Санат бойынша орындаушы рейтингі",
+  "reputation.publicReliability": "Орындаушының ашық сенімділігі",
+  "reputation.completedOrders": "Аяқталған тапсырыстар",
+  "reputation.cancellationRate": "Орындаушы тоқтатқан үлес",
   "admin.sanctions.title": "Орындаушылар санкциялары",
   "admin.sanctions.appeals": "Санкциялар бойынша апелляциялар",
   "admin.title": "TezHelp әкімшілігі",
@@ -281,6 +290,9 @@ const en: Dictionary = {
   "reputation.review": "Review after completed order",
   "reputation.customerReliability": "Customer reliability",
   "reputation.providerRating": "Provider rating by category",
+  "reputation.publicReliability": "Public provider reliability",
+  "reputation.completedOrders": "Completed orders",
+  "reputation.cancellationRate": "Provider cancellation rate",
   "admin.sanctions.title": "Provider sanctions",
   "admin.sanctions.appeals": "Sanction appeals",
   "admin.title": "TezHelp administration",

@@ -2,9 +2,11 @@ import { Injectable } from "@nestjs/common";
 
 import type {
   CustomerReliabilitySummary,
+  Locale,
   OrderReviewSummary,
   ProviderSanctionSummary,
   ProviderSanctionType,
+  PublicProviderReliabilitySummary,
 } from "@tezhelp/types";
 
 import { ReputationRepository } from "../infrastructure/reputation.repository.js";
@@ -32,6 +34,18 @@ export class GetCustomerReliabilityUseCase {
     readonly providerUserId: string;
   }): Promise<CustomerReliabilitySummary> {
     return this.repository.getCustomerReliabilityForOrder(input);
+  }
+}
+
+@Injectable()
+export class GetPublicProviderReliabilityUseCase {
+  constructor(private readonly repository: ReputationRepository) {}
+
+  async execute(input: {
+    readonly serviceProfileId: string;
+    readonly locale: Locale;
+  }): Promise<PublicProviderReliabilitySummary> {
+    return this.repository.getPublicProviderReliability(input);
   }
 }
 

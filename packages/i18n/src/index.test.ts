@@ -49,5 +49,7 @@ describe("i18n", () => {
     expect(translate("ru", "reputation.customerReliability")).toContain("Надежность");
     expect(translate("kk", "reputation.providerRating")).toContain("рейтинг");
     expect(translate("en", "admin.sanctions.appeals")).toContain("appeals");
+    expect(translate("ru", "reputation.publicReliability")).toContain("Публичная");
+    expect(translate("en", "reputation.cancellationRate")).toContain("cancellation");
   });
 });

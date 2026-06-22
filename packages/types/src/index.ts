@@ -370,6 +370,20 @@ export interface CustomerReliabilitySummary {
   readonly providerReviewCount: number;
 }
 
+export interface PublicProviderReliabilitySummary {
+  readonly serviceProfileId: string;
+  readonly providerUserId: string;
+  readonly categorySlug: ServiceCategorySlug;
+  readonly categoryName: string;
+  readonly ratingAverage?: string;
+  readonly ratingCount: number;
+  readonly completedOrderCount: number;
+  readonly providerCancellationCount: number;
+  readonly providerCancellationRatePercent: number;
+  readonly activeSanction: boolean;
+  readonly offerEligible: boolean;
+}
+
 export interface ProviderSanctionEventSummary {
   readonly id: string;
   readonly sanctionId: string;

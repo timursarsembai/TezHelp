@@ -446,7 +446,7 @@ without moving location policy into frontend code.
 
 The `reputation` backend module owns completed-order reviews, customer
 reliability summaries, manual provider sanctions, provider sanction appeals,
-and sanction event history.
+sanction event history, and public provider service reliability summaries.
 
 Current rules:
 
@@ -461,6 +461,9 @@ Current rules:
   service profile;
 - active sanctions block new offer publication until lifted or expired;
 - sanction applications, appeals, and lifts are stored as event history.
+- public provider reliability exposes aggregate rating, completed orders,
+  provider-caused cancellations, active sanction presence, and current offer
+  eligibility without exposing sanction reasons or private documents.
 
 Activity-score deltas, automatic seven-cancellation blocking, complaint
 resolution, ranking changes, and production RBAC are outside this foundation

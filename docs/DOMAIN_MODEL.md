@@ -175,6 +175,10 @@ Customer-to-provider reviews reference the assigned provider service profile and
 update category-specific provider rating. Provider-to-customer reviews feed the
 customer reliability summary and do not reference a provider service profile.
 
+Public provider reliability is derived from provider service profile counters,
+rating, and active sanction presence. It exposes aggregate trust signals only,
+not sanction reasons, documents, phone numbers, or admin decision history.
+
 ### ProviderSanction
 
 Owned by a provider profile and optionally scoped to one provider service
@@ -244,6 +248,8 @@ Owns:
 - only assigned order counterparties can review each other
 - provider rating is service-profile/category specific
 - one review per order per direction
+- provider-caused cancellations increment service-profile cancellation count
+- customer/admin cancellations do not increment provider cancellation count
 - active sanctions block new offer publication until lifted or expired
 - sanction event history is append-only
 
