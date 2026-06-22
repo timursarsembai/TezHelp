@@ -81,7 +81,7 @@ runbook, its links, and its validation entry. No migration rollback is required.
 - [x] Link documentation.
 - [x] Extend validation coverage.
 - [x] Run quality gates.
-- [ ] Commit, push, and verify CI.
+- [x] Commit, push, and verify CI.
 
 ## Decision Log
 
@@ -123,3 +123,8 @@ Remaining production work:
 - implement production deployment automation, secrets management, TLS/domain
   setup, production authentication/RBAC, provider integrations, alerting, and
   retention schedules
+
+Committed and pushed on 2026-06-22:
+
+- `94aa0f6 docs: add kazakhstan deployment readiness`
+- GitHub Actions CI run `27968204310` passed.
