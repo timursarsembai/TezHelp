@@ -85,7 +85,7 @@ removes the shell changes, localization key, e2e assertions, and docs updates.
 - [x] Add e2e accessibility and resource-budget assertions.
 - [x] Update documentation.
 - [x] Run quality gates.
-- [ ] Commit and push.
+- [x] Commit and push.
 
 ## Decision Log
 
@@ -118,3 +118,8 @@ Local validation completed on 2026-06-22:
 - `pnpm build`
 - `.codex/hooks/run_quality_gate.py --full` using bundled Codex Python with
   local Docker services available.
+
+Committed and pushed on 2026-06-22:
+
+- `0cf135b chore: add accessibility performance baseline`
+- GitHub Actions CI run `27944299106` passed.
