@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@source "../../../packages/ui/src";
+@import "../../../packages/ui/src/styles.css";
 
 @theme {
   --color-brand-blue: #165dff;

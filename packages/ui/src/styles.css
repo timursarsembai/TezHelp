@@ -1,0 +1,158 @@
+.tz-button {
+  align-items: center;
+  border-radius: 0.375rem;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.875rem;
+  font-weight: 600;
+  justify-content: center;
+  line-height: 1.25rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+}
+
+.tz-button:focus-visible {
+  outline: 2px solid var(--color-brand-orange);
+  outline-offset: 2px;
+}
+
+.tz-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.tz-button-primary {
+  background: var(--color-brand-blue);
+  color: #ffffff;
+}
+
+.tz-button-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.tz-button-secondary {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+}
+
+.tz-button-secondary:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.tz-button-secondary:focus-visible {
+  outline-color: var(--color-brand-blue);
+}
+
+.tz-button-danger {
+  background: var(--color-brand-danger);
+  color: #ffffff;
+}
+
+.tz-button-danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.tz-shell {
+  background: var(--color-app-background);
+  color: var(--color-app-text);
+  min-height: 100dvh;
+}
+
+.tz-skip-link {
+  background: #ffffff;
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 12px rgb(15 23 42 / 12%);
+  color: var(--color-brand-blue);
+  font-size: 0.875rem;
+  font-weight: 600;
+  height: 1px;
+  left: 1rem;
+  line-height: 1.25rem;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: fixed;
+  top: 1rem;
+  white-space: nowrap;
+  width: 1px;
+  z-index: 50;
+  clip: rect(0, 0, 0, 0);
+}
+
+.tz-skip-link:focus {
+  clip: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  padding: 0.5rem 1rem;
+  white-space: normal;
+  width: auto;
+}
+
+.tz-skip-link:focus-visible {
+  outline: 2px solid var(--color-brand-orange);
+  outline-offset: 2px;
+}
+
+.tz-shell-container {
+  display: flex;
+  flex-direction: column;
+  margin-inline: auto;
+  max-width: 72rem;
+  min-height: 100dvh;
+  padding: 1rem;
+  width: 100%;
+}
+
+.tz-shell-header {
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+}
+
+.tz-shell-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.75rem;
+  margin: 0;
+}
+
+.tz-shell-status {
+  background: #ffffff;
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 4px rgb(15 23 42 / 8%);
+  color: var(--color-brand-success);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.tz-shell-main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  padding-block: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .tz-shell-container {
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tz-shell-container {
+    padding-inline: 2rem;
+  }
+}

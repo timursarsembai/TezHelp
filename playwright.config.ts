@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const webBaseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+const adminBaseURL = process.env.PLAYWRIGHT_ADMIN_BASE_URL ?? "http://127.0.0.1:3001";
+
 const webServer =
   process.env.PLAYWRIGHT_SKIP_WEBSERVER === "true"
     ? undefined
@@ -26,7 +29,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? "github" : "list",
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000",
+    baseURL: webBaseURL,
     trace: "on-first-retry",
   },
   projects: [
@@ -38,7 +41,7 @@ export default defineConfig({
     {
       name: "desktop-admin",
       testMatch: /admin\.spec\.ts/,
-      use: { ...devices["Desktop Chrome"], baseURL: "http://127.0.0.1:3001" },
+      use: { ...devices["Desktop Chrome"], baseURL: adminBaseURL },
     },
   ],
   webServer,

@@ -1,21 +1,23 @@
 import { spawn } from "node:child_process";
 
 const root = process.cwd();
+const webPort = Number.parseInt(process.env.PLAYWRIGHT_WEB_PORT ?? "3000", 10);
+const adminPort = Number.parseInt(process.env.PLAYWRIGHT_ADMIN_PORT ?? "3001", 10);
 
 const servers = [
   {
     name: "web",
     cwd: "apps/web",
-    args: ["node_modules/next/dist/bin/next", "dev", "--port", "3000"],
-    port: 3000,
-    url: "http://127.0.0.1:3000",
+    args: ["node_modules/next/dist/bin/next", "dev", "--port", String(webPort)],
+    port: webPort,
+    url: `http://127.0.0.1:${webPort}`,
   },
   {
     name: "admin",
     cwd: "apps/admin",
-    args: ["node_modules/next/dist/bin/next", "dev", "--port", "3001"],
-    port: 3001,
-    url: "http://127.0.0.1:3001",
+    args: ["node_modules/next/dist/bin/next", "dev", "--port", String(adminPort)],
+    port: adminPort,
+    url: `http://127.0.0.1:${adminPort}`,
   },
 ];
 
@@ -36,6 +38,8 @@ async function main() {
     process.execPath,
     ["node_modules/@playwright/test/cli.js", "test"],
     {
+      PLAYWRIGHT_BASE_URL: servers[0].url,
+      PLAYWRIGHT_ADMIN_BASE_URL: servers[1].url,
       PLAYWRIGHT_SKIP_WEBSERVER: "true",
     },
   );

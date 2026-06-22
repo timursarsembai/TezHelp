@@ -13,22 +13,18 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   readonly variant?: ButtonVariant;
 }
 
-const buttonClassName = cva(
-  "inline-flex min-h-11 items-center justify-center rounded-md px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
-  {
-    variants: {
-      variant: {
-        primary: "bg-brand-blue text-white hover:bg-blue-700 focus-visible:outline-brand-orange",
-        secondary:
-          "border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 focus-visible:outline-brand-blue",
-        danger: "bg-brand-danger text-white hover:bg-red-700 focus-visible:outline-brand-orange",
-      } satisfies Record<ButtonVariant, string>,
-    },
-    defaultVariants: {
-      variant: "primary",
-    },
+const buttonClassName = cva("tz-button", {
+  variants: {
+    variant: {
+      primary: "tz-button-primary",
+      secondary: "tz-button-secondary",
+      danger: "tz-button-danger",
+    } satisfies Record<ButtonVariant, string>,
   },
-);
+  defaultVariants: {
+    variant: "primary",
+  },
+});
 
 export function Button({ className, variant = "primary", type = "button", ...props }: ButtonProps) {
   return <button className={cn(buttonClassName({ variant }), className)} type={type} {...props} />;
@@ -50,27 +46,18 @@ export function ResponsiveShell({
   ...props
 }: ShellProps) {
   return (
-    <div className={cn("min-h-dvh bg-app-background text-app-text", className)} {...props}>
-      <a
-        className="sr-only fixed left-4 top-4 z-50 rounded-md bg-white px-4 py-2 text-sm font-semibold text-brand-blue shadow-md focus:not-sr-only focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-brand-orange"
-        href="#main-content"
-      >
+    <div className={cn("tz-shell", className)} {...props}>
+      <a className="tz-skip-link" href="#main-content">
         {skipLabel}
       </a>
-      <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col px-4 py-4 sm:px-6 lg:px-8">
-        <header
-          className="flex items-center justify-between gap-4 border-b border-slate-200 pb-4"
-          role="banner"
-        >
-          <h1 className="text-xl font-bold">{title}</h1>
-          <span
-            className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-brand-success shadow-sm"
-            role="status"
-          >
+      <div className="tz-shell-container">
+        <header className="tz-shell-header" role="banner">
+          <h1 className="tz-shell-title">{title}</h1>
+          <span className="tz-shell-status" role="status">
             {status}
           </span>
         </header>
-        <main className="flex flex-1 flex-col py-6" id="main-content" tabIndex={-1}>
+        <main className="tz-shell-main" id="main-content" tabIndex={-1}>
           {children}
         </main>
       </div>
