@@ -90,7 +90,7 @@ runbook, validation script, root command, CI step, hook entry, and docs updates.
 - [x] Wire validation into CI and Codex quality gate.
 - [x] Update README and testing/security docs.
 - [x] Run quality gates.
-- [ ] Commit and push.
+- [x] Commit and push.
 
 ## Decision Log
 
@@ -125,4 +125,19 @@ Validation completed locally:
 - `pnpm build`
 - `.codex/hooks/run_quality_gate.py --full`
 
-Pending commit, push, and CI verification.
+Committed and pushed to `origin/main` as
+`033e239 docs: add incident response runbook`.
+
+GitHub Actions CI passed for run `27943133837`:
+
+- `pnpm infra:up`
+- `pnpm db:migrate`
+- `pnpm format:check`
+- `pnpm ops:validate`
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm test`
+- `pnpm test:integration`
+- `pnpm build`
+- `pnpm exec playwright install --with-deps chromium`
+- `pnpm test:e2e`
