@@ -6,6 +6,7 @@ import {
   cancelOrderSchema,
   chatAttachmentMetadataSchema,
   createProviderSanctionSchema,
+  frontendErrorReportSchema,
   liftProviderSanctionSchema,
   localeSchema,
   liveLocationUpdateSchema,
@@ -42,6 +43,7 @@ describe("validation schemas", () => {
     });
 
     expect(env.PORT).toBe(4000);
+    expect(env.ERROR_MONITORING_SINK).toBe("local");
   });
 
   it("rejects production startup with development identity adapters", () => {
@@ -192,5 +194,35 @@ describe("validation schemas", () => {
     expect(liftProviderSanctionSchema.parse({ reason: "appeal accepted" }).reason).toBe(
       "appeal accepted",
     );
+  });
+
+  it("validates frontend error monitoring reports without route query data", () => {
+    const report = frontendErrorReportSchema.parse({
+      source: "web",
+      route: "/orders",
+      errorName: "TypeError",
+      message: "render failed",
+      occurredAt: "2026-06-22T10:00:00.000Z",
+    });
+
+    expect(report.severity).toBe("error");
+    expect(() =>
+      frontendErrorReportSchema.parse({
+        source: "web",
+        route: "/orders?phone=%2B77001234567",
+        errorName: "TypeError",
+        message: "render failed",
+        occurredAt: "2026-06-22T10:00:00.000Z",
+      }),
+    ).toThrow();
+    expect(() =>
+      frontendErrorReportSchema.parse({
+        source: "admin",
+        route: "/moderation",
+        errorName: "Error",
+        message: "x".repeat(501),
+        occurredAt: "2026-06-22T10:00:00.000Z",
+      }),
+    ).toThrow();
   });
 });

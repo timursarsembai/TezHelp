@@ -185,6 +185,19 @@ and event history remain private. Automatic activity-score penalties,
 seven-cancellation automation, complaint workflows, ranking changes, and
 production RBAC remain future work.
 
+## Error Monitoring Foundation
+
+Implemented endpoint:
+
+- `POST /v1/monitoring/frontend-errors`
+
+Web and admin route-level error boundaries send privacy-safe frontend error
+reports with correlation IDs. The current sink is controlled by
+`ERROR_MONITORING_SINK` and supports local sanitized structured logs or disabled
+delivery only. External monitoring providers, alert routing, source-map upload,
+and production retention rules remain future work and require Kazakhstan
+hosting/legal review.
+
 ## Canonical Commands
 
 ```bash
@@ -337,3 +350,4 @@ Start with:
 17. `docs/plans/2026-06-22-public-provider-reliability.md`
 18. `infrastructure/operations/incident-response.md`
 19. `docs/ACCESSIBILITY_PERFORMANCE.md`
+20. `docs/ERROR_MONITORING.md`

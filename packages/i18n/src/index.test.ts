@@ -12,6 +12,7 @@ describe("i18n", () => {
     expect(translate("kk", "common.status.foundation")).toBe("Foundation дайын");
     expect(translate("en", "common.status.foundation")).toBe("Foundation ready");
     expect(translate("en", "common.skipToContent")).toBe("Skip to main content");
+    expect(translate("en", "monitoring.errorTitle")).toBe("Something went wrong");
   });
 
   it("has localized identity strings", () => {

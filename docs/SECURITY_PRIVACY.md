@@ -205,6 +205,20 @@ Audit records are immutable to ordinary administrators.
   `infrastructure/operations/incident-response.md` and is validated with
   `pnpm ops:validate`
 
+## Error monitoring
+
+Frontend error reports are accepted at `POST /v1/monitoring/frontend-errors`
+and sanitized before they reach the configured sink. The accepted contract
+contains only source, route path, error name, short message, optional digest,
+optional component stack, user agent, and timestamp. Query strings and hashes
+are rejected to avoid copying personal data from URLs.
+
+Monitoring logs must follow the same Kazakhstan data-residency rule as
+application logs when they may contain personal data. The current sink is local
+structured logging or disabled delivery only. External monitoring, session
+replay, analytics, and source-map upload require separate privacy, CSP, and
+legal review before production use.
+
 ## Web security
 
 - CSRF protection where cookie authentication is used

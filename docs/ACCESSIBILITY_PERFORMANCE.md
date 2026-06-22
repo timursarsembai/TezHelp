@@ -43,5 +43,5 @@ Before launch:
 - measure mobile network performance in Kazakhstan
 - review map tile, routing, upload, realtime, and monitoring providers in the
   CSP and performance budgets
-- add frontend error monitoring with personal-data scrubbing and Kazakhstan
-  hosting/legal review
+- expand frontend error monitoring into production alerting after Kazakhstan
+  hosting/legal review for the chosen provider

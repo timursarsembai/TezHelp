@@ -73,6 +73,10 @@ export type MessageKey =
   | "admin.moderation.audit"
   | "common.status.foundation"
   | "common.skipToContent"
+  | "monitoring.errorTitle"
+  | "monitoring.errorBody"
+  | "monitoring.retry"
+  | "monitoring.reported"
   | "common.language";
 
 type Dictionary = Readonly<Record<MessageKey, string>>;
@@ -154,6 +158,11 @@ const ru: Dictionary = {
   "admin.moderation.audit": "История аудита",
   "common.status.foundation": "Foundation готов",
   "common.skipToContent": "Перейти к содержанию",
+  "monitoring.errorTitle": "Что-то пошло не так",
+  "monitoring.errorBody":
+    "Мы подготовили безопасный отчет об ошибке без личных данных. Попробуйте обновить этот экран.",
+  "monitoring.retry": "Попробовать снова",
+  "monitoring.reported": "Отчет об ошибке подготовлен",
   "common.language": "Язык",
 };
 
@@ -234,6 +243,11 @@ const kk: Dictionary = {
   "admin.moderation.audit": "Аудит тарихы",
   "common.status.foundation": "Foundation дайын",
   "common.skipToContent": "Мазмұнға өту",
+  "monitoring.errorTitle": "Бірдеңе дұрыс болмады",
+  "monitoring.errorBody":
+    "Жеке дерексіз қауіпсіз қате есебі дайындалды. Экранды қайта жүктеп көріңіз.",
+  "monitoring.retry": "Қайта көру",
+  "monitoring.reported": "Қате есебі дайын",
   "common.language": "Тіл",
 };
 
@@ -313,6 +327,11 @@ const en: Dictionary = {
   "admin.moderation.audit": "Audit history",
   "common.status.foundation": "Foundation ready",
   "common.skipToContent": "Skip to main content",
+  "monitoring.errorTitle": "Something went wrong",
+  "monitoring.errorBody":
+    "A privacy-safe error report was prepared without personal data. Try refreshing this screen.",
+  "monitoring.retry": "Try again",
+  "monitoring.reported": "Error report prepared",
   "common.language": "Language",
 };
 

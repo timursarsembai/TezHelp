@@ -54,4 +54,10 @@ export class AppConfigService {
       sessionCookieSecure: this.config.get("SESSION_COOKIE_SECURE", { infer: true }),
     };
   }
+
+  get monitoring() {
+    return {
+      sink: this.config.get("ERROR_MONITORING_SINK", { infer: true }),
+    };
+  }
 }

@@ -79,6 +79,7 @@ Additional flows:
 - responsive mobile viewport
 - accessibility landmarks and keyboard skip-link behavior
 - lightweight foundation resource budgets
+- privacy-safe monitoring report contracts and frontend reporter behavior
 
 ## Concurrency tests
 
@@ -156,6 +157,17 @@ The current e2e smoke suite checks:
 - reduced-motion media query availability
 - no initial image/audio/video resources in the foundation shells
 - conservative resource-count budgets for scripts, styles, and total resources
+
+## Error monitoring tests
+
+The current monitoring suite checks:
+
+- frontend error report schema rejects route query strings and oversized
+  messages
+- monitoring scrubber redacts sensitive keys and risky scalar values
+- frontend reporter strips query strings and hashes before sending reports
+- web/admin production builds include route-level error boundaries without
+  adding product-visible test routes
 
 ## Restore tests
 

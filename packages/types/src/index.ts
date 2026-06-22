@@ -83,6 +83,10 @@ export type ProviderSanctionEventType =
   | "appeal_accepted"
   | "appeal_rejected";
 
+export type MonitoringEventSeverity = "error" | "warning";
+
+export type FrontendMonitoringSource = "web" | "admin";
+
 export type ProviderGeneralDocumentType = "face_photo" | "identity_document";
 
 export interface ServiceCategorySummary {
@@ -412,6 +416,22 @@ export interface ProviderSanctionSummary {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly events?: ReadonlyArray<ProviderSanctionEventSummary>;
+}
+
+export interface FrontendErrorReport {
+  readonly source: FrontendMonitoringSource;
+  readonly severity: Extract<MonitoringEventSeverity, "error">;
+  readonly route: string;
+  readonly errorName: string;
+  readonly message: string;
+  readonly digest?: string;
+  readonly componentStack?: string;
+  readonly userAgent?: string;
+  readonly occurredAt: string;
+}
+
+export interface MonitoringReportResponse {
+  readonly accepted: true;
 }
 
 export interface IdentityUserSummary {

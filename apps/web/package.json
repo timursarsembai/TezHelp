@@ -12,6 +12,7 @@
     "test:integration": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@tezhelp/api-client": "workspace:*",
     "@tezhelp/config": "workspace:*",
     "@tezhelp/i18n": "workspace:*",
     "@tezhelp/ui": "workspace:*",

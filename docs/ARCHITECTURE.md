@@ -420,6 +420,19 @@ Current rules:
 Realtime WebSocket delivery, upload orchestration, malware scanning, complaint
 resolution, and production RBAC are outside this foundation slice.
 
+## Error monitoring foundation
+
+The `foundation/monitoring` backend module owns sanitized runtime error reports
+and exposes `POST /v1/monitoring/frontend-errors` for web/admin route-level
+error boundaries. Monitoring sinks are behind a port; the current local sink
+writes sanitized structured events to stdout or drops them when disabled.
+
+Monitoring payloads are deliberately narrow and use correlation IDs as the join
+key with request logs and API error envelopes. They must not contain form
+payloads, phone numbers, OTPs, identity-document data, raw object keys, signed
+URLs, exact coordinates, chat contents, or uploaded file contents. External
+monitoring providers require a later Kazakhstan hosting and legal review.
+
 ## Live location foundation
 
 The `live-location` backend module owns active-order tracking visibility,

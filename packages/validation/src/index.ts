@@ -4,6 +4,8 @@ import { serviceCategorySlugs, supportedLocales } from "@tezhelp/types";
 
 export const localeSchema = z.enum(supportedLocales);
 export const userRoleSchema = z.enum(["customer", "provider"]);
+export const frontendMonitoringSourceSchema = z.enum(["web", "admin"]);
+export const monitoringEventSeveritySchema = z.enum(["error", "warning"]);
 export const otpPurposeSchema = z.enum(["sign_in", "phone_completion", "phone_change"]);
 export const serviceCategorySlugSchema = z.enum(serviceCategorySlugs);
 export const providerTaxStatusSchema = z.enum([
@@ -264,6 +266,23 @@ export const serviceCategoryCommercialConfigSchema = z.object({
   operationalMinimumKzt: kztAmountSchema,
 });
 
+export const frontendErrorReportSchema = z.object({
+  source: frontendMonitoringSourceSchema,
+  severity: z.literal("error").default("error"),
+  route: z
+    .string()
+    .trim()
+    .min(1)
+    .max(200)
+    .regex(/^\/[^?#]*$/, "Route must be a path without query string or hash"),
+  errorName: z.string().trim().min(1).max(120),
+  message: z.string().trim().min(1).max(500),
+  digest: z.string().trim().min(1).max(120).optional(),
+  componentStack: z.string().trim().min(1).max(2000).optional(),
+  userAgent: z.string().trim().min(1).max(300).optional(),
+  occurredAt: z.iso.datetime(),
+});
+
 export const apiEnvSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -289,6 +308,7 @@ export const apiEnvSchema = z
     OTP_IP_RATE_LIMIT_PER_HOUR: z.coerce.number().int().positive().default(30),
     SESSION_COOKIE_NAME: z.string().min(1).default("tezhelp_session"),
     SESSION_COOKIE_SECURE: z.coerce.boolean().default(false),
+    ERROR_MONITORING_SINK: z.enum(["local", "disabled"]).default("local"),
   })
   .superRefine((value, context) => {
     if (value.NODE_ENV !== "production") {

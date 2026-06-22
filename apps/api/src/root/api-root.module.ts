@@ -6,6 +6,7 @@ import { ConfigurationModule } from "../foundation/configuration/configuration.m
 import { DatabaseModule } from "../foundation/database/database.module.js";
 import { HealthModule } from "../foundation/health/health.module.js";
 import { HttpFoundationModule } from "../foundation/http/http-foundation.module.js";
+import { MonitoringModule } from "../foundation/monitoring/monitoring.module.js";
 import { IdentityModule } from "../identity/identity.module.js";
 import { LiveLocationModule } from "../live-location/live-location.module.js";
 import { ModerationModule } from "../moderation/moderation.module.js";
@@ -22,6 +23,7 @@ import { WalletModule } from "../wallet/wallet.module.js";
     DatabaseModule,
     AuditModule,
     HttpFoundationModule,
+    MonitoringModule,
     HealthModule,
     IdentityModule,
     ServiceCatalogModule,
