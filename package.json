@@ -19,6 +19,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:migrate": "pnpm --filter @tezhelp/api db:migrate",
+    "db:backup:validate": "node scripts/validate-postgres-backup.mjs",
     "infra:up": "docker compose --env-file .env.example -f infrastructure/docker/docker-compose.yml up -d",
     "infra:down": "docker compose --env-file .env.example -f infrastructure/docker/docker-compose.yml down",
     "knip": "knip",

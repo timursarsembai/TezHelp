@@ -182,6 +182,16 @@ Audit records are immutable to ordinary administrators.
 - separate development, staging, and production credentials
 - scope credentials minimally
 
+## Backups and restore
+
+- production backups must be stored in Kazakhstan-hosted infrastructure
+- backup encryption keys must be separated from application credentials
+- restore tests must be scheduled before launch and after material schema
+  changes
+- restores must validate PostGIS, migration metadata, wallet reconciliation,
+  and private object availability
+- local backup artifacts under `backups/` must never be committed
+
 ## Web security
 
 - CSRF protection where cookie authentication is used

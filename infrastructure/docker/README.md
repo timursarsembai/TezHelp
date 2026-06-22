@@ -5,6 +5,7 @@ The development stack contains PostgreSQL with PostGIS, Redis, and MinIO.
 ```bash
 pnpm infra:up
 pnpm db:migrate
+pnpm db:backup:validate
 pnpm infra:down
 ```
 
@@ -15,3 +16,7 @@ checking that no important development state is stored there.
 MinIO console: `http://localhost:9001`
 
 Example credentials are intentionally synthetic and live in `.env.example`.
+
+`pnpm db:backup:validate` writes local dump files under `backups/postgres/`.
+That directory is ignored by git and is safe to delete when you no longer need
+local validation artifacts.

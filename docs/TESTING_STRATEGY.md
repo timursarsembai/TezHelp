@@ -131,3 +131,16 @@ pnpm build
 ```
 
 CI must run the relevant set for each pull request.
+
+## Restore tests
+
+Local PostgreSQL backup/restore validation:
+
+```bash
+pnpm infra:up
+pnpm db:migrate
+pnpm db:backup:validate
+```
+
+Production restore drills must also cover private object storage, log retention,
+wallet reconciliation, and Kazakhstan-hosting constraints.

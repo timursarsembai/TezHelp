@@ -202,6 +202,7 @@ Docker-dependent commands:
 ```bash
 pnpm infra:up
 pnpm db:migrate
+pnpm db:backup:validate
 pnpm infra:down
 pnpm local:dev
 ```
@@ -209,6 +210,12 @@ pnpm local:dev
 `test:integration` loads `.env.example` for local Docker defaults. Run it after
 `pnpm infra:up` and `pnpm db:migrate` when validating the Docker-backed health
 checks.
+
+`db:backup:validate` creates a local PostgreSQL custom-format dump under
+`backups/postgres/`, restores it into the temporary
+`tezhelp_restore_validation` database inside the Docker Postgres container,
+checks PostGIS and migration metadata, then drops only that validation database.
+It never restores into the main local `tezhelp` database.
 
 ## Architecture
 
@@ -271,6 +278,7 @@ Full checks with Docker:
 ```bash
 pnpm infra:up
 pnpm db:migrate
+pnpm db:backup:validate
 pnpm test:integration
 pnpm test:e2e
 ```
@@ -295,6 +303,8 @@ agent environment; developers should install normal Python 3.
 
 - `pnpm` not found: run `corepack enable pnpm`, then open a new terminal.
 - Docker not found: install Docker Desktop or run the non-Docker checks only.
+- Backup validation fails because Docker is stopped: run `pnpm infra:up`, then
+  retry `pnpm db:backup:validate`.
 - API env validation fails: copy values from `.env.example` into your local environment.
 - MinIO readiness fails: rerun `pnpm infra:up` and wait for `minio-init` to create the private bucket.
 - Playwright browsers missing: run `pnpm exec playwright install chromium`.

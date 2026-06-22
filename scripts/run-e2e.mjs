@@ -7,12 +7,14 @@ const servers = [
     name: "web",
     cwd: "apps/web",
     args: ["node_modules/next/dist/bin/next", "dev", "--port", "3000"],
+    port: 3000,
     url: "http://127.0.0.1:3000",
   },
   {
     name: "admin",
     cwd: "apps/admin",
     args: ["node_modules/next/dist/bin/next", "dev", "--port", "3001"],
+    port: 3001,
     url: "http://127.0.0.1:3001",
   },
 ];
@@ -98,6 +100,22 @@ async function stopChild(child) {
   }
 }
 
+async function stopWindowsPort(port) {
+  const command = [
+    "$listenPids = netstat -ano | Select-String 'LISTENING' |",
+    `Select-String ':${port}\\s' |`,
+    "ForEach-Object { ($_ -split '\\s+')[-1] } |",
+    "Sort-Object -Unique;",
+    "foreach ($listenPid in $listenPids) {",
+    "if ($listenPid -and $listenPid -ne '0') {",
+    "Stop-Process -Id ([int] $listenPid) -Force -ErrorAction SilentlyContinue",
+    "}",
+    "}",
+  ].join(" ");
+
+  await runCommand("powershell.exe", ["-NoProfile", "-Command", command], {});
+}
+
 function sleep(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -108,4 +126,7 @@ try {
   await main();
 } finally {
   await Promise.all(children.map((child) => stopChild(child)));
+  if (process.platform === "win32") {
+    await Promise.all(servers.map((server) => stopWindowsPort(server.port)));
+  }
 }
