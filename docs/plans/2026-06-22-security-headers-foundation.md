@@ -85,7 +85,7 @@ headers, middleware, tests, and documentation updates.
 - [x] Add tests.
 - [x] Update docs.
 - [x] Run quality gates.
-- [ ] Commit and push.
+- [x] Commit and push.
 
 ## Decision Log
 
@@ -116,4 +116,18 @@ Validation completed locally:
 - `pnpm build`
 - `.codex/hooks/run_quality_gate.py --full`
 
-Pending commit, push, and CI verification.
+Committed and pushed to `origin/main` as
+`36a52e6 chore: add security headers foundation`.
+
+GitHub Actions CI passed for run `27942156887`:
+
+- `pnpm infra:up`
+- `pnpm db:migrate`
+- `pnpm format:check`
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm test`
+- `pnpm test:integration`
+- `pnpm build`
+- `pnpm exec playwright install --with-deps chromium`
+- `pnpm test:e2e`
