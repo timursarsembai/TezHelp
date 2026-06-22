@@ -28,6 +28,31 @@ const runbooks = [
       "pnpm db:backup:validate",
     ],
   },
+  {
+    path: "infrastructure/deployment/kazakhstan-readiness.md",
+    requiredSnippets: [
+      "# Kazakhstan Deployment Readiness",
+      "## Purpose",
+      "## Non-goals",
+      "## Data Residency",
+      "## Current Local Stage",
+      "## Pre-purchase Hosting Checklist",
+      "## Baseline Production Topology",
+      "## Production Environment Checklist",
+      "## Deployment Gates",
+      "## Rollback and Restore Rules",
+      "## Remaining Gaps",
+      "Kazakhstan",
+      "PostgreSQL/PostGIS",
+      "private object storage",
+      "application logs",
+      "backups",
+      "ERROR_MONITORING_SINK",
+      "SESSION_COOKIE_SECURE=true",
+      "IDENTITY_DEV_AUTH_HEADER_ENABLED=false",
+      "never rewrite applied migrations",
+    ],
+  },
 ];
 
 const failures = [];

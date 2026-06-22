@@ -12,6 +12,10 @@ Production personal data must be stored and processed on infrastructure physical
 - chat attachments
 - exact live-location records
 
+The pre-purchase deployment checklist lives at
+`infrastructure/deployment/kazakhstan-readiness.md`. Use it before selecting a
+VPS, database, object-storage, logging, monitoring, or backup provider.
+
 Foreign services require separate legal review, data minimization, and appropriate consent. They must not become an accidental primary personal-data store.
 
 ## Sensitive data

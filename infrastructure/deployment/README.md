@@ -7,6 +7,11 @@ constraint for personal data, files, relevant logs, and backups. Use the
 provider-adapter boundaries documented in `docs/ARCHITECTURE.md` before adding
 SMS, payments, storage, maps, routing, or document verification providers.
 
+Before buying or configuring VPS hosting, review
+`infrastructure/deployment/kazakhstan-readiness.md`. It records the
+provider-neutral checklist for Kazakhstan data residency, production environment
+settings, deployment gates, rollback rules, and remaining production gaps.
+
 ## Backup and restore baseline
 
 Before production launch, choose Kazakhstan-hosted backup storage for:

@@ -351,3 +351,4 @@ Start with:
 18. `infrastructure/operations/incident-response.md`
 19. `docs/ACCESSIBILITY_PERFORMANCE.md`
 20. `docs/ERROR_MONITORING.md`
+21. `infrastructure/deployment/kazakhstan-readiness.md`
