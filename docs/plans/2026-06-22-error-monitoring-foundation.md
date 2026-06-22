@@ -109,7 +109,7 @@ error boundaries, contracts, and docs. No migration rollback is required.
 - [x] Update documentation.
 - [x] Add tests.
 - [x] Run quality gates.
-- [ ] Commit and push.
+- [x] Commit and push.
 
 ## Decision Log
 
@@ -151,3 +151,8 @@ Remaining production work:
 - choose a Kazakhstan-hosted monitoring/logging destination or complete legal
   review for any foreign provider
 - add production alert routing, retention, source-map policy, and CSP review
+
+Committed and pushed on 2026-06-22:
+
+- `304fb2a chore: add error monitoring foundation`
+- GitHub Actions CI run `27966422656` passed.
