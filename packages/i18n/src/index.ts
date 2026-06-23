@@ -67,6 +67,9 @@ export type MessageKey =
   | "maps.createOrder"
   | "maps.closePanel"
   | "maps.customerMode"
+  | "maps.providerMode"
+  | "maps.switchToCustomer"
+  | "maps.switchToProvider"
   | "maps.online"
   | "maps.noActiveOrders"
   | "maps.categoriesLoading"
@@ -82,6 +85,22 @@ export type MessageKey =
   | "maps.orderPublished"
   | "maps.publishError"
   | "maps.selectLocationFirst"
+  | "provider.feedTitle"
+  | "provider.feedEmpty"
+  | "provider.feedUnavailable"
+  | "provider.walletBalance"
+  | "provider.freeResponses"
+  | "provider.offerCount"
+  | "provider.distance"
+  | "provider.openOrder"
+  | "provider.offerPrice"
+  | "provider.arrivalMinutes"
+  | "provider.offerComment"
+  | "provider.offerCommentPlaceholder"
+  | "provider.submitOffer"
+  | "provider.submittingOffer"
+  | "provider.offerSubmitted"
+  | "provider.offerError"
   | "admin.maps.activeOrderTracking"
   | "reputation.review"
   | "reputation.customerReliability"
@@ -183,6 +202,9 @@ const ru: Dictionary = {
   "maps.createOrder": "Создать заказ",
   "maps.closePanel": "Закрыть",
   "maps.customerMode": "Режим клиента",
+  "maps.providerMode": "Режим исполнителя",
+  "maps.switchToCustomer": "Перейти в режим клиента",
+  "maps.switchToProvider": "Перейти в режим исполнителя",
   "maps.online": "На связи",
   "maps.noActiveOrders": "Активных заказов пока нет",
   "maps.categoriesLoading": "Загружаем услуги",
@@ -198,6 +220,22 @@ const ru: Dictionary = {
   "maps.orderPublished": "Заказ опубликован",
   "maps.publishError": "Не удалось опубликовать заказ. Попробуйте снова.",
   "maps.selectLocationFirst": "Сначала укажите точку на карте",
+  "provider.feedTitle": "Доступные заказы",
+  "provider.feedEmpty": "Подходящих заказов пока нет",
+  "provider.feedUnavailable": "Лента недоступна. Проверьте профиль и модерацию категорий.",
+  "provider.walletBalance": "Доступный баланс",
+  "provider.freeResponses": "Бесплатные отклики",
+  "provider.offerCount": "Откликов",
+  "provider.distance": "Расстояние",
+  "provider.openOrder": "Открыть заказ",
+  "provider.offerPrice": "Ваша цена, KZT",
+  "provider.arrivalMinutes": "Прибытие, минут",
+  "provider.offerComment": "Комментарий",
+  "provider.offerCommentPlaceholder": "Уточните условия и время прибытия",
+  "provider.submitOffer": "Отправить отклик",
+  "provider.submittingOffer": "Отправляем",
+  "provider.offerSubmitted": "Отклик опубликован",
+  "provider.offerError": "Не удалось отправить отклик. Проверьте баланс и доступность профиля.",
   "admin.maps.activeOrderTracking": "Отслеживание активного заказа",
   "reputation.review": "Отзыв после завершения заказа",
   "reputation.customerReliability": "Надежность клиента",
@@ -300,6 +338,9 @@ const kk: Dictionary = {
   "maps.createOrder": "Тапсырыс жасау",
   "maps.closePanel": "Жабу",
   "maps.customerMode": "Клиент режимі",
+  "maps.providerMode": "Орындаушы режимі",
+  "maps.switchToCustomer": "Клиент режиміне өту",
+  "maps.switchToProvider": "Орындаушы режиміне өту",
   "maps.online": "Байланыста",
   "maps.noActiveOrders": "Белсенді тапсырыстар әзірге жоқ",
   "maps.categoriesLoading": "Қызметтер жүктелуде",
@@ -315,6 +356,22 @@ const kk: Dictionary = {
   "maps.orderPublished": "Тапсырыс жарияланды",
   "maps.publishError": "Тапсырысты жариялау мүмкін болмады. Қайта көріңіз.",
   "maps.selectLocationFirst": "Алдымен картадан нүктені таңдаңыз",
+  "provider.feedTitle": "Қолжетімді тапсырыстар",
+  "provider.feedEmpty": "Сәйкес тапсырыстар әзірге жоқ",
+  "provider.feedUnavailable": "Лента қолжетімсіз. Профиль мен санат модерациясын тексеріңіз.",
+  "provider.walletBalance": "Қолжетімді баланс",
+  "provider.freeResponses": "Тегін жауаптар",
+  "provider.offerCount": "Жауаптар",
+  "provider.distance": "Қашықтық",
+  "provider.openOrder": "Тапсырысты ашу",
+  "provider.offerPrice": "Сіздің бағаңыз, KZT",
+  "provider.arrivalMinutes": "Келу уақыты, минут",
+  "provider.offerComment": "Түсініктеме",
+  "provider.offerCommentPlaceholder": "Шарттар мен келу уақытын жазыңыз",
+  "provider.submitOffer": "Жауап жіберу",
+  "provider.submittingOffer": "Жіберілуде",
+  "provider.offerSubmitted": "Жауап жарияланды",
+  "provider.offerError": "Жауап жіберілмеді. Баланс пен профиль қолжетімділігін тексеріңіз.",
   "admin.maps.activeOrderTracking": "Белсенді тапсырысты бақылау",
   "reputation.review": "Тапсырыс аяқталғаннан кейінгі пікір",
   "reputation.customerReliability": "Клиент сенімділігі",
@@ -416,6 +473,9 @@ const en: Dictionary = {
   "maps.createOrder": "Create order",
   "maps.closePanel": "Close",
   "maps.customerMode": "Customer mode",
+  "maps.providerMode": "Provider mode",
+  "maps.switchToCustomer": "Switch to customer mode",
+  "maps.switchToProvider": "Switch to provider mode",
   "maps.online": "Online",
   "maps.noActiveOrders": "There are no active orders yet",
   "maps.categoriesLoading": "Loading services",
@@ -431,6 +491,22 @@ const en: Dictionary = {
   "maps.orderPublished": "Order published",
   "maps.publishError": "The order could not be published. Try again.",
   "maps.selectLocationFirst": "Choose a point on the map first",
+  "provider.feedTitle": "Available orders",
+  "provider.feedEmpty": "There are no matching orders yet",
+  "provider.feedUnavailable": "The feed is unavailable. Check profile and category moderation.",
+  "provider.walletBalance": "Available balance",
+  "provider.freeResponses": "Free responses",
+  "provider.offerCount": "Offers",
+  "provider.distance": "Distance",
+  "provider.openOrder": "Open order",
+  "provider.offerPrice": "Your price, KZT",
+  "provider.arrivalMinutes": "Arrival, minutes",
+  "provider.offerComment": "Comment",
+  "provider.offerCommentPlaceholder": "Clarify terms and arrival time",
+  "provider.submitOffer": "Submit offer",
+  "provider.submittingOffer": "Submitting",
+  "provider.offerSubmitted": "Offer published",
+  "provider.offerError": "Offer failed. Check balance and service-profile eligibility.",
   "admin.maps.activeOrderTracking": "Active order tracking",
   "reputation.review": "Review after completed order",
   "reputation.customerReliability": "Customer reliability",

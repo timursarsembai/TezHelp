@@ -46,6 +46,12 @@ describe("web shell localization", () => {
     expect(translate("en", "maps.pickPoint")).toContain("map");
   });
 
+  it("has localized provider discovery and offer actions", () => {
+    expect(translate("ru", "provider.feedTitle")).toContain("заказы");
+    expect(translate("kk", "provider.submitOffer")).toContain("Жауап");
+    expect(translate("en", "provider.walletBalance")).toContain("balance");
+  });
+
   it("uses Russian as fallback locale", () => {
     expect(resolveLocale(undefined)).toBe("ru");
   });

@@ -49,10 +49,41 @@ test("customer signs in and opens the Almaty order flow", async ({ page }, testI
   await expect(page.getByText("Проспект Абая, рядом с АЗС")).toBeVisible();
 });
 
+test("provider opens a discoverable order and submits an offer", async ({ page }, testInfo) => {
+  test.setTimeout(45_000);
+  await mockCustomerApi(page);
+  await signIn(page);
+
+  await page.getByRole("button", { name: /Режим клиента|Исполнитель/ }).click();
+  await expect(page.getByRole("heading", { name: "Доступные заказы" })).toBeVisible();
+  await expect(page.getByText("Проспект Достык, 91")).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath(`${testInfo.project.name}-provider.png`),
+    fullPage: true,
+  });
+  await page.getByRole("button", { name: /Проспект Достык, 91/ }).click();
+
+  await page.getByLabel("Ваша цена, KZT").fill("15000");
+  await page.getByLabel("Прибытие, минут").fill("25");
+  await page.getByLabel("Комментарий").fill("Приеду на эвакуаторе через 25 минут");
+  await page.getByRole("button", { name: "Отправить отклик" }).click();
+
+  await expect(page.getByRole("status")).toContainText("Отклик опубликован");
+});
+
+async function signIn(page: Page) {
+  await page.goto("/?locale=ru", { waitUntil: "domcontentloaded" });
+  await page.getByLabel("Телефон").fill("+77001234567");
+  await page.getByRole("button", { name: "Получить код" }).click();
+  await page.getByLabel("Код из SMS").fill("123456");
+  await page.getByRole("button", { name: "Подтвердить и войти" }).click();
+  await expect(page.getByTestId("almaty-map")).toBeVisible();
+}
+
 async function mockCustomerApi(page: Page) {
   await page.route("**/backend/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
-    const payload = mockApiPayload(path);
+    const payload = mockApiPayload(path, route.request().method());
 
     await route.fulfill({
       contentType: "application/json",
@@ -61,7 +92,7 @@ async function mockCustomerApi(page: Page) {
   });
 }
 
-function mockApiPayload(path: string): object {
+function mockApiPayload(path: string, method: string): object {
   if (path === "/backend/v1/auth/otp/request") {
     return {
       data: {
@@ -84,6 +115,80 @@ function mockApiPayload(path: string): object {
         roles: ["customer", "provider"],
       },
       correlationId: "e2e-verify",
+    };
+  }
+
+  if (path === "/backend/v1/me/role") {
+    const role = method === "PATCH" ? "provider" : "customer";
+    return {
+      data: {
+        id: "00000000-0000-4000-8000-000000000002",
+        status: "active",
+        preferredLocale: "ru",
+        selectedRole: role,
+        verifiedPhone: "+77001234567",
+        roles: ["customer", "provider"],
+      },
+      correlationId: "e2e-role",
+    };
+  }
+
+  if (path === "/backend/v1/provider/orders") {
+    return {
+      data: [
+        {
+          order: {
+            id: "00000000-0000-4000-8000-000000000010",
+            customerUserId: "00000000-0000-4000-8000-000000000011",
+            categorySlug: "tow_truck",
+            status: "published",
+            city: "Almaty",
+            latitude: 43.233,
+            longitude: 76.956,
+            addressLandmark: "Проспект Достык, 91",
+            description: "Автомобиль не заводится, нужен эвакуатор",
+            offerCount: 2,
+            images: [],
+            createdAt: "2026-06-24T02:00:00.000Z",
+            publishedAt: "2026-06-24T02:00:00.000Z",
+          },
+          providerServiceProfileId: "00000000-0000-4000-8000-000000000012",
+          offerCount: 2,
+          distanceMeters: 4200,
+        },
+      ],
+      correlationId: "e2e-provider-feed",
+    };
+  }
+
+  if (path === "/backend/v1/provider/wallet") {
+    return {
+      data: {
+        providerUserId: "00000000-0000-4000-8000-000000000002",
+        availableBalanceKzt: 5000,
+        reservedBalanceKzt: 0,
+        freeResponsesRemaining: 4,
+      },
+      correlationId: "e2e-wallet",
+    };
+  }
+
+  if (path.endsWith("/offers")) {
+    return {
+      data: {
+        id: "00000000-0000-4000-8000-000000000013",
+        orderId: "00000000-0000-4000-8000-000000000010",
+        providerUserId: "00000000-0000-4000-8000-000000000002",
+        providerServiceProfileId: "00000000-0000-4000-8000-000000000012",
+        priceKzt: 15000,
+        arrivalMinutes: 25,
+        comment: "Приеду на эвакуаторе через 25 минут",
+        status: "active",
+        responseFeeKzt: 0,
+        freeResponseCreditUsed: true,
+        createdAt: "2026-06-24T02:05:00.000Z",
+      },
+      correlationId: "e2e-offer",
     };
   }
 

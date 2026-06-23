@@ -38,6 +38,10 @@ export function AuthGate({ locale }: { readonly locale: Locale }) {
     <MapWorkspace
       initialLocale={locale}
       initialUser={session}
+      onSessionChange={(user) => {
+        window.sessionStorage.setItem(localSessionKey, JSON.stringify(user));
+        setSession(user);
+      }}
       onSignOut={() => {
         window.sessionStorage.removeItem(localSessionKey);
         setSession(null);

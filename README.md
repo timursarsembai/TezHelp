@@ -4,7 +4,8 @@ TezHelp is a marketplace for emergency roadside services in Kazakhstan. This
 repository is a production-oriented foundation: mobile-first web, separate
 admin web, standalone NestJS API, shared packages, local infrastructure, and the
 provider moderation, orders/offers/wallet, chat, live location, reputation,
-sanctions, provider activity foundations, and a map-first customer web flow.
+sanctions, provider activity foundations, and map-first customer and provider
+web flows.
 
 ## Requirements
 
@@ -36,7 +37,7 @@ Apps:
 - Swagger UI: `http://localhost:4000/docs`
 - MinIO console: `http://localhost:9001`
 
-## Local Customer Demo
+## Local Web Demo
 
 The web app now starts with phone authentication and opens a MapLibre map
 centered on Almaty after verification.
@@ -47,6 +48,17 @@ centered on Almaty after verification.
 4. Click the map to choose the roadside location.
 5. Open `Create order`, choose a category, add a landmark and description, and
    publish through the existing `POST /v1/orders` API.
+
+To inspect the provider workspace, use the role control in the top bar on
+desktop or `Provider` in the mobile navigation. The provider view loads
+backend-authorized discoverable orders, shows them in a list and on the map,
+displays the wallet/free-response summary, and submits a price, arrival time,
+and comment through `POST /v1/provider/orders/:orderId/offers`.
+
+A newly created local account does not automatically have an approved provider
+service profile. Its real provider feed can therefore be empty or unavailable
+until provider onboarding and moderation are completed. The UI does not invent
+eligible orders or bypass backend rules.
 
 The browser retains the returned user ID in session storage only for this local
 development flow and sends it through the existing `x-tezhelp-user-id` header.

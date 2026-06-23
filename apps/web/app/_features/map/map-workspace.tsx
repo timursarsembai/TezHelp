@@ -15,14 +15,21 @@ import type {
 import { Button } from "@tezhelp/ui";
 
 import { AlmatyMap } from "./almaty-map";
+import { ProviderMapWorkspace } from "../provider/provider-map-workspace";
 
 interface MapWorkspaceProps {
   readonly initialLocale: Locale;
   readonly initialUser: IdentityUserSummary;
+  readonly onSessionChange: (user: IdentityUserSummary) => void;
   readonly onSignOut: () => void;
 }
 
-export function MapWorkspace({ initialLocale, initialUser, onSignOut }: MapWorkspaceProps) {
+export function MapWorkspace({
+  initialLocale,
+  initialUser,
+  onSessionChange,
+  onSignOut,
+}: MapWorkspaceProps) {
   const [activePanel, setActivePanel] = useState<"create" | "orders" | "profile" | null>(null);
   const [selectedPoint, setSelectedPoint] = useState<GeoPoint | null>(null);
   const [categories, setCategories] = useState<ReadonlyArray<ServiceCategorySummary>>([]);
@@ -42,6 +49,29 @@ export function MapWorkspace({ initialLocale, initialUser, onSignOut }: MapWorks
       .catch(() => setCatalogStatus("error"));
   }, [initialLocale]);
 
+  if (initialUser.selectedRole === "provider") {
+    return (
+      <ProviderMapWorkspace
+        locale={initialLocale}
+        onSessionChange={onSessionChange}
+        onSignOut={onSignOut}
+        user={initialUser}
+      />
+    );
+  }
+
+  async function switchToProvider() {
+    const nextUser = await createBrowserApiClient().patch<
+      IdentityUserSummary,
+      { readonly role: "provider" }
+    >(
+      "/backend/v1/me/role",
+      { role: "provider" },
+      { headers: { "x-tezhelp-user-id": initialUser.id } },
+    );
+    onSessionChange(nextUser);
+  }
+
   return (
     <div className="map-app">
       <a className="tz-skip-link" href="#main-content">
@@ -55,10 +85,14 @@ export function MapWorkspace({ initialLocale, initialUser, onSignOut }: MapWorks
           </span>
           <strong>{translate(initialLocale, "app.brand")}</strong>
         </div>
-        <div className="map-mode">
+        <button
+          className="map-mode map-mode-button"
+          onClick={() => void switchToProvider()}
+          type="button"
+        >
           <span className="map-online-dot" aria-hidden="true" />
           <span>{translate(initialLocale, "maps.customerMode")}</span>
-        </div>
+        </button>
         <button
           aria-label={translate(initialLocale, "identity.signOut")}
           className="map-profile-button"
@@ -172,6 +206,11 @@ export function MapWorkspace({ initialLocale, initialUser, onSignOut }: MapWorks
           icon="○"
           label={translate(initialLocale, "maps.profile")}
           onClick={() => setActivePanel("profile")}
+        />
+        <NavigationButton
+          icon="P"
+          label={translate(initialLocale, "web.nav.provider")}
+          onClick={() => void switchToProvider()}
         />
       </nav>
     </div>
