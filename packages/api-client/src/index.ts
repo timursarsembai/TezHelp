@@ -20,17 +20,28 @@ export interface ApiClientOptions {
   readonly fetchImpl?: typeof fetch;
 }
 
+export interface ApiRequestOptions {
+  readonly correlationId?: string;
+  readonly headers?: Readonly<Record<string, string>>;
+}
+
 export class ApiClient {
   private readonly fetchImpl: typeof fetch;
 
   constructor(private readonly options: ApiClientOptions) {
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    this.fetchImpl =
+      options.fetchImpl ?? ((input, init) => globalThis.fetch.call(globalThis, input, init));
   }
 
-  async get<TData>(path: `/${string}`, correlationId = crypto.randomUUID()): Promise<TData> {
+  async get<TData>(
+    path: `/${string}`,
+    requestOptions: ApiRequestOptions | string = {},
+  ): Promise<TData> {
+    const options = normalizeRequestOptions(requestOptions);
     const response = await this.fetchImpl(new URL(path, this.options.baseUrl), {
       headers: {
-        "x-correlation-id": correlationId,
+        ...options.headers,
+        "x-correlation-id": options.correlationId,
       },
     });
 
@@ -46,15 +57,34 @@ export class ApiClient {
   async post<TData, TBody extends object>(
     path: `/${string}`,
     body: TBody,
-    correlationId = crypto.randomUUID(),
+    requestOptions: ApiRequestOptions | string = {},
   ): Promise<TData> {
+    return this.mutate<TData, TBody>("POST", path, body, requestOptions);
+  }
+
+  async patch<TData, TBody extends object>(
+    path: `/${string}`,
+    body: TBody,
+    requestOptions: ApiRequestOptions | string = {},
+  ): Promise<TData> {
+    return this.mutate<TData, TBody>("PATCH", path, body, requestOptions);
+  }
+
+  private async mutate<TData, TBody extends object>(
+    method: "PATCH" | "POST",
+    path: `/${string}`,
+    body: TBody,
+    requestOptions: ApiRequestOptions | string,
+  ): Promise<TData> {
+    const options = normalizeRequestOptions(requestOptions);
     const response = await this.fetchImpl(new URL(path, this.options.baseUrl), {
       body: JSON.stringify(body),
       headers: {
+        ...options.headers,
         "content-type": "application/json",
-        "x-correlation-id": correlationId,
+        "x-correlation-id": options.correlationId,
       },
-      method: "POST",
+      method,
     });
 
     const payload = (await response.json()) as ApiErrorEnvelope | ApiSuccessEnvelope<TData>;
@@ -65,6 +95,27 @@ export class ApiClient {
 
     return (payload as ApiSuccessEnvelope<TData>).data;
   }
+}
+
+function normalizeRequestOptions(
+  requestOptions: ApiRequestOptions | string,
+): ApiRequestOptions & { readonly correlationId: string } {
+  if (typeof requestOptions === "string") {
+    return { correlationId: requestOptions };
+  }
+
+  return {
+    ...requestOptions,
+    correlationId: requestOptions.correlationId ?? createCorrelationId(),
+  };
+}
+
+function createCorrelationId(): string {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `client-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
 }
 
 export interface FrontendErrorReporterOptions {

@@ -1,8 +1,8 @@
 import { spawn } from "node:child_process";
 
 const root = process.cwd();
-const webPort = Number.parseInt(process.env.PLAYWRIGHT_WEB_PORT ?? "3000", 10);
-const adminPort = Number.parseInt(process.env.PLAYWRIGHT_ADMIN_PORT ?? "3001", 10);
+const webPort = Number.parseInt(process.env.PLAYWRIGHT_WEB_PORT ?? "3200", 10);
+const adminPort = Number.parseInt(process.env.PLAYWRIGHT_ADMIN_PORT ?? "3201", 10);
 
 const servers = [
   {

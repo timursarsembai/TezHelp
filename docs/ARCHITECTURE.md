@@ -505,6 +505,11 @@ OpenStreetMap is the geographic data foundation.
 
 Do not rely on public OSM tile or Nominatim servers for production load.
 
+The current `DevelopmentOpenStreetMapStyleProvider` is used only by the local
+map-first web demo. It supplies a resilient background plus public OSM raster
+tiles for low-volume development. A production tile adapter must replace it
+after Kazakhstan hosting, privacy, capacity, and CSP review.
+
 ## External provider abstraction
 
 Define application ports for:

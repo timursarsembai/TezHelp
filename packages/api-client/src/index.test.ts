@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { ApiClient, ApiClientError, FrontendErrorReporter, sanitizeRoute } from "./index";
 
@@ -22,6 +22,32 @@ describe("ApiClient", () => {
     });
 
     await expect(client.get("/v1/health")).rejects.toBeInstanceOf(ApiClientError);
+  });
+
+  it("forwards identity and correlation headers", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ data: { ok: true }, correlationId: "response-id" }), {
+        status: 200,
+      }),
+    );
+    const client = new ApiClient({ baseUrl: "http://localhost:4000", fetchImpl });
+
+    await client.post(
+      "/v1/orders",
+      { categorySlug: "tow_truck" },
+      {
+        correlationId: "request-id",
+        headers: { "x-tezhelp-user-id": "local-user-id" },
+      },
+    );
+
+    const [requestUrl, requestInit] = fetchImpl.mock.calls[0] ?? [];
+    const requestHeaders = new Headers(requestInit?.headers);
+
+    expect(requestUrl).toEqual(new URL("http://localhost:4000/v1/orders"));
+    expect(requestInit?.method).toBe("POST");
+    expect(requestHeaders.get("x-correlation-id")).toBe("request-id");
+    expect(requestHeaders.get("x-tezhelp-user-id")).toBe("local-user-id");
   });
 
   it("posts frontend error reports with sanitized routes", async () => {

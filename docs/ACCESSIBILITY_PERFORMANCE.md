@@ -1,7 +1,8 @@
 # Accessibility and Performance Baseline
 
-This baseline applies to the current web and admin foundation shells. It is not
-a complete WCAG audit or production performance program.
+This baseline applies to the current map-first customer web flow and admin
+foundation shell. It is not a complete WCAG audit or production performance
+program.
 
 ## Accessibility Baseline
 
@@ -16,21 +17,27 @@ Current requirements:
 - user-facing shell text uses localization keys
 - reduced-motion preference is respected by disabling transitions and animations
 
-E2E smoke tests assert the shared shell landmarks, skip-link keyboard behavior,
-status exposure, and reduced-motion media query availability for web and admin.
+E2E smoke tests assert the sign-in landmarks, skip-link keyboard behavior,
+labelled order controls, a stable mobile map viewport, and the admin shell
+baseline.
 
 ## Performance Baseline
 
-Current foundation shells must stay lightweight:
+The initial unauthenticated route and admin shell must stay lightweight:
 
 - no image, audio, or video resources on initial web/admin shell load
 - conservative script, style, and total resource-count budgets in e2e tests
-- no external analytics, monitoring, map, tile, upload, or realtime resources in
-  the foundation shell
+- no external analytics, monitoring, upload, or realtime resources on initial
+  load
+- MapLibre and tile resources load only after a local customer session opens the
+  map workspace
 
 The current resource budgets are intentionally broad because Next.js development
 mode loads extra scripts. They are meant to catch obvious regressions, not to
 replace production Lighthouse or real-user monitoring.
+
+Public OpenStreetMap raster tiles are a low-volume development adapter, not a
+production dependency or an accepted production performance baseline.
 
 ## Production Gaps
 

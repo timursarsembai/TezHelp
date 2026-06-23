@@ -12,6 +12,7 @@ playwright-report/
 test-results/
 backups/
 pnpm-debug.log*
+debug.log
 *.tsbuildinfo
 __pycache__/
 *.pyc

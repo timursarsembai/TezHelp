@@ -40,6 +40,12 @@ describe("web shell localization", () => {
     expect(translate("en", "maps.providerMarker")).toContain("Provider");
   });
 
+  it("has localized map-first sign-in and order actions", () => {
+    expect(translate("ru", "identity.phoneSignInTitle")).toContain("TezHelp");
+    expect(translate("kk", "maps.createOrder")).toContain("Тапсырыс");
+    expect(translate("en", "maps.pickPoint")).toContain("map");
+  });
+
   it("uses Russian as fallback locale", () => {
     expect(resolveLocale(undefined)).toBe("ru");
   });

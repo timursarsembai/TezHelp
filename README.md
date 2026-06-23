@@ -4,7 +4,7 @@ TezHelp is a marketplace for emergency roadside services in Kazakhstan. This
 repository is a production-oriented foundation: mobile-first web, separate
 admin web, standalone NestJS API, shared packages, local infrastructure, and the
 provider moderation, orders/offers/wallet, chat, live location, reputation,
-sanctions, and provider activity foundations.
+sanctions, provider activity foundations, and a map-first customer web flow.
 
 ## Requirements
 
@@ -35,6 +35,27 @@ Apps:
 - OpenAPI: `http://localhost:4000/openapi.json`
 - Swagger UI: `http://localhost:4000/docs`
 - MinIO console: `http://localhost:9001`
+
+## Local Customer Demo
+
+The web app now starts with phone authentication and opens a MapLibre map
+centered on Almaty after verification.
+
+1. Open the web app.
+2. Enter a synthetic Kazakhstan phone number, for example `+77001234567`.
+3. Request an OTP and enter the local development code `123456`.
+4. Click the map to choose the roadside location.
+5. Open `Create order`, choose a category, add a landmark and description, and
+   publish through the existing `POST /v1/orders` API.
+
+The browser retains the returned user ID in session storage only for this local
+development flow and sends it through the existing `x-tezhelp-user-id` header.
+This is not production authentication. Secure server-issued sessions, real SMS,
+and Google OAuth remain required before deployment.
+
+The current map adapter uses public OpenStreetMap raster tiles for low-volume
+local development only. TezHelp must select a Kazakhstan-compatible production
+tile provider or self-host tiles before launch.
 
 ## Identity Foundation
 
@@ -241,7 +262,8 @@ It never restores into the main local `tezhelp` database.
 
 The MVP remains a modular monolith with a standalone NestJS backend.
 
-- `apps/web`: customer/provider responsive web shell.
+- `apps/web`: map-first customer web app with local OTP entry and responsive
+  order publication; provider map discovery remains a later slice.
 - `apps/admin`: separate protected administration shell.
 - `apps/api`: NestJS API foundation with configuration, database, health, audit, identity, service catalog, provider-services, moderation, orders, offers, wallet, commissions, chat, live-location, and reputation modules.
 - `packages/*`: shared UI, public contracts, validation, i18n, API client, maps, and config.

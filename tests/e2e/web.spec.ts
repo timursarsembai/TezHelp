@@ -1,8 +1,10 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
-test("web mobile shell renders localized identity entry points", async ({ page }) => {
-  test.setTimeout(15_000);
+test("customer signs in and opens the Almaty order flow", async ({ page }, testInfo) => {
+  test.setTimeout(45_000);
+  await mockCustomerApi(page);
+
   const response = await page.goto("/?locale=ru", { waitUntil: "domcontentloaded" });
   const headers = response?.headers() ?? {};
 
@@ -12,55 +14,123 @@ test("web mobile shell renders localized identity entry points", async ({ page }
   expect(headers["permissions-policy"]).toContain("geolocation=(self)");
   expect(headers["content-security-policy-report-only"]).toContain("frame-ancestors 'none'");
 
-  await expectSharedShellStyles(page);
+  await expect(page.getByRole("heading", { name: "Войти в TezHelp" })).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.locator('a[href="#main-content"]')).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.locator("#main-content")).toBeFocused();
-  await expect(page.getByRole("banner")).toBeVisible();
-  await expect(page.getByRole("main")).toBeVisible();
-  await expect(page.locator('header [role="status"]')).toBeVisible();
-  await expect(page.locator("main#main-content")).toHaveCount(1);
-  expect(
-    await page.evaluate(() => window.matchMedia("(prefers-reduced-motion: reduce)").media),
-  ).toBe("(prefers-reduced-motion: reduce)");
-  await expectFoundationResourceBudget(page);
-
-  await expect(page.getByRole("heading", { name: "TezHelp" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Помощь на дороге рядом" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Рабочее место исполнителя" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Вход и профиль" })).toBeVisible();
   await expect(page.getByLabel("Телефон")).toBeVisible();
-  await expect(page.getByLabel("Код из SMS")).toBeVisible();
-  await expect(page.locator("body")).toContainText("Чат заказа");
-  await expect(page.locator("body")).toContainText("Переписка хранится для разбора споров");
-  await expect(page.locator("body")).toContainText("Живое отслеживание");
-  await expect(page.locator("body")).toContainText("Метка исполнителя");
-  await expect(page.locator("body")).toContainText("Отзыв после завершения заказа");
-  await expect(page.locator("body")).toContainText("Надежность клиента");
-  await expect(page.locator("body")).toContainText("Публичная надежность исполнителя");
-});
+  await expectInitialResourceBudget(page);
 
-async function expectSharedShellStyles(page: Page) {
-  const skipLinkBox = await page.locator('a[href="#main-content"]').boundingBox();
-  expect(skipLinkBox?.width).toBeLessThanOrEqual(2);
-  expect(skipLinkBox?.height).toBeLessThanOrEqual(2);
+  await page.getByLabel("Телефон").fill("+77001234567");
+  await page.getByRole("button", { name: "Получить код" }).click();
+  await page.getByLabel("Код из SMS").fill("123456");
+  await page.getByRole("button", { name: "Подтвердить и войти" }).click();
 
-  const shellStyles = await page.locator(".tz-shell").evaluate((element) => {
-    const styles = window.getComputedStyle(element);
-    return {
-      backgroundColor: styles.backgroundColor,
-      color: styles.color,
-      minHeight: Number.parseFloat(styles.minHeight),
-    };
+  await expect(page.getByTestId("almaty-map")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Создать заказ" })).toBeVisible();
+  const mapBox = await page.getByTestId("almaty-map").boundingBox();
+  expect(mapBox?.width).toBeGreaterThan(300);
+  expect(mapBox?.height).toBeGreaterThan(400);
+  await expect(page.locator(".map-canvas canvas")).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath(`${testInfo.project.name}-map.png`),
+    fullPage: true,
   });
 
-  expect(shellStyles.backgroundColor).toBe("rgb(246, 248, 252)");
-  expect(shellStyles.color).toBe("rgb(21, 32, 51)");
-  expect(shellStyles.minHeight).toBeGreaterThanOrEqual(page.viewportSize()?.height ?? 0);
+  await page.getByTestId("almaty-map").click({ position: { x: 180, y: 320 } });
+  await page.getByRole("button", { name: "Создать заказ" }).click();
+  await page.getByLabel("Что случилось?").selectOption("tow_truck");
+  await page.getByLabel("Ориентир или адрес").fill("Проспект Абая, рядом с АЗС");
+  await page.getByLabel("Что нужно сделать").fill("Нужен эвакуатор для легкового автомобиля");
+  await page.getByRole("button", { name: "Опубликовать заказ" }).click();
+
+  await expect(page.getByText("Заказ опубликован")).toBeVisible();
+  await expect(page.getByText("Проспект Абая, рядом с АЗС")).toBeVisible();
+});
+
+async function mockCustomerApi(page: Page) {
+  await page.route("**/backend/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    const payload = mockApiPayload(path);
+
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify(payload),
+    });
+  });
 }
 
-async function expectFoundationResourceBudget(page: Page) {
+function mockApiPayload(path: string): object {
+  if (path === "/backend/v1/auth/otp/request") {
+    return {
+      data: {
+        challengeId: "00000000-0000-4000-8000-000000000001",
+        expiresAt: "2026-06-24T02:00:00.000Z",
+        resendAvailableAt: "2026-06-24T01:50:30.000Z",
+      },
+      correlationId: "e2e-request",
+    };
+  }
+
+  if (path === "/backend/v1/auth/otp/verify") {
+    return {
+      data: {
+        id: "00000000-0000-4000-8000-000000000002",
+        status: "active",
+        preferredLocale: "ru",
+        selectedRole: "customer",
+        verifiedPhone: "+77001234567",
+        roles: ["customer", "provider"],
+      },
+      correlationId: "e2e-verify",
+    };
+  }
+
+  if (path === "/backend/v1/service-categories") {
+    return {
+      data: [
+        {
+          slug: "tow_truck",
+          enabled: true,
+          name: "Эвакуатор",
+          description: "Перевозка автомобиля",
+          commercialConfig: {
+            responseFeeKzt: 100,
+            commissionStrategy: "percentage",
+            commissionPercentageBps: 1000,
+            commissionFixedKzt: 0,
+            operationalMinimumKzt: 3000,
+          },
+          allowedTaxStatuses: [],
+          requiredDocuments: [],
+        },
+      ],
+      correlationId: "e2e-catalog",
+    };
+  }
+
+  return {
+    data: {
+      id: "00000000-0000-4000-8000-000000000003",
+      customerUserId: "00000000-0000-4000-8000-000000000002",
+      categorySlug: "tow_truck",
+      status: "published",
+      city: "Almaty",
+      latitude: 43.238949,
+      longitude: 76.889709,
+      addressLandmark: "Проспект Абая, рядом с АЗС",
+      description: "Нужен эвакуатор для легкового автомобиля",
+      offerCount: 0,
+      images: [],
+      createdAt: "2026-06-24T01:55:00.000Z",
+      publishedAt: "2026-06-24T01:55:00.000Z",
+    },
+    correlationId: "e2e-order",
+  };
+}
+
+async function expectInitialResourceBudget(page: Page) {
   const resources = await page.evaluate(() =>
     performance.getEntriesByType("resource").reduce(
       (summary, entry) => {
@@ -82,7 +152,7 @@ async function expectFoundationResourceBudget(page: Page) {
   );
 
   expect(resources.media).toBe(0);
-  expect(resources.styles).toBeLessThanOrEqual(8);
-  expect(resources.scripts).toBeLessThanOrEqual(40);
-  expect(resources.total).toBeLessThanOrEqual(60);
+  expect(resources.styles).toBeLessThanOrEqual(10);
+  expect(resources.scripts).toBeLessThanOrEqual(50);
+  expect(resources.total).toBeLessThanOrEqual(70);
 }

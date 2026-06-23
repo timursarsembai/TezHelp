@@ -50,6 +50,11 @@ API integration tests that share the local Docker database run with file
 parallelism disabled. Tests may truncate shared tables, so parallel files can
 create false failures by deleting each other's fixtures.
 
+Local Playwright servers use ports `3200` and `3201` by default so they do not
+collide with the standard app ports or the persistent demo ports `3100` and
+`3101`. Override them through `PLAYWRIGHT_WEB_PORT` and
+`PLAYWRIGHT_ADMIN_PORT` when needed.
+
 ### End-to-end tests
 
 Critical flows:

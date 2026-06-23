@@ -15,7 +15,10 @@
     "@tezhelp/api-client": "workspace:*",
     "@tezhelp/config": "workspace:*",
     "@tezhelp/i18n": "workspace:*",
+    "@tezhelp/maps": "workspace:*",
+    "@tezhelp/types": "workspace:*",
     "@tezhelp/ui": "workspace:*",
+    "maplibre-gl": "5.24.0",
     "next": "16.2.9",
     "react": "19.2.7",
     "react-dom": "19.2.7"

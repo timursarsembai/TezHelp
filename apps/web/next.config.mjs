@@ -1,13 +1,15 @@
+import process from "node:process";
+
 const contentSecurityPolicyReportOnly = [
   "default-src 'self'",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://tile.openstreetmap.org",
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-  "connect-src 'self' http://localhost:* ws://localhost:*",
+  "connect-src 'self' http://localhost:* ws://localhost:* https://tile.openstreetmap.org",
 ].join("; ");
 
 const securityHeaders = [
@@ -27,6 +29,15 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
+  async rewrites() {
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+    return [
+      {
+        source: "/backend/:path*",
+        destination: `${apiBaseUrl}/:path*`,
+      },
+    ];
+  },
   async headers() {
     return [
       {
@@ -36,7 +47,13 @@ const nextConfig = {
     ];
   },
   reactStrictMode: true,
-  transpilePackages: ["@tezhelp/ui", "@tezhelp/i18n", "@tezhelp/config"],
+  transpilePackages: [
+    "@tezhelp/ui",
+    "@tezhelp/i18n",
+    "@tezhelp/config",
+    "@tezhelp/maps",
+    "@tezhelp/types",
+  ],
 };
 
 export default nextConfig;

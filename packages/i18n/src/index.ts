@@ -21,6 +21,15 @@ export type MessageKey =
   | "identity.roleProvider"
   | "identity.locale"
   | "identity.submit"
+  | "identity.phoneSignInTitle"
+  | "identity.phoneSignInBody"
+  | "identity.localDemoCode"
+  | "identity.requestCode"
+  | "identity.verifyCode"
+  | "identity.codeSent"
+  | "identity.authError"
+  | "identity.signOut"
+  | "identity.localSession"
   | "providerModeration.title"
   | "providerModeration.subtitle"
   | "providerModeration.generalProfile"
@@ -50,6 +59,29 @@ export type MessageKey =
   | "maps.customerMarker"
   | "maps.providerMarker"
   | "maps.staleState"
+  | "maps.helpNow"
+  | "maps.orders"
+  | "maps.profile"
+  | "maps.location"
+  | "maps.pickPoint"
+  | "maps.createOrder"
+  | "maps.closePanel"
+  | "maps.customerMode"
+  | "maps.online"
+  | "maps.noActiveOrders"
+  | "maps.categoriesLoading"
+  | "maps.categoriesError"
+  | "maps.orderCategory"
+  | "maps.chooseCategory"
+  | "maps.orderLandmark"
+  | "maps.orderLandmarkPlaceholder"
+  | "maps.orderDescription"
+  | "maps.orderDescriptionPlaceholder"
+  | "maps.orderPublish"
+  | "maps.orderPublishing"
+  | "maps.orderPublished"
+  | "maps.publishError"
+  | "maps.selectLocationFirst"
   | "admin.maps.activeOrderTracking"
   | "reputation.review"
   | "reputation.customerReliability"
@@ -104,6 +136,15 @@ const ru: Dictionary = {
   "identity.roleProvider": "Исполнитель",
   "identity.locale": "Язык интерфейса",
   "identity.submit": "Продолжить",
+  "identity.phoneSignInTitle": "Войти в TezHelp",
+  "identity.phoneSignInBody": "Введите номер телефона, чтобы открыть помощь на карте Алматы.",
+  "identity.localDemoCode": "Локальный деморежим: код подтверждения 123456",
+  "identity.requestCode": "Получить код",
+  "identity.verifyCode": "Подтвердить и войти",
+  "identity.codeSent": "Код отправлен. Введите шесть цифр.",
+  "identity.authError": "Не удалось выполнить вход. Проверьте данные и попробуйте снова.",
+  "identity.signOut": "Выйти",
+  "identity.localSession": "Локальная демосессия",
   "providerModeration.title": "Модерация услуг исполнителя",
   "providerModeration.subtitle":
     "Заполните общий профиль, выберите категории и отправьте документы на отдельную проверку.",
@@ -134,6 +175,29 @@ const ru: Dictionary = {
   "maps.customerMarker": "Точка клиента",
   "maps.providerMarker": "Метка исполнителя",
   "maps.staleState": "Показана последняя известная точка",
+  "maps.helpNow": "Нужна помощь",
+  "maps.orders": "Заказы",
+  "maps.profile": "Профиль",
+  "maps.location": "Моё местоположение",
+  "maps.pickPoint": "Нажмите на карту, чтобы указать место",
+  "maps.createOrder": "Создать заказ",
+  "maps.closePanel": "Закрыть",
+  "maps.customerMode": "Режим клиента",
+  "maps.online": "На связи",
+  "maps.noActiveOrders": "Активных заказов пока нет",
+  "maps.categoriesLoading": "Загружаем услуги",
+  "maps.categoriesError": "Не удалось загрузить услуги",
+  "maps.orderCategory": "Что случилось?",
+  "maps.chooseCategory": "Выберите услугу",
+  "maps.orderLandmark": "Ориентир или адрес",
+  "maps.orderLandmarkPlaceholder": "Например, проспект Абая, рядом с АЗС",
+  "maps.orderDescription": "Что нужно сделать",
+  "maps.orderDescriptionPlaceholder": "Коротко опишите ситуацию",
+  "maps.orderPublish": "Опубликовать заказ",
+  "maps.orderPublishing": "Публикуем",
+  "maps.orderPublished": "Заказ опубликован",
+  "maps.publishError": "Не удалось опубликовать заказ. Попробуйте снова.",
+  "maps.selectLocationFirst": "Сначала укажите точку на карте",
   "admin.maps.activeOrderTracking": "Отслеживание активного заказа",
   "reputation.review": "Отзыв после завершения заказа",
   "reputation.customerReliability": "Надежность клиента",
@@ -189,6 +253,15 @@ const kk: Dictionary = {
   "identity.roleProvider": "Орындаушы",
   "identity.locale": "Интерфейс тілі",
   "identity.submit": "Жалғастыру",
+  "identity.phoneSignInTitle": "TezHelp жүйесіне кіру",
+  "identity.phoneSignInBody": "Алматы картасындағы көмекті ашу үшін телефон нөмірін енгізіңіз.",
+  "identity.localDemoCode": "Жергілікті деморежим: растау коды 123456",
+  "identity.requestCode": "Код алу",
+  "identity.verifyCode": "Растау және кіру",
+  "identity.codeSent": "Код жіберілді. Алты санды енгізіңіз.",
+  "identity.authError": "Кіру орындалмады. Деректерді тексеріп, қайта көріңіз.",
+  "identity.signOut": "Шығу",
+  "identity.localSession": "Жергілікті демосессия",
   "providerModeration.title": "Орындаушы қызметтерін модерациялау",
   "providerModeration.subtitle":
     "Жалпы профильді толтырып, санаттарды таңдаңыз және құжаттарды бөлек тексеруге жіберіңіз.",
@@ -219,6 +292,29 @@ const kk: Dictionary = {
   "maps.customerMarker": "Клиент нүктесі",
   "maps.providerMarker": "Орындаушы белгісі",
   "maps.staleState": "Соңғы белгілі нүкте көрсетілді",
+  "maps.helpNow": "Көмек керек",
+  "maps.orders": "Тапсырыстар",
+  "maps.profile": "Профиль",
+  "maps.location": "Менің орналасуым",
+  "maps.pickPoint": "Орынды көрсету үшін картаны басыңыз",
+  "maps.createOrder": "Тапсырыс жасау",
+  "maps.closePanel": "Жабу",
+  "maps.customerMode": "Клиент режимі",
+  "maps.online": "Байланыста",
+  "maps.noActiveOrders": "Белсенді тапсырыстар әзірге жоқ",
+  "maps.categoriesLoading": "Қызметтер жүктелуде",
+  "maps.categoriesError": "Қызметтерді жүктеу мүмкін болмады",
+  "maps.orderCategory": "Не болды?",
+  "maps.chooseCategory": "Қызметті таңдаңыз",
+  "maps.orderLandmark": "Бағдар немесе мекенжай",
+  "maps.orderLandmarkPlaceholder": "Мысалы, Абай даңғылы, жанармай бекетінің жанында",
+  "maps.orderDescription": "Не істеу керек",
+  "maps.orderDescriptionPlaceholder": "Жағдайды қысқаша сипаттаңыз",
+  "maps.orderPublish": "Тапсырысты жариялау",
+  "maps.orderPublishing": "Жариялануда",
+  "maps.orderPublished": "Тапсырыс жарияланды",
+  "maps.publishError": "Тапсырысты жариялау мүмкін болмады. Қайта көріңіз.",
+  "maps.selectLocationFirst": "Алдымен картадан нүктені таңдаңыз",
   "admin.maps.activeOrderTracking": "Белсенді тапсырысты бақылау",
   "reputation.review": "Тапсырыс аяқталғаннан кейінгі пікір",
   "reputation.customerReliability": "Клиент сенімділігі",
@@ -273,6 +369,15 @@ const en: Dictionary = {
   "identity.roleProvider": "Provider",
   "identity.locale": "Interface language",
   "identity.submit": "Continue",
+  "identity.phoneSignInTitle": "Sign in to TezHelp",
+  "identity.phoneSignInBody": "Enter your phone number to open roadside help on the Almaty map.",
+  "identity.localDemoCode": "Local demo mode: confirmation code 123456",
+  "identity.requestCode": "Get code",
+  "identity.verifyCode": "Verify and sign in",
+  "identity.codeSent": "Code sent. Enter the six digits.",
+  "identity.authError": "Sign-in failed. Check the details and try again.",
+  "identity.signOut": "Sign out",
+  "identity.localSession": "Local demo session",
   "providerModeration.title": "Provider service moderation",
   "providerModeration.subtitle":
     "Complete the general profile, choose categories, and submit private documents for separate review.",
@@ -303,6 +408,29 @@ const en: Dictionary = {
   "maps.customerMarker": "Customer point",
   "maps.providerMarker": "Provider marker",
   "maps.staleState": "Last known point is shown",
+  "maps.helpNow": "Need help",
+  "maps.orders": "Orders",
+  "maps.profile": "Profile",
+  "maps.location": "My location",
+  "maps.pickPoint": "Tap the map to choose the location",
+  "maps.createOrder": "Create order",
+  "maps.closePanel": "Close",
+  "maps.customerMode": "Customer mode",
+  "maps.online": "Online",
+  "maps.noActiveOrders": "There are no active orders yet",
+  "maps.categoriesLoading": "Loading services",
+  "maps.categoriesError": "Services could not be loaded",
+  "maps.orderCategory": "What happened?",
+  "maps.chooseCategory": "Choose a service",
+  "maps.orderLandmark": "Landmark or address",
+  "maps.orderLandmarkPlaceholder": "For example, Abay Avenue near the fuel station",
+  "maps.orderDescription": "What needs to be done",
+  "maps.orderDescriptionPlaceholder": "Briefly describe the situation",
+  "maps.orderPublish": "Publish order",
+  "maps.orderPublishing": "Publishing",
+  "maps.orderPublished": "Order published",
+  "maps.publishError": "The order could not be published. Try again.",
+  "maps.selectLocationFirst": "Choose a point on the map first",
   "admin.maps.activeOrderTracking": "Active order tracking",
   "reputation.review": "Review after completed order",
   "reputation.customerReliability": "Customer reliability",
