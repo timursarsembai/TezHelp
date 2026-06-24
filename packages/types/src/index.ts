@@ -175,6 +175,12 @@ export interface ProviderModerationQueueItem {
   readonly overdue: boolean;
 }
 
+export interface ProviderModerationDetail {
+  readonly provider: ProviderProfileSummary;
+  readonly serviceProfile: ProviderServiceProfileSummary;
+  readonly history: ReadonlyArray<ProviderModerationEventSummary>;
+}
+
 export interface SignedDocumentUrlResponse {
   readonly url: string;
   readonly expiresAt: string;

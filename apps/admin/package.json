@@ -15,6 +15,7 @@
     "@tezhelp/api-client": "workspace:*",
     "@tezhelp/config": "workspace:*",
     "@tezhelp/i18n": "workspace:*",
+    "@tezhelp/types": "workspace:*",
     "@tezhelp/ui": "workspace:*",
     "next": "16.2.9",
     "react": "19.2.7",

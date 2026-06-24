@@ -405,6 +405,16 @@ compensating object deletion. Moderation submission validates the general
 profile, category tax allowance, general identity documents, and all
 data-driven required category documents inside the backend transaction.
 
+The admin web application now uses the existing OTP identity flow only to
+identify an audited moderator actor in local development. It sends that user ID
+through the existing development admin header and exposes a working moderation
+queue/detail workflow. This remains separate from production RBAC and is
+rejected by production configuration.
+
+The development private-storage adapter uses the official S3 presigner for
+five-minute read URLs. Moderation detail includes both general provider
+documents and category-specific documents without exposing raw object keys.
+
 ## Chat and attachments foundation
 
 The `chat` backend module owns order conversation records, chat messages,

@@ -1,6 +1,10 @@
-import { createHmac } from "node:crypto";
-
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Injectable } from "@nestjs/common";
 
 import { AppConfigService } from "../configuration/app-config.service.js";
@@ -49,22 +53,22 @@ export class DevelopmentPrivateObjectStorage implements PrivateObjectStoragePort
     );
   }
 
-  signReadUrl(input: {
+  async signReadUrl(input: {
     readonly privateObjectKey: string;
     readonly expiresInSeconds: number;
-  }): SignedPrivateObjectUrl {
+  }): Promise<SignedPrivateObjectUrl> {
     const expiresAt = new Date(Date.now() + input.expiresInSeconds * 1000);
-    const expires = String(Math.floor(expiresAt.getTime() / 1000));
-    const signature = createHmac("sha256", this.config.s3.secretAccessKey)
-      .update(`${input.privateObjectKey}:${expires}`)
-      .digest("hex");
-    const objectPath = input.privateObjectKey
-      .split("/")
-      .map((part) => encodeURIComponent(part))
-      .join("/");
+    const url = await getSignedUrl(
+      this.client,
+      new GetObjectCommand({
+        Bucket: this.config.s3.bucketPrivate,
+        Key: input.privateObjectKey,
+      }),
+      { expiresIn: input.expiresInSeconds },
+    );
 
     return {
-      url: `${this.config.s3.endpoint}/${this.config.s3.bucketPrivate}/${objectPath}?expires=${expires}&signature=${signature}`,
+      url,
       expiresAt,
     };
   }

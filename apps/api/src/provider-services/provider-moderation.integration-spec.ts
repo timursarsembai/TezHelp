@@ -180,15 +180,14 @@ describeWithInfrastructure("provider moderation integration", () => {
       (towCategory?.requiredDocuments ?? [])
         .filter((rule) => rule.required)
         .map((rule) =>
-          registerDocument.execute({
+          uploadDocument.execute({
             providerUserId,
             serviceProfileId: towProfile.id,
             documentType: rule.documentType,
-            privateObjectKey: `providers/111/${rule.documentType}`,
             originalFilename: `${rule.documentType}.pdf`,
             contentType: rule.allowedMimeTypes[0] ?? "application/pdf",
             sizeBytes: 1024,
-            metadata: {},
+            body: Buffer.alloc(1024, rule.documentType),
           }),
         ),
     );
@@ -232,7 +231,8 @@ describeWithInfrastructure("provider moderation integration", () => {
     expect(approved.moderationStatus).toBe("approved");
     expect(afterApproval.eligible).toBe(true);
     expect(unlockingEligibility.eligible).toBe(false);
-    expect(adminUrl.url).toContain("signature=");
+    expect(adminUrl.url).toContain("X-Amz-Signature=");
+    expect((await fetch(adminUrl.url)).status).toBe(200);
     expect(audit.map((event) => event.action)).toContain("provider_service.approved");
     expect(documentAccess.map((event) => event.actor_user_id)).toContain(adminUserId);
   });

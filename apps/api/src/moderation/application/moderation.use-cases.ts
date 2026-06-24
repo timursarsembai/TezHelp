@@ -2,6 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 
 import type {
   Locale,
+  ProviderModerationDetail,
   ProviderModerationQueueItem,
   ProviderModerationStatus,
   ServiceCategorySlug,
@@ -12,10 +13,7 @@ import {
   PRIVATE_OBJECT_STORAGE,
   type PrivateObjectStoragePort,
 } from "../../foundation/storage/private-object-storage.port.js";
-import {
-  type ModerationDetail,
-  ModerationRepository,
-} from "../infrastructure/moderation.repository.js";
+import { ModerationRepository } from "../infrastructure/moderation.repository.js";
 
 @Injectable()
 export class ListModerationQueueUseCase {
@@ -41,7 +39,7 @@ export class ListModerationQueueUseCase {
 export class GetModerationDetailUseCase {
   constructor(private readonly repository: ModerationRepository) {}
 
-  async execute(serviceProfileId: string, locale: Locale): Promise<ModerationDetail> {
+  async execute(serviceProfileId: string, locale: Locale): Promise<ProviderModerationDetail> {
     return this.repository.getDetail(serviceProfileId, locale);
   }
 }
@@ -91,7 +89,7 @@ export class GetAdminDocumentAccessUrlUseCase {
 
   async execute(adminUserId: string, documentId: string): Promise<SignedDocumentUrlResponse> {
     const document = await this.repository.findDocumentForAdmin(documentId);
-    const signed = this.storage.signReadUrl({
+    const signed = await this.storage.signReadUrl({
       privateObjectKey: document.privateObjectKey,
       expiresInSeconds: 300,
     });

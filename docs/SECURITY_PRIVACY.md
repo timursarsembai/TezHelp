@@ -104,6 +104,12 @@ storage credentials never reach the browser, and the request is limited to
 Production rollout still requires malware scanning, content inspection,
 retention rules, and Kazakhstan-hosted object storage.
 
+Local admin document review obtains a real five-minute S3-compatible presigned
+URL only after the development admin guard authorizes the request. Every URL
+creation writes `provider_document_access_audit`. The local OTP identifies the
+audit actor but does not grant production staff privileges; production requires
+deny-by-default RBAC and staff identity management.
+
 Chat attachments are stored as private photo/voice metadata linked to an order
 conversation. Assigned participants and authorized administrators receive only
 short-lived signed read URLs, and every signed URL creation writes

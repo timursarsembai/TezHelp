@@ -104,7 +104,7 @@ export class GetChatAttachmentAccessUrlUseCase {
       orderId: input.orderId,
       attachmentId: input.attachmentId,
     });
-    const signed = this.storage.signReadUrl({
+    const signed = await this.storage.signReadUrl({
       privateObjectKey: attachment.privateObjectKey,
       expiresInSeconds: 300,
     });

@@ -138,7 +138,7 @@ export class GetProviderDocumentAccessUrlUseCase {
 
   async execute(providerUserId: string, documentId: string): Promise<SignedDocumentUrlResponse> {
     const document = await this.repository.findProviderDocument(providerUserId, documentId);
-    const signed = this.storage.signReadUrl({
+    const signed = await this.storage.signReadUrl({
       privateObjectKey: document.privateObjectKey,
       expiresInSeconds: 300,
     });

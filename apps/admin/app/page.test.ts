@@ -12,6 +12,12 @@ describe("admin shell", () => {
     expect(translate("en", "admin.moderation.suspend")).toContain("Suspend");
   });
 
+  it("has localized working moderation states", () => {
+    expect(translate("ru", "admin.moderation.startReview")).toContain("проверку");
+    expect(translate("kk", "admin.moderation.openDocument")).toBe("Ашу");
+    expect(translate("en", "admin.developmentAccess")).toBe("Local access");
+  });
+
   it("has localized commercial and ledger labels", () => {
     expect(translate("ru", "marketplace.admin.ledger")).toContain("кошелька");
     expect(translate("en", "marketplace.admin.commercialConfig")).toContain("tariffs");

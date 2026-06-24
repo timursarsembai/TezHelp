@@ -65,6 +65,13 @@ provider feed can therefore be empty or unavailable until an administrator
 completes moderation. The UI does not invent eligible orders or bypass backend
 rules.
 
+Open the admin app and use the same local OTP flow to enter the development
+moderation workspace. The returned user ID is used only as the audited local
+moderator actor. The workspace filters the queue, opens general and
+category-specific documents through five-minute MinIO presigned URLs, records
+document access, and supports review, approval, rejection, and suspension with
+mandatory reasons. This is not production staff authorization.
+
 The browser retains the returned user ID in session storage only for this local
 development flow and sends it through the existing `x-tezhelp-user-id` header.
 This is not production authentication. Secure server-issued sessions, real SMS,

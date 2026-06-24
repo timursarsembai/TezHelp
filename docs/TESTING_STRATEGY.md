@@ -75,6 +75,8 @@ Additional flows:
 
 - provider completes a general profile, uploads synthetic private documents,
   creates a service profile, and submits it for moderation
+- local admin filters the moderation queue, requests an audited synthetic
+  document URL, and records a moderation decision on desktop and mobile
 - insufficient balance
 - free response credits
 - customer cancellation at each stage

@@ -5,6 +5,7 @@ import type {
   Locale,
   ProviderDocumentSummary,
   ProviderModerationEventSummary,
+  ProviderModerationDetail,
   ProviderModerationQueueItem,
   ProviderModerationStatus,
   ProviderProfileSummary,
@@ -15,12 +16,6 @@ import type {
 import { DatabaseService } from "../../foundation/database/database.service.js";
 import type { DatabaseSchema } from "../../foundation/database/database.types.js";
 import { ModerationApplicationError } from "../domain/moderation-errors.js";
-
-export interface ModerationDetail {
-  readonly provider: ProviderProfileSummary;
-  readonly serviceProfile: ProviderServiceProfileSummary;
-  readonly history: ReadonlyArray<ProviderModerationEventSummary>;
-}
 
 export interface ModerationQueueFilter {
   readonly status?: ProviderModerationStatus;
@@ -67,7 +62,7 @@ export class ModerationRepository {
     );
   }
 
-  async getDetail(serviceProfileId: string, locale: Locale): Promise<ModerationDetail> {
+  async getDetail(serviceProfileId: string, locale: Locale): Promise<ProviderModerationDetail> {
     const row = await this.database.db
       .selectFrom("provider_service_profiles")
       .selectAll()
@@ -263,15 +258,25 @@ export class ModerationRepository {
   }
 
   private async getProvider(providerUserId: string): Promise<ProviderProfileSummary> {
-    const row = await this.database.db
-      .selectFrom("provider_profiles")
-      .selectAll()
-      .where("user_id", "=", providerUserId)
-      .executeTakeFirstOrThrow();
+    const [row, generalDocuments] = await Promise.all([
+      this.database.db
+        .selectFrom("provider_profiles")
+        .selectAll()
+        .where("user_id", "=", providerUserId)
+        .executeTakeFirstOrThrow(),
+      this.database.db
+        .selectFrom("provider_documents")
+        .selectAll()
+        .where("provider_user_id", "=", providerUserId)
+        .where("service_profile_id", "is", null)
+        .orderBy("created_at", "desc")
+        .execute(),
+    ]);
 
     return {
       userId: row.user_id,
       generalDocumentVersion: row.general_document_version,
+      generalDocuments: generalDocuments.map((document) => this.toDocumentSummary(document)),
       ...(row.display_name ? { displayName: row.display_name } : {}),
       ...(row.iin ? { iin: row.iin } : {}),
       ...(row.city ? { city: row.city } : {}),

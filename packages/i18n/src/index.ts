@@ -146,6 +146,8 @@ export type MessageKey =
   | "admin.title"
   | "admin.authRequired"
   | "admin.authRequiredBody"
+  | "admin.developmentAccess"
+  | "admin.developmentAccessBody"
   | "admin.moderation.title"
   | "admin.moderation.queue"
   | "admin.moderation.filters"
@@ -155,6 +157,30 @@ export type MessageKey =
   | "admin.moderation.reject"
   | "admin.moderation.suspend"
   | "admin.moderation.audit"
+  | "admin.moderation.statusFilter"
+  | "admin.moderation.categoryFilter"
+  | "admin.moderation.activeQueue"
+  | "admin.moderation.allCategories"
+  | "admin.moderation.loading"
+  | "admin.moderation.loadError"
+  | "admin.moderation.empty"
+  | "admin.moderation.selectSubmission"
+  | "admin.moderation.loadingDetail"
+  | "admin.moderation.detailError"
+  | "admin.moderation.iin"
+  | "admin.moderation.city"
+  | "admin.moderation.taxStatus"
+  | "admin.moderation.documentVersion"
+  | "admin.moderation.generalDocuments"
+  | "admin.moderation.categoryDocuments"
+  | "admin.moderation.noDocuments"
+  | "admin.moderation.openDocument"
+  | "admin.moderation.documentError"
+  | "admin.moderation.noHistory"
+  | "admin.moderation.decisionReason"
+  | "admin.moderation.reasonPlaceholder"
+  | "admin.moderation.startReview"
+  | "admin.moderation.actionError"
   | "common.status.foundation"
   | "common.skipToContent"
   | "monitoring.errorTitle"
@@ -315,6 +341,9 @@ const ru: Dictionary = {
   "admin.authRequired": "Требуется вход администратора",
   "admin.authRequiredBody":
     "Foundation не реализует fake auth. Реальная авторизация будет добавлена отдельной задачей.",
+  "admin.developmentAccess": "Локальный доступ",
+  "admin.developmentAccessBody":
+    "Войдите по тестовому OTP. Пользователь используется только как аудируемый модератор локальной среды.",
   "admin.moderation.title": "Ручная модерация исполнителей",
   "admin.moderation.queue": "Очередь проверок",
   "admin.moderation.filters": "Фильтры",
@@ -324,6 +353,30 @@ const ru: Dictionary = {
   "admin.moderation.reject": "Отклонить",
   "admin.moderation.suspend": "Приостановить категорию",
   "admin.moderation.audit": "История аудита",
+  "admin.moderation.statusFilter": "Статус",
+  "admin.moderation.categoryFilter": "Категория",
+  "admin.moderation.activeQueue": "Активная очередь",
+  "admin.moderation.allCategories": "Все категории",
+  "admin.moderation.loading": "Загружаем очередь",
+  "admin.moderation.loadError": "Не удалось загрузить очередь модерации.",
+  "admin.moderation.empty": "Заявок по выбранным фильтрам нет",
+  "admin.moderation.selectSubmission": "Выберите заявку слева для проверки",
+  "admin.moderation.loadingDetail": "Загружаем заявку",
+  "admin.moderation.detailError": "Не удалось загрузить заявку.",
+  "admin.moderation.iin": "ИИН",
+  "admin.moderation.city": "Город",
+  "admin.moderation.taxStatus": "Налоговый статус",
+  "admin.moderation.documentVersion": "Версия документов",
+  "admin.moderation.generalDocuments": "Общие документы",
+  "admin.moderation.categoryDocuments": "Документы категории",
+  "admin.moderation.noDocuments": "Документы не загружены",
+  "admin.moderation.openDocument": "Открыть",
+  "admin.moderation.documentError": "Не удалось открыть документ",
+  "admin.moderation.noHistory": "История пока пуста",
+  "admin.moderation.decisionReason": "Причина решения",
+  "admin.moderation.reasonPlaceholder": "Опишите основание решения",
+  "admin.moderation.startReview": "Начать проверку",
+  "admin.moderation.actionError": "Не удалось выполнить действие модерации.",
   "common.status.foundation": "Foundation готов",
   "common.skipToContent": "Перейти к содержанию",
   "monitoring.errorTitle": "Что-то пошло не так",
@@ -484,6 +537,9 @@ const kk: Dictionary = {
   "admin.authRequired": "Әкімші ретінде кіру қажет",
   "admin.authRequiredBody":
     "Foundation fake auth қоспайды. Нақты авторизация бөлек тапсырмада қосылады.",
+  "admin.developmentAccess": "Жергілікті қолжетімділік",
+  "admin.developmentAccessBody":
+    "Тестілік OTP арқылы кіріңіз. Пайдаланушы тек жергілікті ортаның аудиттелетін модераторы ретінде қолданылады.",
   "admin.moderation.title": "Орындаушыларды қолмен модерациялау",
   "admin.moderation.queue": "Тексеру кезегі",
   "admin.moderation.filters": "Сүзгілер",
@@ -493,6 +549,30 @@ const kk: Dictionary = {
   "admin.moderation.reject": "Қабылдамау",
   "admin.moderation.suspend": "Санатты тоқтату",
   "admin.moderation.audit": "Аудит тарихы",
+  "admin.moderation.statusFilter": "Мәртебе",
+  "admin.moderation.categoryFilter": "Санат",
+  "admin.moderation.activeQueue": "Белсенді кезек",
+  "admin.moderation.allCategories": "Барлық санаттар",
+  "admin.moderation.loading": "Кезек жүктелуде",
+  "admin.moderation.loadError": "Модерация кезегін жүктеу мүмкін болмады.",
+  "admin.moderation.empty": "Таңдалған сүзгілер бойынша өтінім жоқ",
+  "admin.moderation.selectSubmission": "Тексеру үшін сол жақтан өтінімді таңдаңыз",
+  "admin.moderation.loadingDetail": "Өтінім жүктелуде",
+  "admin.moderation.detailError": "Өтінімді жүктеу мүмкін болмады.",
+  "admin.moderation.iin": "ЖСН",
+  "admin.moderation.city": "Қала",
+  "admin.moderation.taxStatus": "Салық мәртебесі",
+  "admin.moderation.documentVersion": "Құжат нұсқасы",
+  "admin.moderation.generalDocuments": "Жалпы құжаттар",
+  "admin.moderation.categoryDocuments": "Санат құжаттары",
+  "admin.moderation.noDocuments": "Құжаттар жүктелмеген",
+  "admin.moderation.openDocument": "Ашу",
+  "admin.moderation.documentError": "Құжатты ашу мүмкін болмады",
+  "admin.moderation.noHistory": "Тарих әзірге бос",
+  "admin.moderation.decisionReason": "Шешім себебі",
+  "admin.moderation.reasonPlaceholder": "Шешімнің негізін жазыңыз",
+  "admin.moderation.startReview": "Тексеруді бастау",
+  "admin.moderation.actionError": "Модерация әрекетін орындау мүмкін болмады.",
   "common.status.foundation": "Foundation дайын",
   "common.skipToContent": "Мазмұнға өту",
   "monitoring.errorTitle": "Бірдеңе дұрыс болмады",
@@ -652,6 +732,9 @@ const en: Dictionary = {
   "admin.authRequired": "Administrator sign-in required",
   "admin.authRequiredBody":
     "The foundation does not implement fake auth. Real authorization comes in a separate task.",
+  "admin.developmentAccess": "Local access",
+  "admin.developmentAccessBody":
+    "Sign in with the test OTP. The user is used only as an audited moderator in the local environment.",
   "admin.moderation.title": "Manual provider moderation",
   "admin.moderation.queue": "Review queue",
   "admin.moderation.filters": "Filters",
@@ -661,6 +744,30 @@ const en: Dictionary = {
   "admin.moderation.reject": "Reject",
   "admin.moderation.suspend": "Suspend category",
   "admin.moderation.audit": "Audit history",
+  "admin.moderation.statusFilter": "Status",
+  "admin.moderation.categoryFilter": "Category",
+  "admin.moderation.activeQueue": "Active queue",
+  "admin.moderation.allCategories": "All categories",
+  "admin.moderation.loading": "Loading queue",
+  "admin.moderation.loadError": "The moderation queue could not be loaded.",
+  "admin.moderation.empty": "No submissions match the selected filters",
+  "admin.moderation.selectSubmission": "Select a submission on the left to review it",
+  "admin.moderation.loadingDetail": "Loading submission",
+  "admin.moderation.detailError": "The submission could not be loaded.",
+  "admin.moderation.iin": "IIN",
+  "admin.moderation.city": "City",
+  "admin.moderation.taxStatus": "Tax status",
+  "admin.moderation.documentVersion": "Document version",
+  "admin.moderation.generalDocuments": "General documents",
+  "admin.moderation.categoryDocuments": "Category documents",
+  "admin.moderation.noDocuments": "No documents uploaded",
+  "admin.moderation.openDocument": "Open",
+  "admin.moderation.documentError": "The document could not be opened",
+  "admin.moderation.noHistory": "No history yet",
+  "admin.moderation.decisionReason": "Decision reason",
+  "admin.moderation.reasonPlaceholder": "Describe the basis for the decision",
+  "admin.moderation.startReview": "Start review",
+  "admin.moderation.actionError": "The moderation action could not be completed.",
   "common.status.foundation": "Foundation ready",
   "common.skipToContent": "Skip to main content",
   "monitoring.errorTitle": "Something went wrong",

@@ -48,6 +48,11 @@ export default defineConfig({
       testMatch: /admin\.spec\.ts/,
       use: { ...devices["Desktop Chrome"], baseURL: adminBaseURL },
     },
+    {
+      name: "mobile-admin",
+      testMatch: /admin\.spec\.ts/,
+      use: { ...devices["Pixel 7"], baseURL: adminBaseURL },
+    },
   ],
   webServer,
 });
