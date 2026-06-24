@@ -96,6 +96,8 @@ export type MessageKey =
   | "maps.orders"
   | "maps.profile"
   | "maps.location"
+  | "maps.locating"
+  | "maps.locationError"
   | "maps.pickPoint"
   | "maps.createOrder"
   | "maps.closePanel"
@@ -118,6 +120,32 @@ export type MessageKey =
   | "maps.orderPublished"
   | "maps.publishError"
   | "maps.selectLocationFirst"
+  | "offers.title"
+  | "offers.empty"
+  | "offers.select"
+  | "offers.selecting"
+  | "offers.arrival"
+  | "offers.cancelOrder"
+  | "offers.cancelReason"
+  | "offers.confirmCancel"
+  | "offers.selectError"
+  | "offers.cancelError"
+  | "review.title"
+  | "review.prompt"
+  | "review.commentPlaceholder"
+  | "review.submit"
+  | "review.submitting"
+  | "review.submitted"
+  | "review.skip"
+  | "review.error"
+  | "order.status.provider_selected"
+  | "order.status.provider_en_route"
+  | "order.status.provider_arrived"
+  | "order.status.in_progress"
+  | "order.status.completed"
+  | "order.status.cancelled_by_customer"
+  | "order.status.cancelled_by_provider"
+  | "order.status.cancelled_by_admin"
   | "provider.feedTitle"
   | "provider.feedEmpty"
   | "provider.feedUnavailable"
@@ -290,6 +318,8 @@ const ru: Dictionary = {
   "maps.orders": "Заказы",
   "maps.profile": "Профиль",
   "maps.location": "Моё местоположение",
+  "maps.locating": "Определяем...",
+  "maps.locationError": "Не удалось определить местоположение",
   "maps.pickPoint": "Нажмите на карту, чтобы указать место",
   "maps.createOrder": "Создать заказ",
   "maps.closePanel": "Закрыть",
@@ -312,6 +342,32 @@ const ru: Dictionary = {
   "maps.orderPublished": "Заказ опубликован",
   "maps.publishError": "Не удалось опубликовать заказ. Попробуйте снова.",
   "maps.selectLocationFirst": "Сначала укажите точку на карте",
+  "offers.title": "Отклики исполнителей",
+  "offers.empty": "Ждём откликов…",
+  "offers.select": "Выбрать",
+  "offers.selecting": "Выбираем…",
+  "offers.arrival": "мин",
+  "offers.cancelOrder": "Отменить заказ",
+  "offers.cancelReason": "Причина отмены",
+  "offers.confirmCancel": "Подтвердить отмену",
+  "offers.selectError": "Не удалось выбрать исполнителя. Попробуйте снова.",
+  "offers.cancelError": "Не удалось отменить заказ.",
+  "review.title": "Оцените исполнителя",
+  "review.prompt": "Как прошёл заказ?",
+  "review.commentPlaceholder": "Оставьте комментарий (необязательно)",
+  "review.submit": "Отправить отзыв",
+  "review.submitting": "Отправка...",
+  "review.submitted": "Спасибо за отзыв!",
+  "review.skip": "Пропустить",
+  "review.error": "Не удалось отправить отзыв. Попробуйте снова.",
+  "order.status.provider_selected": "Исполнитель выбран — ожидайте выезда",
+  "order.status.provider_en_route": "Исполнитель едет к вам",
+  "order.status.provider_arrived": "Исполнитель прибыл",
+  "order.status.in_progress": "Выполняется",
+  "order.status.completed": "Заказ выполнен",
+  "order.status.cancelled_by_customer": "Вы отменили заказ",
+  "order.status.cancelled_by_provider": "Исполнитель отменил заказ",
+  "order.status.cancelled_by_admin": "Заказ отменён администратором",
   "provider.feedTitle": "Доступные заказы",
   "provider.feedEmpty": "Подходящих заказов пока нет",
   "provider.feedUnavailable": "Лента недоступна. Проверьте профиль и модерацию категорий.",
@@ -486,6 +542,8 @@ const kk: Dictionary = {
   "maps.orders": "Тапсырыстар",
   "maps.profile": "Профиль",
   "maps.location": "Менің орналасуым",
+  "maps.locating": "Анықталуда...",
+  "maps.locationError": "Орналасуды анықтау мүмкін болмады",
   "maps.pickPoint": "Орынды көрсету үшін картаны басыңыз",
   "maps.createOrder": "Тапсырыс жасау",
   "maps.closePanel": "Жабу",
@@ -508,6 +566,32 @@ const kk: Dictionary = {
   "maps.orderPublished": "Тапсырыс жарияланды",
   "maps.publishError": "Тапсырысты жариялау мүмкін болмады. Қайта көріңіз.",
   "maps.selectLocationFirst": "Алдымен картадан нүктені таңдаңыз",
+  "offers.title": "Орындаушылардың жауаптары",
+  "offers.empty": "Жауаптар күтілуде…",
+  "offers.select": "Таңдау",
+  "offers.selecting": "Таңдалуда…",
+  "offers.arrival": "мин",
+  "offers.cancelOrder": "Тапсырысты бас тарту",
+  "offers.cancelReason": "Бас тарту себебі",
+  "offers.confirmCancel": "Бас тартуды растау",
+  "offers.selectError": "Орындаушыны таңдау мүмкін болмады. Қайта көріңіз.",
+  "offers.cancelError": "Тапсырысты бас тарту мүмкін болмады.",
+  "review.title": "Орындаушыны бағалаңыз",
+  "review.prompt": "Тапсырыс қалай өтті?",
+  "review.commentPlaceholder": "Пікір қалдырыңыз (міндетті емес)",
+  "review.submit": "Пікір жіберу",
+  "review.submitting": "Жіберілуде...",
+  "review.submitted": "Пікіріңіз үшін рахмет!",
+  "review.skip": "Өткізіп жіберу",
+  "review.error": "Пікір жіберу мүмкін болмады. Қайта көріңіз.",
+  "order.status.provider_selected": "Орындаушы таңдалды — шығуды күтіңіз",
+  "order.status.provider_en_route": "Орындаушы сізге келе жатыр",
+  "order.status.provider_arrived": "Орындаушы жетті",
+  "order.status.in_progress": "Орындалуда",
+  "order.status.completed": "Тапсырыс орындалды",
+  "order.status.cancelled_by_customer": "Сіз тапсырысты бас тарттыңыз",
+  "order.status.cancelled_by_provider": "Орындаушы тапсырысты бас тартты",
+  "order.status.cancelled_by_admin": "Тапсырыс әкімші тарапынан бас тартылды",
   "provider.feedTitle": "Қолжетімді тапсырыстар",
   "provider.feedEmpty": "Сәйкес тапсырыстар әзірге жоқ",
   "provider.feedUnavailable": "Лента қолжетімсіз. Профиль мен санат модерациясын тексеріңіз.",
@@ -681,6 +765,8 @@ const en: Dictionary = {
   "maps.orders": "Orders",
   "maps.profile": "Profile",
   "maps.location": "My location",
+  "maps.locating": "Locating...",
+  "maps.locationError": "Could not determine location",
   "maps.pickPoint": "Tap the map to choose the location",
   "maps.createOrder": "Create order",
   "maps.closePanel": "Close",
@@ -703,6 +789,32 @@ const en: Dictionary = {
   "maps.orderPublished": "Order published",
   "maps.publishError": "The order could not be published. Try again.",
   "maps.selectLocationFirst": "Choose a point on the map first",
+  "offers.title": "Provider offers",
+  "offers.empty": "Waiting for offers…",
+  "offers.select": "Select",
+  "offers.selecting": "Selecting…",
+  "offers.arrival": "min",
+  "offers.cancelOrder": "Cancel order",
+  "offers.cancelReason": "Reason for cancellation",
+  "offers.confirmCancel": "Confirm cancellation",
+  "offers.selectError": "Could not select provider. Please try again.",
+  "offers.cancelError": "Could not cancel the order.",
+  "review.title": "Rate your provider",
+  "review.prompt": "How did the service go?",
+  "review.commentPlaceholder": "Leave a comment (optional)",
+  "review.submit": "Submit review",
+  "review.submitting": "Submitting...",
+  "review.submitted": "Thank you for your feedback!",
+  "review.skip": "Skip",
+  "review.error": "Could not submit review. Please try again.",
+  "order.status.provider_selected": "Provider selected — awaiting departure",
+  "order.status.provider_en_route": "Provider is on the way",
+  "order.status.provider_arrived": "Provider has arrived",
+  "order.status.in_progress": "In progress",
+  "order.status.completed": "Order completed",
+  "order.status.cancelled_by_customer": "You cancelled the order",
+  "order.status.cancelled_by_provider": "Provider cancelled the order",
+  "order.status.cancelled_by_admin": "Order cancelled by administrator",
   "provider.feedTitle": "Available orders",
   "provider.feedEmpty": "There are no matching orders yet",
   "provider.feedUnavailable": "The feed is unavailable. Check profile and category moderation.",

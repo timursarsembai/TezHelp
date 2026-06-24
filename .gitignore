@@ -16,3 +16,12 @@ debug.log
 *.tsbuildinfo
 __pycache__/
 *.pyc
+
+# Internal documentation — not for public repo
+docs/
+prompts/
+AGENTS.md
+CODE_REVIEW.md
+PLANS.md
+infrastructure/deployment/
+infrastructure/operations/

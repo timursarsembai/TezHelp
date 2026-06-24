@@ -13,6 +13,8 @@ interface AlmatyMapProps {
   readonly onOrderSelect?: (orderId: string) => void;
   readonly selectedPoint: GeoPoint | null;
   readonly onPointSelect: (point: GeoPoint) => void;
+  readonly flyToPoint?: GeoPoint | null;
+  readonly providerPoint?: { readonly latitude: number; readonly longitude: number } | null;
 }
 
 export function AlmatyMap({
@@ -20,10 +22,13 @@ export function AlmatyMap({
   onOrderSelect,
   selectedPoint,
   onPointSelect,
+  flyToPoint,
+  providerPoint,
 }: AlmatyMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
+  const providerMarkerRef = useRef<maplibregl.Marker | null>(null);
   const orderMarkersRef = useRef<ReadonlyArray<maplibregl.Marker>>([]);
   const onPointSelectRef = useRef(onPointSelect);
 
@@ -42,7 +47,7 @@ export function AlmatyMap({
       attributionControl: false,
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-left");
     map.on("click", (event) => {
       onPointSelectRef.current({
         latitude: event.lngLat.lat,
@@ -58,6 +63,7 @@ export function AlmatyMap({
 
     return () => {
       markerRef.current?.remove();
+      providerMarkerRef.current?.remove();
       orderMarkersRef.current.forEach((marker) => marker.remove());
       map.remove();
       mapRef.current = null;
@@ -75,6 +81,37 @@ export function AlmatyMap({
     markerRef.current ??= new maplibregl.Marker({ color: "#ff7a00" });
     markerRef.current.setLngLat([selectedPoint.longitude, selectedPoint.latitude]).addTo(map);
   }, [selectedPoint]);
+
+  useEffect(() => {
+    if (!mapRef.current || !flyToPoint) {
+      return;
+    }
+    mapRef.current.flyTo({
+      center: [flyToPoint.longitude, flyToPoint.latitude],
+      zoom: 15,
+      speed: 1.5,
+    });
+  }, [flyToPoint]);
+
+  // Маркер провайдера (синий автомобиль)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !providerPoint) {
+      providerMarkerRef.current?.remove();
+      providerMarkerRef.current = null;
+      return;
+    }
+
+    if (!providerMarkerRef.current) {
+      const el = document.createElement("div");
+      el.className = "provider-live-marker";
+      el.textContent = "🚗";
+      providerMarkerRef.current = new maplibregl.Marker({ element: el, anchor: "center" });
+    }
+    providerMarkerRef.current
+      .setLngLat([providerPoint.longitude, providerPoint.latitude])
+      .addTo(map);
+  }, [providerPoint]);
 
   useEffect(() => {
     const map = mapRef.current;

@@ -66,7 +66,11 @@ export class OrderTransitionPolicy {
       return {
         status: "cancelled_by_customer",
         commissionAction:
-          current === "provider_arrived" || current === "in_progress" ? "hold" : "release",
+          current === "receiving_offers"
+            ? "none"
+            : current === "provider_arrived" || current === "in_progress"
+              ? "hold"
+              : "release",
       };
     }
 

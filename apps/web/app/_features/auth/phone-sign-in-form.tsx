@@ -107,8 +107,13 @@ export function PhoneSignInForm({ locale, onAuthenticated }: PhoneSignInFormProp
                 id="otp"
                 inputMode="numeric"
                 maxLength={6}
-                onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
+                onChange={(event) => {
+                  const digits = event.target.value.replace(/\D/g, "").slice(0, 6);
+                  setCode(digits);
+                }}
+                pattern="\d*"
                 placeholder={translate(locale, "identity.otpPlaceholder")}
+                type="text"
                 value={code}
               />
             </label>

@@ -29,6 +29,8 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
+  // Tile fetch failures from OSM are transient network errors — suppress from dev overlay
+  devIndicators: { position: "bottom-left" },
   async rewrites() {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
     return [
