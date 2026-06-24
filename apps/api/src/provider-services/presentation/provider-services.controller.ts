@@ -1,10 +1,24 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 
 import {
   createProviderServiceProfileSchema,
   registerProviderDocumentSchema,
   updateProviderProfileSchema,
+  uploadProviderDocumentFieldsSchema,
 } from "@tezhelp/validation";
 
 import { resolveApiLocale } from "../../foundation/http/locale-query.js";
@@ -21,7 +35,16 @@ import {
   RegisterProviderDocumentUseCase,
   SubmitProviderServiceProfileUseCase,
   UpdateProviderProfileUseCase,
+  UploadProviderDocumentUseCase,
 } from "../application/provider-profile.use-cases.js";
+import { ProviderServicesApplicationError } from "../domain/provider-services-errors.js";
+
+interface UploadedProviderDocument {
+  readonly originalname: string;
+  readonly mimetype: string;
+  readonly size: number;
+  readonly buffer: Buffer;
+}
 
 @ApiTags("provider-services")
 @UseGuards(DevelopmentIdentityGuard)
@@ -33,6 +56,7 @@ export class ProviderServicesController {
     private readonly createServiceProfile: CreateProviderServiceProfileUseCase,
     private readonly listServiceProfiles: ListProviderServiceProfilesUseCase,
     private readonly registerDocument: RegisterProviderDocumentUseCase,
+    private readonly uploadDocument: UploadProviderDocumentUseCase,
     private readonly submitServiceProfile: SubmitProviderServiceProfileUseCase,
     private readonly getDocumentAccessUrl: GetProviderDocumentAccessUrlUseCase,
     private readonly getOfferEligibility: GetProviderOfferEligibilityUseCase,
@@ -97,6 +121,34 @@ export class ProviderServicesController {
       contentType: input.contentType,
       sizeBytes: input.sizeBytes,
       metadata: input.metadata,
+      ...(input.serviceProfileId ? { serviceProfileId: input.serviceProfileId } : {}),
+    });
+  }
+
+  @Post("documents/upload")
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 20 * 1024 * 1024 } }))
+  @ApiOkResponse({ description: "Upload a private provider document." })
+  async upload(
+    @Body() body: unknown,
+    @UploadedFile() file: UploadedProviderDocument | undefined,
+    @Req() request: IdentityRequest,
+  ) {
+    if (!file) {
+      throw new ProviderServicesApplicationError(
+        "PROVIDER_DOCUMENT_FILE_REQUIRED",
+        "File is required",
+        400,
+      );
+    }
+    const input = parseBody(uploadProviderDocumentFieldsSchema, body);
+
+    return this.uploadDocument.execute({
+      providerUserId: this.requireUserId(request),
+      documentType: input.documentType,
+      originalFilename: file.originalname,
+      contentType: file.mimetype,
+      sizeBytes: file.size,
+      body: file.buffer,
       ...(input.serviceProfileId ? { serviceProfileId: input.serviceProfileId } : {}),
     });
   }

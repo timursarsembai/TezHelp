@@ -396,6 +396,15 @@ admin moderation endpoints. Production startup rejects the development-auth
 configuration. A later identity/RBAC task must replace these headers before
 production use.
 
+Provider onboarding uploads use
+`POST /v1/provider/documents/upload`. The multipart controller passes file
+bytes to a focused provider-services use case, which generates the private
+object key server-side, writes through `PrivateObjectStoragePort`, and registers
+metadata only after storage succeeds. A failed metadata write attempts a
+compensating object deletion. Moderation submission validates the general
+profile, category tax allowance, general identity documents, and all
+data-driven required category documents inside the backend transaction.
+
 ## Chat and attachments foundation
 
 The `chat` backend module owns order conversation records, chat messages,

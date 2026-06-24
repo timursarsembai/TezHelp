@@ -50,8 +50,9 @@ export class ProviderServicesRepository {
       .selectAll()
       .where("user_id", "=", userId)
       .executeTakeFirstOrThrow();
+    const documents = await this.listGeneralDocuments(userId);
 
-    return this.toProviderProfile(row);
+    return this.toProviderProfile(row, documents);
   }
 
   async updateProviderProfile(
@@ -71,8 +72,9 @@ export class ProviderServicesRepository {
       .where("user_id", "=", userId)
       .returningAll()
       .executeTakeFirstOrThrow();
+    const documents = await this.listGeneralDocuments(userId);
 
-    return this.toProviderProfile(row);
+    return this.toProviderProfile(row, documents);
   }
 
   async createServiceProfile(
@@ -221,6 +223,65 @@ export class ProviderServicesRepository {
           409,
         );
       }
+      const provider = await trx
+        .selectFrom("provider_profiles")
+        .select(["display_name", "iin", "city", "tax_status"])
+        .where("user_id", "=", providerUserId)
+        .executeTakeFirstOrThrow();
+      if (!provider.display_name || !provider.iin || !provider.city || !provider.tax_status) {
+        throw new ProviderServicesApplicationError(
+          "PROVIDER_PROFILE_INCOMPLETE",
+          "Provider profile is incomplete",
+          409,
+        );
+      }
+      const allowedTaxStatus = await trx
+        .selectFrom("service_category_tax_allowances")
+        .select("tax_status")
+        .where("category_slug", "=", profile.category_slug)
+        .where("tax_status", "=", provider.tax_status)
+        .executeTakeFirst();
+      if (!allowedTaxStatus) {
+        throw new ProviderServicesApplicationError(
+          "PROVIDER_TAX_STATUS_NOT_ALLOWED",
+          "Provider tax status is not allowed for this category",
+          409,
+        );
+      }
+      const [requiredRules, providerDocuments] = await Promise.all([
+        trx
+          .selectFrom("service_category_document_rules")
+          .select("document_type")
+          .where("category_slug", "=", profile.category_slug)
+          .where("required", "=", true)
+          .execute(),
+        trx
+          .selectFrom("provider_documents")
+          .select(["document_type", "service_profile_id"])
+          .where("provider_user_id", "=", providerUserId)
+          .execute(),
+      ]);
+      const documentTypes = new Set(
+        providerDocuments
+          .filter(
+            (document) =>
+              document.service_profile_id === null ||
+              document.service_profile_id === serviceProfileId,
+          )
+          .map((document) => document.document_type),
+      );
+      const missingDocumentTypes = [
+        "face_photo",
+        "identity_document",
+        ...requiredRules.map((rule) => rule.document_type),
+      ].filter((documentType) => !documentTypes.has(documentType));
+      if (missingDocumentTypes.length > 0) {
+        throw new ProviderServicesApplicationError(
+          "PROVIDER_REQUIRED_DOCUMENTS_MISSING",
+          "Required provider documents are missing",
+          409,
+        );
+      }
 
       const deadline = new Date(now.getTime() + 3 * 60 * 60 * 1000);
       await trx
@@ -310,6 +371,20 @@ export class ProviderServicesRepository {
       .execute();
   }
 
+  private async listGeneralDocuments(
+    providerUserId: string,
+  ): Promise<ReadonlyArray<ProviderDocumentSummary>> {
+    const documents = await this.database.db
+      .selectFrom("provider_documents")
+      .selectAll()
+      .where("provider_user_id", "=", providerUserId)
+      .where("service_profile_id", "is", null)
+      .orderBy("created_at", "desc")
+      .execute();
+
+    return documents.map((document) => this.toDocumentSummary(document));
+  }
+
   private async registerGeneralDocument(
     trx: Transaction<DatabaseSchema>,
     input: RegisterDocumentInput,
@@ -318,6 +393,17 @@ export class ProviderServicesRepository {
       throw new ProviderServicesApplicationError(
         "DOCUMENT_TYPE_NOT_ALLOWED",
         "General provider document type is not allowed",
+        400,
+      );
+    }
+    const allowedContentTypes =
+      input.documentType === "face_photo"
+        ? ["image/jpeg", "image/png", "image/webp"]
+        : ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+    if (!allowedContentTypes.includes(input.contentType)) {
+      throw new ProviderServicesApplicationError(
+        "DOCUMENT_CONTENT_TYPE_NOT_ALLOWED",
+        "General provider document content type is not allowed",
         400,
       );
     }
@@ -460,17 +546,21 @@ export class ProviderServicesRepository {
       .execute();
   }
 
-  private toProviderProfile(row: {
-    readonly user_id: string;
-    readonly display_name: string | null;
-    readonly iin: string | null;
-    readonly city: string | null;
-    readonly tax_status: ProviderTaxStatus | null;
-    readonly general_document_version: number;
-  }): ProviderProfileSummary {
+  private toProviderProfile(
+    row: {
+      readonly user_id: string;
+      readonly display_name: string | null;
+      readonly iin: string | null;
+      readonly city: string | null;
+      readonly tax_status: ProviderTaxStatus | null;
+      readonly general_document_version: number;
+    },
+    generalDocuments: ReadonlyArray<ProviderDocumentSummary> = [],
+  ): ProviderProfileSummary {
     return {
       userId: row.user_id,
       generalDocumentVersion: row.general_document_version,
+      generalDocuments,
       ...(row.display_name ? { displayName: row.display_name } : {}),
       ...(row.iin ? { iin: row.iin } : {}),
       ...(row.city ? { city: row.city } : {}),

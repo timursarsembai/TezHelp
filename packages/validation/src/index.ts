@@ -93,6 +93,11 @@ export const registerProviderDocumentSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).default({}),
 });
 
+export const uploadProviderDocumentFieldsSchema = z.object({
+  serviceProfileId: z.uuid().optional(),
+  documentType: z.string().trim().min(2).max(80),
+});
+
 export const moderationDecisionSchema = z.object({
   reason: z.string().trim().min(3).max(1000),
 });

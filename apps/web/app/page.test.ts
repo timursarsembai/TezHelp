@@ -52,6 +52,12 @@ describe("web shell localization", () => {
     expect(translate("en", "provider.walletBalance")).toContain("balance");
   });
 
+  it("has localized provider onboarding states", () => {
+    expect(translate("ru", "providerOnboarding.title")).toBe("Профиль исполнителя");
+    expect(translate("kk", "providerOnboarding.status.approved")).toBe("Мақұлданды");
+    expect(translate("en", "providerOnboarding.uploadDocument")).toBe("Upload");
+  });
+
   it("uses Russian as fallback locale", () => {
     expect(resolveLocale(undefined)).toBe("ru");
   });

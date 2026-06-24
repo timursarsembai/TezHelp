@@ -70,6 +70,30 @@ export class ApiClient {
     return this.mutate<TData, TBody>("PATCH", path, body, requestOptions);
   }
 
+  async postForm<TData>(
+    path: `/${string}`,
+    body: FormData,
+    requestOptions: ApiRequestOptions | string = {},
+  ): Promise<TData> {
+    const options = normalizeRequestOptions(requestOptions);
+    const response = await this.fetchImpl(new URL(path, this.options.baseUrl), {
+      body,
+      headers: {
+        ...options.headers,
+        "x-correlation-id": options.correlationId,
+      },
+      method: "POST",
+    });
+
+    const payload = (await response.json()) as ApiErrorEnvelope | ApiSuccessEnvelope<TData>;
+
+    if (!response.ok) {
+      throw new ApiClientError(payload as ApiErrorEnvelope, response.status);
+    }
+
+    return (payload as ApiSuccessEnvelope<TData>).data;
+  }
+
   private async mutate<TData, TBody extends object>(
     method: "PATCH" | "POST",
     path: `/${string}`,

@@ -71,6 +71,59 @@ test("provider opens a discoverable order and submits an offer", async ({ page }
   await expect(page.getByRole("status")).toContainText("Отклик опубликован");
 });
 
+test("provider completes onboarding and submits a service profile", async ({ page }, testInfo) => {
+  test.setTimeout(45_000);
+  await mockCustomerApi(page);
+  await signIn(page);
+
+  await page.getByRole("button", { name: /Режим клиента|Исполнитель/ }).click();
+  await page.getByRole("button", { name: "Профиль" }).first().click();
+  await expect(page.getByRole("heading", { name: "Профиль исполнителя" })).toBeVisible();
+
+  await page.getByLabel("Имя или название").fill("Тестовый исполнитель");
+  await page.getByLabel("ИИН").fill("900101300001");
+  await page.getByLabel("Город").fill("Алматы");
+  await page.getByLabel("Налоговый статус").selectOption("individual_entrepreneur");
+  await page.getByRole("button", { name: "Сохранить профиль" }).click();
+  await expect(page.getByRole("status")).toContainText("Профиль сохранен");
+
+  const fileInputs = page.locator('input[type="file"]');
+  await fileInputs.nth(0).setInputFiles({
+    name: "face.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("synthetic-face"),
+  });
+  await expect(page.getByText("face.png")).toBeVisible();
+  await fileInputs.nth(1).setInputFiles({
+    name: "identity.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("synthetic-identity"),
+  });
+  await expect(page.getByText("identity.pdf")).toBeVisible();
+
+  await page.getByLabel("Добавить категорию").selectOption("tow_truck");
+  await page.getByRole("button", { name: "Добавить категорию" }).click();
+  await expect(page.getByRole("heading", { name: "Эвакуатор" })).toBeVisible();
+  await page
+    .locator('input[type="file"]')
+    .last()
+    .setInputFiles({
+      name: "driver-license.pdf",
+      mimeType: "application/pdf",
+      buffer: Buffer.from("synthetic-license"),
+    });
+  await expect(page.getByText("driver-license.pdf")).toBeVisible();
+  await page.getByRole("button", { name: "Отправить на модерацию" }).click();
+  await expect(page.getByText("Отправлен", { exact: true }).first()).toBeVisible();
+  await page.locator(".provider-onboarding").evaluate((element) => {
+    element.scrollTop = 0;
+  });
+  await page.screenshot({
+    path: testInfo.outputPath(`${testInfo.project.name}-provider-onboarding.png`),
+    fullPage: true,
+  });
+});
+
 async function signIn(page: Page) {
   await page.goto("/?locale=ru", { waitUntil: "domcontentloaded" });
   await page.getByLabel("Телефон").fill("+77001234567");
@@ -81,15 +134,108 @@ async function signIn(page: Page) {
 }
 
 async function mockCustomerApi(page: Page) {
+  let providerProfile = {
+    userId: "00000000-0000-4000-8000-000000000002",
+    generalDocumentVersion: 0,
+    generalDocuments: [] as Array<Record<string, unknown>>,
+  };
+  let providerServiceProfiles: Array<Record<string, unknown>> = [];
+  let documentSequence = 0;
+
   await page.route("**/backend/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
-    const payload = mockApiPayload(path, route.request().method());
+    const method = route.request().method();
+    let payload: object;
+
+    if (path === "/backend/v1/provider/profile") {
+      if (method === "PATCH") {
+        providerProfile = {
+          ...providerProfile,
+          displayName: "Тестовый исполнитель",
+          iin: "900101300001",
+          city: "Алматы",
+          taxStatus: "individual_entrepreneur",
+        };
+      }
+      payload = { data: providerProfile, correlationId: "e2e-provider-profile" };
+    } else if (path === "/backend/v1/provider/service-profiles" && method === "GET") {
+      payload = { data: providerServiceProfiles, correlationId: "e2e-service-profiles" };
+    } else if (path === "/backend/v1/provider/service-profiles" && method === "POST") {
+      const created = createMockServiceProfile("draft", []);
+      providerServiceProfiles = [created];
+      payload = { data: created, correlationId: "e2e-service-profile-create" };
+    } else if (path === "/backend/v1/provider/documents/upload") {
+      documentSequence += 1;
+      const documentType =
+        documentSequence === 1
+          ? "face_photo"
+          : documentSequence === 2
+            ? "identity_document"
+            : "driver_license";
+      const document = {
+        id: `00000000-0000-4000-8000-00000000002${documentSequence}`,
+        documentType,
+        originalFilename:
+          documentType === "face_photo"
+            ? "face.png"
+            : documentType === "identity_document"
+              ? "identity.pdf"
+              : "driver-license.pdf",
+        contentType: documentType === "face_photo" ? "image/png" : "application/pdf",
+        sizeBytes: 32,
+        documentVersion: documentSequence,
+        createdAt: "2026-06-24T03:00:00.000Z",
+      };
+      if (documentSequence <= 2) {
+        providerProfile = {
+          ...providerProfile,
+          generalDocumentVersion: documentSequence,
+          generalDocuments: [document, ...providerProfile.generalDocuments],
+        };
+      } else {
+        providerServiceProfiles = [createMockServiceProfile("draft", [document])];
+      }
+      payload = { data: document, correlationId: "e2e-document-upload" };
+    } else if (path.endsWith("/submit")) {
+      const submitted = createMockServiceProfile(
+        "submitted",
+        (providerServiceProfiles[0]?.documents as Array<Record<string, unknown>>) ?? [],
+      );
+      providerServiceProfiles = [submitted];
+      payload = { data: submitted, correlationId: "e2e-service-profile-submit" };
+    } else {
+      payload = mockApiPayload(path, method);
+    }
 
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify(payload),
     });
   });
+}
+
+function createMockServiceProfile(
+  moderationStatus: "draft" | "submitted",
+  documents: Array<Record<string, unknown>>,
+): Record<string, unknown> {
+  return {
+    id: "00000000-0000-4000-8000-000000000012",
+    providerUserId: "00000000-0000-4000-8000-000000000002",
+    categorySlug: "tow_truck",
+    categoryName: "Эвакуатор",
+    moderationStatus,
+    documentVersion: documents.length,
+    ratingCount: 0,
+    completedOrderCount: 0,
+    cancellationCount: 0,
+    documents,
+    ...(moderationStatus === "submitted"
+      ? {
+          submittedAt: "2026-06-24T03:05:00.000Z",
+          slaDeadlineAt: "2026-06-24T06:05:00.000Z",
+        }
+      : {}),
+  };
 }
 
 function mockApiPayload(path: string, method: string): object {
@@ -208,7 +354,17 @@ function mockApiPayload(path: string, method: string): object {
             operationalMinimumKzt: 3000,
           },
           allowedTaxStatuses: [],
-          requiredDocuments: [],
+          requiredDocuments: [
+            {
+              id: "00000000-0000-4000-8000-000000000030",
+              categorySlug: "tow_truck",
+              documentType: "driver_license",
+              label: "Водительское удостоверение",
+              required: true,
+              allowedMimeTypes: ["application/pdf", "image/jpeg", "image/png"],
+              maxSizeBytes: 20_971_520,
+            },
+          ],
         },
       ],
       correlationId: "e2e-catalog",

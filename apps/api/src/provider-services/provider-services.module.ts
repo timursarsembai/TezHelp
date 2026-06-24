@@ -12,6 +12,7 @@ import {
   RegisterProviderDocumentUseCase,
   SubmitProviderServiceProfileUseCase,
   UpdateProviderProfileUseCase,
+  UploadProviderDocumentUseCase,
 } from "./application/provider-profile.use-cases.js";
 import { ProviderServicesRepository } from "./infrastructure/provider-services.repository.js";
 import { ProviderServicesController } from "./presentation/provider-services.controller.js";
@@ -26,6 +27,7 @@ import { ProviderServicesController } from "./presentation/provider-services.con
     CreateProviderServiceProfileUseCase,
     ListProviderServiceProfilesUseCase,
     RegisterProviderDocumentUseCase,
+    UploadProviderDocumentUseCase,
     SubmitProviderServiceProfileUseCase,
     GetProviderDocumentAccessUrlUseCase,
     GetProviderOfferEligibilityUseCase,

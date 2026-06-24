@@ -1,7 +1,10 @@
+import { randomUUID } from "node:crypto";
+
 import { Inject, Injectable } from "@nestjs/common";
 
 import type {
   Locale,
+  ProviderDocumentSummary,
   ProviderProfileSummary,
   ProviderServiceProfileSummary,
   ServiceCategorySlug,
@@ -69,6 +72,48 @@ export class RegisterProviderDocumentUseCase {
 
   async execute(input: RegisterDocumentInput) {
     return this.repository.registerDocument(input);
+  }
+}
+
+@Injectable()
+export class UploadProviderDocumentUseCase {
+  constructor(
+    private readonly repository: ProviderServicesRepository,
+    @Inject(PRIVATE_OBJECT_STORAGE) private readonly storage: PrivateObjectStoragePort,
+  ) {}
+
+  async execute(input: {
+    readonly providerUserId: string;
+    readonly serviceProfileId?: string;
+    readonly documentType: string;
+    readonly originalFilename: string;
+    readonly contentType: string;
+    readonly sizeBytes: number;
+    readonly body: Uint8Array;
+  }): Promise<ProviderDocumentSummary> {
+    const privateObjectKey = `provider-documents/${input.providerUserId}/${randomUUID()}`;
+
+    await this.storage.putObject({
+      privateObjectKey,
+      contentType: input.contentType,
+      body: input.body,
+    });
+
+    try {
+      return await this.repository.registerDocument({
+        providerUserId: input.providerUserId,
+        documentType: input.documentType,
+        privateObjectKey,
+        originalFilename: input.originalFilename,
+        contentType: input.contentType,
+        sizeBytes: input.sizeBytes,
+        metadata: {},
+        ...(input.serviceProfileId ? { serviceProfileId: input.serviceProfileId } : {}),
+      });
+    } catch (error) {
+      await this.storage.deleteObject(privateObjectKey).catch(() => undefined);
+      throw error;
+    }
   }
 }
 

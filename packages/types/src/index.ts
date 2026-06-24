@@ -124,6 +124,7 @@ export interface ProviderProfileSummary {
   readonly city?: string;
   readonly taxStatus?: ProviderTaxStatus;
   readonly generalDocumentVersion: number;
+  readonly generalDocuments?: ReadonlyArray<ProviderDocumentSummary>;
 }
 
 export interface ProviderDocumentSummary {

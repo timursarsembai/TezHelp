@@ -38,6 +38,39 @@ export type MessageKey =
   | "providerModeration.perCategoryStatus"
   | "providerModeration.rejectionReason"
   | "providerModeration.resubmit"
+  | "providerOnboarding.title"
+  | "providerOnboarding.loading"
+  | "providerOnboarding.loadError"
+  | "providerOnboarding.profileSaved"
+  | "providerOnboarding.displayName"
+  | "providerOnboarding.iin"
+  | "providerOnboarding.city"
+  | "providerOnboarding.taxStatus"
+  | "providerOnboarding.chooseTaxStatus"
+  | "providerOnboarding.taxIp"
+  | "providerOnboarding.taxSelfEmployed"
+  | "providerOnboarding.savingProfile"
+  | "providerOnboarding.saveProfile"
+  | "providerOnboarding.identityDocuments"
+  | "providerOnboarding.facePhoto"
+  | "providerOnboarding.identityDocument"
+  | "providerOnboarding.chooseCategory"
+  | "providerOnboarding.addCategory"
+  | "providerOnboarding.submitError"
+  | "providerOnboarding.submitting"
+  | "providerOnboarding.submit"
+  | "providerOnboarding.completeRequired"
+  | "providerOnboarding.documentMissing"
+  | "providerOnboarding.uploadError"
+  | "providerOnboarding.uploading"
+  | "providerOnboarding.replaceDocument"
+  | "providerOnboarding.uploadDocument"
+  | "providerOnboarding.status.draft"
+  | "providerOnboarding.status.submitted"
+  | "providerOnboarding.status.under_review"
+  | "providerOnboarding.status.approved"
+  | "providerOnboarding.status.rejected"
+  | "providerOnboarding.status.suspended"
   | "marketplace.order.title"
   | "marketplace.order.publish"
   | "marketplace.provider.discovery"
@@ -173,6 +206,39 @@ const ru: Dictionary = {
   "providerModeration.perCategoryStatus": "Статус по каждой категории",
   "providerModeration.rejectionReason": "Причина отказа",
   "providerModeration.resubmit": "Отправить повторно",
+  "providerOnboarding.title": "Профиль исполнителя",
+  "providerOnboarding.loading": "Загружаем профиль",
+  "providerOnboarding.loadError": "Не удалось загрузить профиль исполнителя.",
+  "providerOnboarding.profileSaved": "Профиль сохранен",
+  "providerOnboarding.displayName": "Имя или название",
+  "providerOnboarding.iin": "ИИН",
+  "providerOnboarding.city": "Город",
+  "providerOnboarding.taxStatus": "Налоговый статус",
+  "providerOnboarding.chooseTaxStatus": "Выберите статус",
+  "providerOnboarding.taxIp": "Индивидуальный предприниматель",
+  "providerOnboarding.taxSelfEmployed": "Самозанятый / специальный налоговый режим",
+  "providerOnboarding.savingProfile": "Сохраняем",
+  "providerOnboarding.saveProfile": "Сохранить профиль",
+  "providerOnboarding.identityDocuments": "Документы личности",
+  "providerOnboarding.facePhoto": "Фотография лица",
+  "providerOnboarding.identityDocument": "Удостоверение личности",
+  "providerOnboarding.chooseCategory": "Выберите категорию услуги",
+  "providerOnboarding.addCategory": "Добавить категорию",
+  "providerOnboarding.submitError": "Не удалось отправить категорию на модерацию.",
+  "providerOnboarding.submitting": "Отправляем",
+  "providerOnboarding.submit": "Отправить на модерацию",
+  "providerOnboarding.completeRequired": "Заполните профиль и загрузите обязательные документы.",
+  "providerOnboarding.documentMissing": "Документ не загружен",
+  "providerOnboarding.uploadError": "Не удалось загрузить файл",
+  "providerOnboarding.uploading": "Загрузка",
+  "providerOnboarding.replaceDocument": "Заменить",
+  "providerOnboarding.uploadDocument": "Загрузить",
+  "providerOnboarding.status.draft": "Черновик",
+  "providerOnboarding.status.submitted": "Отправлен",
+  "providerOnboarding.status.under_review": "На проверке",
+  "providerOnboarding.status.approved": "Одобрен",
+  "providerOnboarding.status.rejected": "Отклонен",
+  "providerOnboarding.status.suspended": "Приостановлен",
   "marketplace.order.title": "Заказ помощи на дороге",
   "marketplace.order.publish": "Опубликовать заказ",
   "marketplace.provider.discovery": "Лента доступных заказов",
@@ -309,6 +375,39 @@ const kk: Dictionary = {
   "providerModeration.perCategoryStatus": "Әр санаттың мәртебесі",
   "providerModeration.rejectionReason": "Бас тарту себебі",
   "providerModeration.resubmit": "Қайта жіберу",
+  "providerOnboarding.title": "Орындаушы профилі",
+  "providerOnboarding.loading": "Профиль жүктелуде",
+  "providerOnboarding.loadError": "Орындаушы профилін жүктеу мүмкін болмады.",
+  "providerOnboarding.profileSaved": "Профиль сақталды",
+  "providerOnboarding.displayName": "Аты немесе атауы",
+  "providerOnboarding.iin": "ЖСН",
+  "providerOnboarding.city": "Қала",
+  "providerOnboarding.taxStatus": "Салық мәртебесі",
+  "providerOnboarding.chooseTaxStatus": "Мәртебені таңдаңыз",
+  "providerOnboarding.taxIp": "Жеке кәсіпкер",
+  "providerOnboarding.taxSelfEmployed": "Өзін-өзі жұмыспен қамтыған / арнайы салық режимі",
+  "providerOnboarding.savingProfile": "Сақталуда",
+  "providerOnboarding.saveProfile": "Профильді сақтау",
+  "providerOnboarding.identityDocuments": "Жеке бас құжаттары",
+  "providerOnboarding.facePhoto": "Бет фотосуреті",
+  "providerOnboarding.identityDocument": "Жеке куәлік",
+  "providerOnboarding.chooseCategory": "Қызмет санатын таңдаңыз",
+  "providerOnboarding.addCategory": "Санат қосу",
+  "providerOnboarding.submitError": "Санатты модерацияға жіберу мүмкін болмады.",
+  "providerOnboarding.submitting": "Жіберілуде",
+  "providerOnboarding.submit": "Модерацияға жіберу",
+  "providerOnboarding.completeRequired": "Профильді толтырып, міндетті құжаттарды жүктеңіз.",
+  "providerOnboarding.documentMissing": "Құжат жүктелмеген",
+  "providerOnboarding.uploadError": "Файлды жүктеу мүмкін болмады",
+  "providerOnboarding.uploading": "Жүктелуде",
+  "providerOnboarding.replaceDocument": "Ауыстыру",
+  "providerOnboarding.uploadDocument": "Жүктеу",
+  "providerOnboarding.status.draft": "Жоба",
+  "providerOnboarding.status.submitted": "Жіберілді",
+  "providerOnboarding.status.under_review": "Тексерілуде",
+  "providerOnboarding.status.approved": "Мақұлданды",
+  "providerOnboarding.status.rejected": "Қабылданбады",
+  "providerOnboarding.status.suspended": "Тоқтатылды",
   "marketplace.order.title": "Жолдағы көмекке тапсырыс",
   "marketplace.order.publish": "Тапсырысты жариялау",
   "marketplace.provider.discovery": "Қолжетімді тапсырыстар лентасы",
@@ -444,6 +543,39 @@ const en: Dictionary = {
   "providerModeration.perCategoryStatus": "Per-category status",
   "providerModeration.rejectionReason": "Rejection reason",
   "providerModeration.resubmit": "Resubmit",
+  "providerOnboarding.title": "Provider profile",
+  "providerOnboarding.loading": "Loading profile",
+  "providerOnboarding.loadError": "The provider profile could not be loaded.",
+  "providerOnboarding.profileSaved": "Profile saved",
+  "providerOnboarding.displayName": "Name or business name",
+  "providerOnboarding.iin": "IIN",
+  "providerOnboarding.city": "City",
+  "providerOnboarding.taxStatus": "Tax status",
+  "providerOnboarding.chooseTaxStatus": "Choose status",
+  "providerOnboarding.taxIp": "Individual entrepreneur",
+  "providerOnboarding.taxSelfEmployed": "Self-employed / special tax regime",
+  "providerOnboarding.savingProfile": "Saving",
+  "providerOnboarding.saveProfile": "Save profile",
+  "providerOnboarding.identityDocuments": "Identity documents",
+  "providerOnboarding.facePhoto": "Face photo",
+  "providerOnboarding.identityDocument": "Identity document",
+  "providerOnboarding.chooseCategory": "Choose a service category",
+  "providerOnboarding.addCategory": "Add category",
+  "providerOnboarding.submitError": "The category could not be submitted for moderation.",
+  "providerOnboarding.submitting": "Submitting",
+  "providerOnboarding.submit": "Submit for moderation",
+  "providerOnboarding.completeRequired": "Complete the profile and upload required documents.",
+  "providerOnboarding.documentMissing": "Document not uploaded",
+  "providerOnboarding.uploadError": "The file could not be uploaded",
+  "providerOnboarding.uploading": "Uploading",
+  "providerOnboarding.replaceDocument": "Replace",
+  "providerOnboarding.uploadDocument": "Upload",
+  "providerOnboarding.status.draft": "Draft",
+  "providerOnboarding.status.submitted": "Submitted",
+  "providerOnboarding.status.under_review": "Under review",
+  "providerOnboarding.status.approved": "Approved",
+  "providerOnboarding.status.rejected": "Rejected",
+  "providerOnboarding.status.suspended": "Suspended",
   "marketplace.order.title": "Roadside assistance order",
   "marketplace.order.publish": "Publish order",
   "marketplace.provider.discovery": "Available order feed",

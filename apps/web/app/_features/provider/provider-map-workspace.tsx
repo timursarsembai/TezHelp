@@ -14,6 +14,7 @@ import type {
 import { Button } from "@tezhelp/ui";
 
 import { AlmatyMap } from "../map/almaty-map";
+import { ProviderOnboarding } from "./provider-onboarding";
 
 interface ProviderMapWorkspaceProps {
   readonly locale: Locale;
@@ -31,6 +32,7 @@ export function ProviderMapWorkspace({
   const [orders, setOrders] = useState<ReadonlyArray<ProviderOrderDiscoveryItem>>([]);
   const [wallet, setWallet] = useState<WalletSummary | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [feedStatus, setFeedStatus] = useState<"loading" | "ready" | "error">("loading");
   const headers = useMemo(() => ({ "x-tezhelp-user-id": user.id }), [user.id]);
 
@@ -77,7 +79,7 @@ export function ProviderMapWorkspace({
   }
 
   return (
-    <div className="map-app provider-map-app">
+    <div className={`map-app provider-map-app${showOnboarding ? " provider-profile-open" : ""}`}>
       <a className="tz-skip-link" href="#main-content">
         {translate(locale, "common.skipToContent")}
       </a>
@@ -97,10 +99,10 @@ export function ProviderMapWorkspace({
           <span>{translate(locale, "maps.providerMode")}</span>
         </button>
         <button
-          aria-label={translate(locale, "identity.signOut")}
+          aria-label={translate(locale, "maps.profile")}
           className="map-profile-button"
-          onClick={onSignOut}
-          title={translate(locale, "identity.signOut")}
+          onClick={() => setShowOnboarding(true)}
+          title={translate(locale, "maps.profile")}
           type="button"
         >
           {user.verifiedPhone?.slice(-2) ?? "TH"}
@@ -153,21 +155,32 @@ export function ProviderMapWorkspace({
       </aside>
 
       <main className="map-main provider-map-main" id="main-content" tabIndex={-1}>
-        <AlmatyMap
-          onOrderSelect={setSelectedOrderId}
-          onPointSelect={() => undefined}
-          orderPoints={orderPoints}
-          selectedPoint={null}
-        />
-        {selectedOrder ? (
-          <ProviderOfferPanel
-            item={selectedOrder}
+        {showOnboarding ? (
+          <ProviderOnboarding
             locale={locale}
-            onClose={() => setSelectedOrderId(null)}
-            onSubmitted={() => void loadProviderData()}
+            onClose={() => setShowOnboarding(false)}
+            onSignOut={onSignOut}
             userId={user.id}
           />
-        ) : null}
+        ) : (
+          <>
+            <AlmatyMap
+              onOrderSelect={setSelectedOrderId}
+              onPointSelect={() => undefined}
+              orderPoints={orderPoints}
+              selectedPoint={null}
+            />
+            {selectedOrder ? (
+              <ProviderOfferPanel
+                item={selectedOrder}
+                locale={locale}
+                onClose={() => setSelectedOrderId(null)}
+                onSubmitted={() => void loadProviderData()}
+                userId={user.id}
+              />
+            ) : null}
+          </>
+        )}
       </main>
 
       <nav
@@ -184,8 +197,23 @@ export function ProviderMapWorkspace({
           </span>
           <span>{translate(locale, "web.nav.customer")}</span>
         </button>
-        <span className="provider-mobile-count">{orders.length}</span>
-        <button className="map-navigation-button" onClick={onSignOut} type="button">
+        <button
+          aria-current={!showOnboarding ? "page" : undefined}
+          className="map-navigation-button"
+          onClick={() => setShowOnboarding(false)}
+          type="button"
+        >
+          <span className="map-navigation-icon" aria-hidden="true">
+            {orders.length}
+          </span>
+          <span>{translate(locale, "maps.orders")}</span>
+        </button>
+        <button
+          aria-current={showOnboarding ? "page" : undefined}
+          className="map-navigation-button"
+          onClick={() => setShowOnboarding(true)}
+          type="button"
+        >
           <span className="map-navigation-icon" aria-hidden="true">
             ○
           </span>

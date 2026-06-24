@@ -4,6 +4,12 @@ export interface SignedPrivateObjectUrl {
 }
 
 export interface PrivateObjectStoragePort {
+  putObject(input: {
+    readonly privateObjectKey: string;
+    readonly contentType: string;
+    readonly body: Uint8Array;
+  }): Promise<void>;
+  deleteObject(privateObjectKey: string): Promise<void>;
   signReadUrl(input: {
     readonly privateObjectKey: string;
     readonly expiresInSeconds: number;

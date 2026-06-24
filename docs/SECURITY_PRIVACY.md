@@ -97,6 +97,13 @@ URL use cases and write `provider_document_access_audit`. Raw object keys are
 not an authorization mechanism. The current development signer is replaceable by
 a production S3-compatible presigner before real document uploads are enabled.
 
+The local provider onboarding upload endpoint streams multipart file bytes
+through the API to private MinIO storage. Object keys are generated server-side,
+storage credentials never reach the browser, and the request is limited to
+20 MB. General and category-specific MIME allowlists are checked server-side.
+Production rollout still requires malware scanning, content inspection,
+retention rules, and Kazakhstan-hosted object storage.
+
 Chat attachments are stored as private photo/voice metadata linked to an order
 conversation. Assigned participants and authorized administrators receive only
 short-lived signed read URLs, and every signed URL creation writes

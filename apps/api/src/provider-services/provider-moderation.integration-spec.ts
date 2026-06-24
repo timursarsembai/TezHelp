@@ -1,3 +1,4 @@
+import { HeadObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { Test } from "@nestjs/testing";
 import { sql } from "kysely";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
@@ -16,6 +17,7 @@ import {
   RegisterProviderDocumentUseCase,
   SubmitProviderServiceProfileUseCase,
   UpdateProviderProfileUseCase,
+  UploadProviderDocumentUseCase,
 } from "./application/provider-profile.use-cases.js";
 import { ProviderServicesApplicationError } from "./domain/provider-services-errors.js";
 import { ProviderServicesModule } from "./provider-services.module.js";
@@ -37,6 +39,7 @@ describeWithInfrastructure("provider moderation integration", () => {
   let updateProfile: UpdateProviderProfileUseCase;
   let createServiceProfile: CreateProviderServiceProfileUseCase;
   let registerDocument: RegisterProviderDocumentUseCase;
+  let uploadDocument: UploadProviderDocumentUseCase;
   let submitServiceProfile: SubmitProviderServiceProfileUseCase;
   let offerEligibility: GetProviderOfferEligibilityUseCase;
   let listQueue: ListModerationQueueUseCase;
@@ -60,6 +63,7 @@ describeWithInfrastructure("provider moderation integration", () => {
     updateProfile = moduleRef.get(UpdateProviderProfileUseCase);
     createServiceProfile = moduleRef.get(CreateProviderServiceProfileUseCase);
     registerDocument = moduleRef.get(RegisterProviderDocumentUseCase);
+    uploadDocument = moduleRef.get(UploadProviderDocumentUseCase);
     submitServiceProfile = moduleRef.get(SubmitProviderServiceProfileUseCase);
     offerEligibility = moduleRef.get(GetProviderOfferEligibilityUseCase);
     listQueue = moduleRef.get(ListModerationQueueUseCase);
@@ -151,16 +155,46 @@ describeWithInfrastructure("provider moderation integration", () => {
       providerUserId,
       "vehicle_unlocking",
     );
-    const document = await registerDocument.execute({
+    await registerDocument.execute({
       providerUserId,
-      serviceProfileId: towProfile.id,
-      documentType: "driver_license",
-      privateObjectKey: "providers/111/driver-license.pdf",
-      originalFilename: "driver-license.pdf",
+      documentType: "face_photo",
+      privateObjectKey: "providers/111/face.png",
+      originalFilename: "face.png",
+      contentType: "image/png",
+      sizeBytes: 1024,
+      metadata: {},
+    });
+    await registerDocument.execute({
+      providerUserId,
+      documentType: "identity_document",
+      privateObjectKey: "providers/111/identity.pdf",
+      originalFilename: "identity.pdf",
       contentType: "application/pdf",
       sizeBytes: 1024,
       metadata: {},
     });
+    const towCategory = (await listCategories.execute("en")).find(
+      (category) => category.slug === "tow_truck",
+    );
+    const towDocuments = await Promise.all(
+      (towCategory?.requiredDocuments ?? [])
+        .filter((rule) => rule.required)
+        .map((rule) =>
+          registerDocument.execute({
+            providerUserId,
+            serviceProfileId: towProfile.id,
+            documentType: rule.documentType,
+            privateObjectKey: `providers/111/${rule.documentType}`,
+            originalFilename: `${rule.documentType}.pdf`,
+            contentType: rule.allowedMimeTypes[0] ?? "application/pdf",
+            sizeBytes: 1024,
+            metadata: {},
+          }),
+        ),
+    );
+    const document = towDocuments.find(
+      (registered) => registered.documentType === "driver_license",
+    )!;
 
     const submitted = await submitServiceProfile.execute(providerUserId, towProfile.id);
     const queue = await listQueue.execute({ locale: "ru" });
@@ -201,5 +235,59 @@ describeWithInfrastructure("provider moderation integration", () => {
     expect(adminUrl.url).toContain("signature=");
     expect(audit.map((event) => event.action)).toContain("provider_service.approved");
     expect(documentAccess.map((event) => event.actor_user_id)).toContain(adminUserId);
+  });
+
+  it("stores uploaded provider document bytes in private object storage", async () => {
+    await updateProfile.execute(providerUserId, {
+      displayName: "Upload Test Provider",
+      iin: "123456789012",
+      city: "Almaty",
+      taxStatus: "individual_entrepreneur",
+    });
+
+    const uploaded = await uploadDocument.execute({
+      providerUserId,
+      documentType: "face_photo",
+      originalFilename: "synthetic-face.png",
+      contentType: "image/png",
+      sizeBytes: 14,
+      body: Buffer.from("synthetic-face"),
+    });
+    const stored = await database.db
+      .selectFrom("provider_documents")
+      .select("private_object_key")
+      .where("id", "=", uploaded.id)
+      .executeTakeFirstOrThrow();
+    const s3Endpoint = process.env.S3_ENDPOINT;
+    const s3Bucket = process.env.S3_BUCKET_PRIVATE;
+    if (!s3Endpoint || !s3Bucket) {
+      throw new Error("S3 integration environment is not configured");
+    }
+    const client = new S3Client({
+      endpoint: s3Endpoint,
+      region: process.env.S3_REGION ?? "local",
+      credentials: {
+        accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "tezhelp_dev_access_key",
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "tezhelp_dev_secret_key",
+      },
+      forcePathStyle: true,
+    });
+    const object = await client.send(
+      new HeadObjectCommand({
+        Bucket: s3Bucket,
+        Key: stored.private_object_key,
+      }),
+    );
+
+    expect(uploaded.documentType).toBe("face_photo");
+    expect(object.ContentLength).toBe(14);
+  });
+
+  it("rejects moderation submission until profile and required documents are complete", async () => {
+    const serviceProfile = await createServiceProfile.execute(providerUserId, "tow_truck");
+
+    await expect(
+      submitServiceProfile.execute(providerUserId, serviceProfile.id),
+    ).rejects.toMatchObject({ code: "PROVIDER_PROFILE_INCOMPLETE" });
   });
 });

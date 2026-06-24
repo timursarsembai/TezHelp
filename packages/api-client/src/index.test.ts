@@ -50,6 +50,28 @@ describe("ApiClient", () => {
     expect(requestHeaders.get("x-tezhelp-user-id")).toBe("local-user-id");
   });
 
+  it("posts form data without overriding the multipart content type", async () => {
+    const form = new FormData();
+    form.set("documentType", "driver_license");
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ data: { id: "document-1" }, correlationId: "corr-form" }), {
+        status: 200,
+      }),
+    );
+    const client = new ApiClient({ baseUrl: "http://localhost:4000", fetchImpl });
+
+    await expect(
+      client.postForm<{ readonly id: string }>("/v1/provider/documents/upload", form, {
+        headers: { "x-tezhelp-user-id": "provider-1" },
+      }),
+    ).resolves.toEqual({ id: "document-1" });
+
+    const request = fetchImpl.mock.calls[0]?.[1];
+    const requestHeaders = new Headers(request?.headers);
+    expect(request?.body).toBe(form);
+    expect(requestHeaders.has("content-type")).toBe(false);
+  });
+
   it("posts frontend error reports with sanitized routes", async () => {
     const bodies: string[] = [];
     const client = new ApiClient({

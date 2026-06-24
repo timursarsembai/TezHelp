@@ -73,6 +73,8 @@ Critical flows:
 
 Additional flows:
 
+- provider completes a general profile, uploads synthetic private documents,
+  creates a service profile, and submits it for moderation
 - insufficient balance
 - free response credits
 - customer cancellation at each stage

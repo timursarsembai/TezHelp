@@ -55,10 +55,15 @@ backend-authorized discoverable orders, shows them in a list and on the map,
 displays the wallet/free-response summary, and submits a price, arrival time,
 and comment through `POST /v1/provider/orders/:orderId/offers`.
 
-A newly created local account does not automatically have an approved provider
-service profile. Its real provider feed can therefore be empty or unavailable
-until provider onboarding and moderation are completed. The UI does not invent
-eligible orders or bypass backend rules.
+Open `Profile` to complete provider onboarding. The local flow saves the general
+profile, uploads private documents through the API into MinIO, creates
+independent service-category profiles, and submits each category for manual
+moderation. Use only synthetic files in local development.
+
+A newly submitted local account is not automatically approved. Its real
+provider feed can therefore be empty or unavailable until an administrator
+completes moderation. The UI does not invent eligible orders or bypass backend
+rules.
 
 The browser retains the returned user ID in session storage only for this local
 development flow and sends it through the existing `x-tezhelp-user-id` header.
@@ -101,6 +106,7 @@ Implemented development endpoints:
 - `POST /v1/provider/service-profiles/:serviceProfileId/submit`
 - `GET /v1/provider/service-profiles/:serviceProfileId/offer-eligibility`
 - `POST /v1/provider/documents`
+- `POST /v1/provider/documents/upload`
 - `GET /v1/provider/documents/:documentId/access-url`
 - `GET /v1/admin/provider-moderation/queue`
 - `GET /v1/admin/provider-moderation/service-profiles/:serviceProfileId`
