@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 
 import { cancelOrderSchema, orderLifecycleCommandSchema } from "@tezhelp/validation";
@@ -14,6 +14,7 @@ import {
   ConfirmProviderDepartureUseCase,
   StartOrderWorkUseCase,
 } from "../application/order-lifecycle.use-cases.js";
+import { GetProviderActiveOrderUseCase } from "../application/order.use-cases.js";
 
 @ApiTags("provider-order-lifecycle")
 @UseGuards(DevelopmentIdentityGuard)
@@ -25,7 +26,14 @@ export class ProviderOrderLifecycleController {
     private readonly startWork: StartOrderWorkUseCase,
     private readonly complete: CompleteOrderUseCase,
     private readonly cancelOrder: CancelOrderUseCase,
+    private readonly getActiveOrder: GetProviderActiveOrderUseCase,
   ) {}
+
+  @Get("active")
+  @ApiOkResponse({ description: "Currently assigned active order for the provider, or null." })
+  async activeOrder(@Req() request: IdentityRequest) {
+    return this.getActiveOrder.execute(this.requireUserId(request));
+  }
 
   @Post(":orderId/depart")
   @ApiOkResponse({ description: "Confirm provider departure and reveal contact details." })

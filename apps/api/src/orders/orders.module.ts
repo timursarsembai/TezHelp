@@ -14,7 +14,7 @@ import {
   GetOrderContactUseCase,
   StartOrderWorkUseCase,
 } from "./application/order-lifecycle.use-cases.js";
-import { CreateOrderUseCase, GetOrderUseCase } from "./application/order.use-cases.js";
+import { CreateOrderUseCase, GetOrderUseCase, GetProviderActiveOrderUseCase } from "./application/order.use-cases.js";
 import { SelectProviderUseCase } from "./application/select-provider.use-case.js";
 import { OrdersRepository } from "./infrastructure/orders.repository.js";
 import { AdminOrdersController } from "./presentation/admin-orders.controller.js";
@@ -31,6 +31,7 @@ import { ProviderOrderLifecycleController } from "./presentation/provider-order-
     OrdersRepository,
     CreateOrderUseCase,
     GetOrderUseCase,
+    GetProviderActiveOrderUseCase,
     SelectProviderUseCase,
     ConfirmProviderDepartureUseCase,
     ConfirmProviderArrivalUseCase,

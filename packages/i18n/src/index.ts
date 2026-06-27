@@ -87,6 +87,11 @@ export type MessageKey =
   | "chat.title"
   | "chat.disputeEvidence"
   | "chat.attachmentAccess"
+  | "chat.inputPlaceholder"
+  | "chat.send"
+  | "chat.empty"
+  | "chat.openChat"
+  | "chat.closeChat"
   | "admin.chat.disputeReview"
   | "maps.liveTracking"
   | "maps.customerMarker"
@@ -162,6 +167,16 @@ export type MessageKey =
   | "provider.submittingOffer"
   | "provider.offerSubmitted"
   | "provider.offerError"
+  | "provider.activeOrder"
+  | "provider.depart"
+  | "provider.arrive"
+  | "provider.startWork"
+  | "provider.complete"
+  | "provider.cancelOrder"
+  | "provider.cancelReason"
+  | "provider.confirmCancel"
+  | "provider.cancelError"
+  | "provider.actionError"
   | "admin.maps.activeOrderTracking"
   | "reputation.review"
   | "reputation.customerReliability"
@@ -309,6 +324,11 @@ const ru: Dictionary = {
   "chat.title": "Чат заказа",
   "chat.disputeEvidence": "Переписка хранится для разбора споров",
   "chat.attachmentAccess": "Фото и голос открываются по аудируемой ссылке",
+  "chat.inputPlaceholder": "Сообщение...",
+  "chat.send": "Отправить",
+  "chat.empty": "Напишите первое сообщение исполнителю",
+  "chat.openChat": "Открыть чат",
+  "chat.closeChat": "Закрыть чат",
   "admin.chat.disputeReview": "Чат заказа для разбора спора",
   "maps.liveTracking": "Живое отслеживание",
   "maps.customerMarker": "Точка клиента",
@@ -384,6 +404,16 @@ const ru: Dictionary = {
   "provider.submittingOffer": "Отправляем",
   "provider.offerSubmitted": "Отклик опубликован",
   "provider.offerError": "Не удалось отправить отклик. Проверьте баланс и доступность профиля.",
+  "provider.activeOrder": "Активный заказ",
+  "provider.depart": "Выехал",
+  "provider.arrive": "Прибыл",
+  "provider.startWork": "Начать работу",
+  "provider.complete": "Завершить заказ",
+  "provider.cancelOrder": "Отменить заказ",
+  "provider.cancelReason": "Причина отмены",
+  "provider.confirmCancel": "Подтвердить отмену",
+  "provider.cancelError": "Не удалось отменить заказ.",
+  "provider.actionError": "Не удалось выполнить действие.",
   "admin.maps.activeOrderTracking": "Отслеживание активного заказа",
   "reputation.review": "Отзыв после завершения заказа",
   "reputation.customerReliability": "Надежность клиента",
@@ -533,6 +563,11 @@ const kk: Dictionary = {
   "chat.title": "Тапсырыс чаты",
   "chat.disputeEvidence": "Хат алмасу дауды қарау үшін сақталады",
   "chat.attachmentAccess": "Фото мен дауыс аудителетін сілтемемен ашылады",
+  "chat.inputPlaceholder": "Хабарлама...",
+  "chat.send": "Жіберу",
+  "chat.empty": "Орындаушыға алғашқы хабарламаны жіберіңіз",
+  "chat.openChat": "Чатты ашу",
+  "chat.closeChat": "Чатты жабу",
   "admin.chat.disputeReview": "Дауды қарауға арналған тапсырыс чаты",
   "maps.liveTracking": "Тікелей бақылау",
   "maps.customerMarker": "Клиент нүктесі",
@@ -608,6 +643,16 @@ const kk: Dictionary = {
   "provider.submittingOffer": "Жіберілуде",
   "provider.offerSubmitted": "Жауап жарияланды",
   "provider.offerError": "Жауап жіберілмеді. Баланс пен профиль қолжетімділігін тексеріңіз.",
+  "provider.activeOrder": "Белсенді тапсырыс",
+  "provider.depart": "Шықтым",
+  "provider.arrive": "Жеттім",
+  "provider.startWork": "Жұмысты бастау",
+  "provider.complete": "Тапсырысты аяқтау",
+  "provider.cancelOrder": "Тапсырысты бас тарту",
+  "provider.cancelReason": "Бас тарту себебі",
+  "provider.confirmCancel": "Бас тартуды растау",
+  "provider.cancelError": "Тапсырысты бас тарту мүмкін болмады.",
+  "provider.actionError": "Әрекетті орындау мүмкін болмады.",
   "admin.maps.activeOrderTracking": "Белсенді тапсырысты бақылау",
   "reputation.review": "Тапсырыс аяқталғаннан кейінгі пікір",
   "reputation.customerReliability": "Клиент сенімділігі",
@@ -756,6 +801,11 @@ const en: Dictionary = {
   "chat.title": "Order chat",
   "chat.disputeEvidence": "Conversation is retained for dispute review",
   "chat.attachmentAccess": "Photos and voice are opened through audited links",
+  "chat.inputPlaceholder": "Message...",
+  "chat.send": "Send",
+  "chat.empty": "Send your first message to the provider",
+  "chat.openChat": "Open chat",
+  "chat.closeChat": "Close chat",
   "admin.chat.disputeReview": "Order chat for dispute review",
   "maps.liveTracking": "Live tracking",
   "maps.customerMarker": "Customer point",
@@ -831,6 +881,16 @@ const en: Dictionary = {
   "provider.submittingOffer": "Submitting",
   "provider.offerSubmitted": "Offer published",
   "provider.offerError": "Offer failed. Check balance and service-profile eligibility.",
+  "provider.activeOrder": "Active order",
+  "provider.depart": "Departed",
+  "provider.arrive": "Arrived",
+  "provider.startWork": "Start work",
+  "provider.complete": "Complete order",
+  "provider.cancelOrder": "Cancel order",
+  "provider.cancelReason": "Reason for cancellation",
+  "provider.confirmCancel": "Confirm cancellation",
+  "provider.cancelError": "Could not cancel the order.",
+  "provider.actionError": "Could not perform action.",
   "admin.maps.activeOrderTracking": "Active order tracking",
   "reputation.review": "Review after completed order",
   "reputation.customerReliability": "Customer reliability",

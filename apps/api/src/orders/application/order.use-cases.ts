@@ -21,3 +21,12 @@ export class GetOrderUseCase {
     return this.repository.getOrderById(orderId);
   }
 }
+
+@Injectable()
+export class GetProviderActiveOrderUseCase {
+  constructor(private readonly repository: OrdersRepository) {}
+
+  async execute(providerUserId: string): Promise<OrderSummary | null> {
+    return this.repository.getProviderActiveOrder(providerUserId);
+  }
+}

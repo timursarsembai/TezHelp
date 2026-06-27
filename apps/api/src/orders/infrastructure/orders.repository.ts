@@ -146,6 +146,44 @@ export class OrdersRepository {
     return this.toOrderSummary(row, images, Number(count?.offer_count ?? 0));
   }
 
+  async getProviderActiveOrder(providerUserId: string): Promise<OrderSummary | null> {
+    const row = await this.database.db
+      .selectFrom("orders")
+      .selectAll()
+      .select((eb) => [
+        sql<number>`ST_Y((ST_AsText(${eb.ref("location")}::geometry))::geometry)`.as("latitude"),
+        sql<number>`ST_X((ST_AsText(${eb.ref("location")}::geometry))::geometry)`.as("longitude"),
+      ])
+      .where("assigned_provider_user_id", "=", providerUserId)
+      .where("status", "in", [
+        "provider_selected",
+        "provider_en_route",
+        "provider_arrived",
+        "in_progress",
+      ])
+      .orderBy("selected_at", "desc")
+      .limit(1)
+      .executeTakeFirst();
+
+    if (!row) return null;
+
+    const [images, count] = await Promise.all([
+      this.database.db
+        .selectFrom("order_images")
+        .selectAll()
+        .where("order_id", "=", row.id)
+        .orderBy("sort_order", "asc")
+        .execute(),
+      this.database.db
+        .selectFrom("offers")
+        .select((eb) => eb.fn.countAll<number>().as("offer_count"))
+        .where("order_id", "=", row.id)
+        .executeTakeFirst(),
+    ]);
+
+    return this.toOrderSummary(row, images, Number(count?.offer_count ?? 0));
+  }
+
   async appendStatusHistory(
     trx: Transaction<DatabaseSchema>,
     input: {

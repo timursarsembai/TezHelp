@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ApiClient } from "@tezhelp/api-client";
 import { translate } from "@tezhelp/i18n";
@@ -8,6 +8,8 @@ import type {
   IdentityUserSummary,
   Locale,
   OfferSummary,
+  OrderStatus,
+  OrderSummary,
   ProviderOrderDiscoveryItem,
   WalletSummary,
 } from "@tezhelp/types";
@@ -34,6 +36,8 @@ export function ProviderMapWorkspace({
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [feedStatus, setFeedStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [activeOrder, setActiveOrder] = useState<OrderSummary | null>(null);
+  const watchIdRef = useRef<number | null>(null);
   const headers = useMemo(() => ({ "x-tezhelp-user-id": user.id }), [user.id]);
 
   const loadProviderData = useCallback(async () => {
@@ -56,6 +60,73 @@ export function ProviderMapWorkspace({
   useEffect(() => {
     void loadProviderData();
   }, [loadProviderData]);
+
+  // Polling активного заказа провайдера каждые 4 сек
+  useEffect(() => {
+    const terminalStatuses: ReadonlyArray<OrderStatus> = [
+      "completed", "cancelled_by_customer", "cancelled_by_provider", "cancelled_by_admin",
+    ];
+    if (activeOrder && terminalStatuses.includes(activeOrder.status)) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const order = await createBrowserApiClient().get<OrderSummary | null>(
+          "/backend/v1/provider/orders/active",
+          { headers },
+        );
+        setActiveOrder(order);
+      } catch {
+        // ignore
+      }
+    }, 4000);
+
+    void createBrowserApiClient()
+      .get<OrderSummary | null>("/backend/v1/provider/orders/active", { headers })
+      .then(setActiveOrder)
+      .catch(() => undefined);
+
+    return () => clearInterval(interval);
+  }, [headers, activeOrder?.status]);
+
+  // GPS-публикация пока заказ активен
+  useEffect(() => {
+    const trackingStatuses: ReadonlyArray<OrderStatus> = [
+      "provider_en_route", "provider_arrived", "in_progress",
+    ];
+    if (!activeOrder || !trackingStatuses.includes(activeOrder.status)) {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+      return;
+    }
+
+    if (watchIdRef.current !== null) return; // уже следим
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        void createBrowserApiClient().post(
+          `/backend/v1/provider/orders/${activeOrder.id}/location`,
+          {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            accuracyMeters: pos.coords.accuracy,
+            resumed: false,
+          },
+          { headers },
+        ).catch(() => undefined);
+      },
+      () => undefined,
+      { enableHighAccuracy: true, maximumAge: 5000 },
+    );
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, [activeOrder?.id, activeOrder?.status, headers]);
 
   const selectedOrder = orders.find((item) => item.order.id === selectedOrderId) ?? null;
   const orderPoints = useMemo(
@@ -170,7 +241,14 @@ export function ProviderMapWorkspace({
               orderPoints={orderPoints}
               selectedPoint={null}
             />
-            {selectedOrder ? (
+            {activeOrder && !["completed","cancelled_by_customer","cancelled_by_provider","cancelled_by_admin"].includes(activeOrder.status) ? (
+              <ProviderActiveOrderPanel
+                locale={locale}
+                order={activeOrder}
+                onUpdated={setActiveOrder}
+                userId={user.id}
+              />
+            ) : selectedOrder ? (
               <ProviderOfferPanel
                 item={selectedOrder}
                 locale={locale}
@@ -221,6 +299,173 @@ export function ProviderMapWorkspace({
         </button>
       </nav>
     </div>
+  );
+}
+
+function ProviderActiveOrderPanel({
+  locale,
+  order,
+  userId,
+  onUpdated,
+}: {
+  readonly locale: Locale;
+  readonly order: OrderSummary;
+  readonly userId: string;
+  readonly onUpdated: (order: OrderSummary) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showCancel, setShowCancel] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const headers = useMemo(() => ({ "x-tezhelp-user-id": userId }), [userId]);
+
+  async function lifecycle(endpoint: string, body: Record<string, unknown> = {}) {
+    setBusy(true);
+    setError(null);
+    try {
+      const updated = await createBrowserApiClient().post<OrderSummary, Record<string, unknown>>(
+        `/backend/v1/provider/orders/${order.id}/${endpoint}`,
+        body,
+        { headers },
+      );
+      onUpdated(updated);
+    } catch {
+      setError(translate(locale, "provider.actionError"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function cancelOrder() {
+    if (!cancelReason.trim()) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const updated = await createBrowserApiClient().post<OrderSummary, { reason: string; idempotencyKey: string }>(
+        `/backend/v1/provider/orders/${order.id}/cancel`,
+        { reason: cancelReason, idempotencyKey: `cancel-provider-${order.id}` },
+        { headers },
+      );
+      onUpdated(updated);
+    } catch {
+      setError(translate(locale, "provider.cancelError"));
+      setBusy(false);
+    }
+  }
+
+  const lat = order.latitude;
+  const lon = order.longitude;
+  const navLinks = [
+    {
+      label: "Яндекс",
+      href: `yandexnavi://build_route_on_map?lat_to=${lat}&lon_to=${lon}`,
+      fallback: `https://yandex.kz/maps/?rtext=~${lat},${lon}&rtt=auto`,
+    },
+    {
+      label: "2ГИС",
+      href: `dgis://2gis.ru/routeSearch/rsType/car/to/${lon},${lat}`,
+      fallback: `https://2gis.kz/almaty/routing/car/${lon},${lat}`,
+    },
+    {
+      label: "Google",
+      href: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`,
+      fallback: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`,
+    },
+  ];
+
+  function openNav(href: string, fallback: string) {
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.src = href;
+    document.body.appendChild(iframe);
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 1500);
+    setTimeout(() => {
+      // Если приложение не открылось — открываем браузерную версию
+      window.open(fallback, "_blank", "noopener,noreferrer");
+    }, 800);
+  }
+
+  return (
+    <section className="order-panel order-panel--active" aria-labelledby="provider-active-title">
+      <div className="order-panel-header">
+        <div>
+          <span>{translate(locale, "provider.activeOrder")}</span>
+          <h1 id="provider-active-title">{order.addressLandmark}</h1>
+        </div>
+      </div>
+
+      <p style={{ color: "#475569", margin: "0 0 0.75rem" }}>{order.description}</p>
+
+      <div className="nav-links">
+        {navLinks.map((nav) => (
+          <button
+            className="nav-link-btn"
+            key={nav.label}
+            onClick={() => { openNav(nav.href, nav.fallback); }}
+            type="button"
+          >
+            {nav.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "0.75rem" }}>
+        {order.status === "provider_selected" ? (
+          <Button disabled={busy} onClick={() => void lifecycle("depart")}>
+            {translate(locale, "provider.depart")}
+          </Button>
+        ) : null}
+        {order.status === "provider_en_route" ? (
+          <Button disabled={busy} onClick={() => void lifecycle("arrive")}>
+            {translate(locale, "provider.arrive")}
+          </Button>
+        ) : null}
+        {order.status === "provider_arrived" ? (
+          <Button disabled={busy} onClick={() => void lifecycle("start-work")}>
+            {translate(locale, "provider.startWork")}
+          </Button>
+        ) : null}
+        {order.status === "in_progress" ? (
+          <Button
+            disabled={busy}
+            onClick={() => void lifecycle("complete", { idempotencyKey: `complete-${order.id}` })}
+          >
+            {translate(locale, "provider.complete")}
+          </Button>
+        ) : null}
+        <Button
+          disabled={busy}
+          onClick={() => { setShowCancel((v) => !v); }}
+          variant="secondary"
+        >
+          {translate(locale, "provider.cancelOrder")}
+        </Button>
+      </div>
+
+      {showCancel ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "1rem" }}>
+          <label className="field-label">
+            {translate(locale, "provider.cancelReason")}
+            <input
+              className="app-input"
+              onChange={(e) => { setCancelReason(e.target.value); }}
+              value={cancelReason}
+            />
+          </label>
+          <Button
+            disabled={!cancelReason.trim() || busy}
+            onClick={() => void cancelOrder()}
+            variant="secondary"
+          >
+            {translate(locale, "provider.confirmCancel")}
+          </Button>
+        </div>
+      ) : null}
+
+      {error ? <p className="order-panel-status" role="alert">{error}</p> : null}
+    </section>
   );
 }
 

@@ -903,6 +903,13 @@ const ORDER_STATUS_STEPS: ReadonlyArray<OrderStatus> = [
   "completed",
 ];
 
+const CHAT_STATUSES: ReadonlyArray<OrderStatus> = [
+  "provider_selected",
+  "provider_en_route",
+  "provider_arrived",
+  "in_progress",
+];
+
 function ActiveOrderPanel({
   locale,
   order,
@@ -914,11 +921,14 @@ function ActiveOrderPanel({
   readonly userId: string;
   readonly onDone: () => void;
 }) {
+  const [chatOpen, setChatOpen] = useState(false);
+
   const isCancelled =
     order.status === "cancelled_by_customer" ||
     order.status === "cancelled_by_provider" ||
     order.status === "cancelled_by_admin";
   const isTerminal = order.status === "completed" || isCancelled;
+  const chatAvailable = CHAT_STATUSES.includes(order.status as OrderStatus);
 
   const statusKey = `order.status.${order.status}` as
     | "order.status.provider_selected"
@@ -933,37 +943,61 @@ function ActiveOrderPanel({
   const currentStep = ORDER_STATUS_STEPS.indexOf(order.status as OrderStatus);
 
   return (
-    <section className="order-panel order-panel--active" aria-labelledby="active-order-title">
-      <div className="order-panel-header">
-        <div>
-          <span>{order.addressLandmark}</span>
-          <h1 id="active-order-title">{translate(locale, statusKey)}</h1>
+    <>
+      <section className="order-panel order-panel--active" aria-labelledby="active-order-title">
+        <div className="order-panel-header">
+          <div>
+            <span>{order.addressLandmark}</span>
+            <h1 id="active-order-title">{translate(locale, statusKey)}</h1>
+          </div>
+          <div style={{ display: "flex", gap: "0.375rem" }}>
+            {chatAvailable ? (
+              <button
+                aria-label={translate(locale, "chat.openChat")}
+                className="icon-button"
+                onClick={() => { setChatOpen((v) => !v); }}
+                title={translate(locale, "chat.openChat")}
+                type="button"
+              >
+                💬
+              </button>
+            ) : null}
+            {isTerminal ? (
+              <button className="icon-button" onClick={onDone} type="button">
+                ×
+              </button>
+            ) : null}
+          </div>
         </div>
-        {isTerminal ? (
-          <button className="icon-button" onClick={onDone} type="button">
-            ×
-          </button>
+
+        {!isCancelled ? (
+          <ol className="order-steps">
+            {ORDER_STATUS_STEPS.filter((s) => s !== "completed").map((step, i) => (
+              <li
+                className={`order-step${i < currentStep ? " order-step--done" : ""}${i === currentStep ? " order-step--active" : ""}`}
+                key={step}
+              >
+                <span className="order-step-dot" aria-hidden="true" />
+                <span>{translate(locale, `order.status.${step}` as typeof statusKey)}</span>
+              </li>
+            ))}
+          </ol>
         ) : null}
-      </div>
 
-      {!isCancelled ? (
-        <ol className="order-steps">
-          {ORDER_STATUS_STEPS.filter((s) => s !== "completed").map((step, i) => (
-            <li
-              className={`order-step${i < currentStep ? " order-step--done" : ""}${i === currentStep ? " order-step--active" : ""}`}
-              key={step}
-            >
-              <span className="order-step-dot" aria-hidden="true" />
-              <span>{translate(locale, `order.status.${step}` as typeof statusKey)}</span>
-            </li>
-          ))}
-        </ol>
-      ) : null}
+        {order.status === "completed" ? (
+          <ReviewPanel locale={locale} orderId={order.id} userId={userId} />
+        ) : null}
+      </section>
 
-      {order.status === "completed" ? (
-        <ReviewPanel locale={locale} orderId={order.id} userId={userId} />
+      {chatOpen && chatAvailable ? (
+        <ChatPanel
+          locale={locale}
+          onClose={() => { setChatOpen(false); }}
+          orderId={order.id}
+          userId={userId}
+        />
       ) : null}
-    </section>
+    </>
   );
 }
 
@@ -1044,6 +1078,143 @@ function ReviewPanel({
             ? translate(locale, "review.submitting")
             : translate(locale, "review.submit")}
         </Button>
+      </div>
+    </div>
+  );
+}
+
+function ChatPanel({
+  locale,
+  orderId,
+  userId,
+  onClose,
+}: {
+  readonly locale: Locale;
+  readonly orderId: string;
+  readonly userId: string;
+  readonly onClose: () => void;
+}) {
+  const [messages, setMessages] = useState<ReadonlyArray<import("@tezhelp/types").ChatMessageSummary>>([]);
+  const [text, setText] = useState("");
+  const [sending, setSending] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const conv = await createBrowserApiClient().get<import("@tezhelp/types").OrderConversationSummary>(
+          `/backend/v1/orders/${orderId}/chat`,
+          { headers: { "x-tezhelp-user-id": userId } },
+        );
+        if (!cancelled) setMessages(conv.messages);
+      } catch {
+        // ignore
+      }
+    }
+
+    void load();
+    const interval = setInterval(() => { void load(); }, 3000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [orderId, userId]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  async function send() {
+    const trimmed = text.trim();
+    if (!trimmed || sending) return;
+    setSending(true);
+    try {
+      await createBrowserApiClient().post(
+        `/backend/v1/orders/${orderId}/chat/messages`,
+        { messageType: "text", text: trimmed },
+        { headers: { "x-tezhelp-user-id": userId } },
+      );
+      setText("");
+    } catch {
+      // ignore — next poll will reflect state
+    } finally {
+      setSending(false);
+    }
+  }
+
+  function formatTime(iso: string) {
+    return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  return (
+    <div className="chat-panel" role="complementary" aria-label={translate(locale, "chat.title")}>
+      <div className="chat-panel-header">
+        <h2>{translate(locale, "chat.title")}</h2>
+        <button
+          aria-label={translate(locale, "chat.closeChat")}
+          className="icon-button"
+          onClick={onClose}
+          type="button"
+        >
+          ×
+        </button>
+      </div>
+      <p className="chat-notice">{translate(locale, "chat.disputeEvidence")}</p>
+
+      <div className="chat-messages">
+        {messages.length === 0 ? (
+          <p className="chat-empty">{translate(locale, "chat.empty")}</p>
+        ) : (
+          messages.map((msg) => {
+            if (msg.messageType === "system") {
+              return (
+                <span className="chat-bubble chat-bubble--system" key={msg.id}>
+                  {msg.textBody ?? msg.systemEventType}
+                </span>
+              );
+            }
+            const mine = msg.senderUserId === userId;
+            return (
+              <div
+                className={`chat-bubble ${mine ? "chat-bubble--mine" : "chat-bubble--theirs"}`}
+                key={msg.id}
+              >
+                {msg.textBody}
+                <time className="chat-time" dateTime={msg.deliveredAt}>
+                  {formatTime(msg.deliveredAt)}
+                </time>
+              </div>
+            );
+          })
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      <div className="chat-input-row">
+        <textarea
+          disabled={sending}
+          onChange={(e) => { setText(e.target.value); }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              void send();
+            }
+          }}
+          placeholder={translate(locale, "chat.inputPlaceholder")}
+          rows={1}
+          value={text}
+        />
+        <button
+          aria-label={translate(locale, "chat.send")}
+          className="chat-send-btn"
+          disabled={!text.trim() || sending}
+          onClick={() => { void send(); }}
+          type="button"
+        >
+          ↑
+        </button>
       </div>
     </div>
   );
