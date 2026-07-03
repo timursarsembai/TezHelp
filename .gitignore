@@ -16,6 +16,7 @@ debug.log
 *.tsbuildinfo
 __pycache__/
 *.pyc
+.codegraph/
 
 # Internal documentation — not for public repo
 docs/
