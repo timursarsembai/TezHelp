@@ -4,6 +4,8 @@ import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { providerDiscoveryPreferenceSchema, submitOfferSchema } from "@tezhelp/validation";
 
 import { IdentityApplicationError } from "../../identity/domain/identity-errors.js";
+import { RateLimit } from "../../foundation/authorization/rate-limit.decorator.js";
+import { RateLimitGuard } from "../../foundation/authorization/rate-limit.guard.js";
 import { SessionAuthGuard } from "../../foundation/authorization/session-auth.guard.js";
 import type { IdentityRequest } from "../../identity/presentation/identity-request.js";
 import { parseBody } from "../../identity/presentation/zod-body.js";
@@ -45,6 +47,8 @@ export class ProviderOffersController {
   }
 
   @Post("orders/:orderId/offers")
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ limit: 30, windowSeconds: 3600 })
   @ApiOkResponse({ description: "Submit an offer for an order." })
   async offer(
     @Param("orderId") orderId: string,

@@ -65,4 +65,15 @@ export class AppConfigService {
       sink: this.config.get("ERROR_MONITORING_SINK", { infer: true }),
     };
   }
+
+  get rateLimits() {
+    return {
+      ordersCreatePerHour: this.config.get("RATE_LIMIT_ORDERS_CREATE_PER_HOUR", { infer: true }),
+      offersSubmitPerHour: this.config.get("RATE_LIMIT_OFFERS_SUBMIT_PER_HOUR", { infer: true }),
+      otpVerifyPer15Min: this.config.get("RATE_LIMIT_OTP_VERIFY_PER_15MIN", { infer: true }),
+      chatMessagesPerHour: this.config.get("RATE_LIMIT_CHAT_MESSAGES_PER_HOUR", { infer: true }),
+      locationUpdatesPerHour: this.config.get("RATE_LIMIT_LOCATION_UPDATES_PER_HOUR", { infer: true }),
+      adminWalletPerHour: this.config.get("RATE_LIMIT_ADMIN_WALLET_PER_HOUR", { infer: true }),
+    };
+  }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, Res } from "@nestjs/common";
+import { Body, Controller, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import type { Request, Response } from "express";
 
@@ -10,6 +10,8 @@ import {
 
 import { AppConfigService } from "../../foundation/configuration/app-config.service.js";
 import { sessionCookieOptions } from "../../foundation/authorization/cookie-options.js";
+import { RateLimit } from "../../foundation/authorization/rate-limit.decorator.js";
+import { RateLimitGuard } from "../../foundation/authorization/rate-limit.guard.js";
 import { DevelopmentGoogleSignInUseCase } from "../application/development-google-sign-in.use-case.js";
 import { RequestPhoneOtpUseCase } from "../application/request-phone-otp.use-case.js";
 import { RevokeSessionUseCase } from "../application/revoke-session.use-case.js";
@@ -40,6 +42,8 @@ export class AuthController {
   }
 
   @Post("otp/verify")
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ limit: 5, windowSeconds: 900 })
   @ApiOkResponse({ description: "Verify a phone OTP challenge and start a session." })
   async verifyOtp(@Body() body: unknown, @Res({ passthrough: true }) response: Response) {
     const input = parseBody(verifyOtpSchema, body);

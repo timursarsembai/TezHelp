@@ -5,6 +5,8 @@ import { walletAdjustmentSchema } from "@tezhelp/validation";
 
 import { parseBody } from "../../identity/presentation/zod-body.js";
 import { ModerationApplicationError } from "../../moderation/domain/moderation-errors.js";
+import { RateLimit } from "../../foundation/authorization/rate-limit.decorator.js";
+import { RateLimitGuard } from "../../foundation/authorization/rate-limit.guard.js";
 import {
   type AdminRequest,
   StaffAuthGuard,
@@ -24,6 +26,8 @@ export class AdminWalletController {
   ) {}
 
   @Post("manual-credit")
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ limit: 30, windowSeconds: 3600 })
   @ApiOkResponse({ description: "Append a manual wallet credit ledger entry." })
   async credit(@Body() body: unknown, @Req() request: AdminRequest) {
     const input = parseBody(walletAdjustmentSchema, body);
@@ -34,6 +38,8 @@ export class AdminWalletController {
   }
 
   @Post("manual-debit-correction")
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ limit: 30, windowSeconds: 3600 })
   @ApiOkResponse({ description: "Append a manual wallet debit correction ledger entry." })
   async debitCorrection(@Body() body: unknown, @Req() request: AdminRequest) {
     const input = parseBody(walletAdjustmentSchema, body);

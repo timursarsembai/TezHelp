@@ -4,6 +4,8 @@ import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { cancelOrderSchema, createOrderSchema, selectProviderSchema } from "@tezhelp/validation";
 
 import { IdentityApplicationError } from "../../identity/domain/identity-errors.js";
+import { RateLimit } from "../../foundation/authorization/rate-limit.decorator.js";
+import { RateLimitGuard } from "../../foundation/authorization/rate-limit.guard.js";
 import { SessionAuthGuard } from "../../foundation/authorization/session-auth.guard.js";
 import type { IdentityRequest } from "../../identity/presentation/identity-request.js";
 import { parseBody } from "../../identity/presentation/zod-body.js";
@@ -27,6 +29,8 @@ export class OrdersController {
   ) {}
 
   @Post()
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ limit: 20, windowSeconds: 3600 })
   @ApiOkResponse({ description: "Create and publish an Almaty order." })
   async create(@Body() body: unknown, @Req() request: IdentityRequest) {
     const input = parseBody(createOrderSchema, body);

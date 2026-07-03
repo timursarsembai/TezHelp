@@ -325,6 +325,12 @@ export const apiEnvSchema = z
       .positive()
       .default(60 * 15),
     ERROR_MONITORING_SINK: z.enum(["local", "disabled"]).default("local"),
+    RATE_LIMIT_ORDERS_CREATE_PER_HOUR: z.coerce.number().int().positive().default(20),
+    RATE_LIMIT_OFFERS_SUBMIT_PER_HOUR: z.coerce.number().int().positive().default(30),
+    RATE_LIMIT_OTP_VERIFY_PER_15MIN: z.coerce.number().int().positive().default(5),
+    RATE_LIMIT_CHAT_MESSAGES_PER_HOUR: z.coerce.number().int().positive().default(120),
+    RATE_LIMIT_LOCATION_UPDATES_PER_HOUR: z.coerce.number().int().positive().default(600),
+    RATE_LIMIT_ADMIN_WALLET_PER_HOUR: z.coerce.number().int().positive().default(30),
   })
   .superRefine((value, context) => {
     if (value.SESSION_COOKIE_SAMESITE === "none" && !value.SESSION_COOKIE_SECURE) {

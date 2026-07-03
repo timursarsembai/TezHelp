@@ -4,6 +4,8 @@ import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { liveLocationUpdateSchema } from "@tezhelp/validation";
 
 import { IdentityApplicationError } from "../../identity/domain/identity-errors.js";
+import { RateLimit } from "../../foundation/authorization/rate-limit.decorator.js";
+import { RateLimitGuard } from "../../foundation/authorization/rate-limit.guard.js";
 import { SessionAuthGuard } from "../../foundation/authorization/session-auth.guard.js";
 import type { IdentityRequest } from "../../identity/presentation/identity-request.js";
 import { parseBody } from "../../identity/presentation/zod-body.js";
@@ -16,6 +18,8 @@ export class ProviderLiveLocationController {
   constructor(private readonly publishLocation: PublishProviderLocationUseCase) {}
 
   @Post()
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ limit: 600, windowSeconds: 3600 })
   @ApiOkResponse({ description: "Publish assigned provider live GPS point for an active order." })
   async publish(
     @Param("orderId") orderId: string,

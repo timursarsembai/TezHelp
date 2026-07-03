@@ -4,6 +4,8 @@ import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { reportChatMessageSchema, sendChatMessageSchema } from "@tezhelp/validation";
 
 import { IdentityApplicationError } from "../../identity/domain/identity-errors.js";
+import { RateLimit } from "../../foundation/authorization/rate-limit.decorator.js";
+import { RateLimitGuard } from "../../foundation/authorization/rate-limit.guard.js";
 import { SessionAuthGuard } from "../../foundation/authorization/session-auth.guard.js";
 import type { IdentityRequest } from "../../identity/presentation/identity-request.js";
 import { parseBody } from "../../identity/presentation/zod-body.js";
@@ -35,6 +37,8 @@ export class OrderChatController {
   }
 
   @Post("messages")
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ limit: 120, windowSeconds: 3600 })
   @ApiOkResponse({ description: "Send a text or attachment message in an active selected order." })
   async message(
     @Param("orderId") orderId: string,
