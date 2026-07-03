@@ -5,6 +5,7 @@ import { Injectable } from "@nestjs/common";
 import type { OrderSummary } from "@tezhelp/types";
 
 import { CommissionCalculator } from "../../commissions/domain/commission-calculator.js";
+import { AuditEventRepository } from "../../foundation/audit/audit-event.repository.js";
 import { DatabaseService } from "../../foundation/database/database.service.js";
 import { WalletRepository } from "../../wallet/infrastructure/wallet.repository.js";
 import { WalletApplicationError } from "../../wallet/domain/wallet-errors.js";
@@ -18,6 +19,7 @@ export class SelectProviderUseCase {
     private readonly orders: OrdersRepository,
     private readonly wallet: WalletRepository,
     private readonly commissionCalculator: CommissionCalculator,
+    private readonly audit: AuditEventRepository,
   ) {}
 
   async execute(input: {
@@ -198,9 +200,8 @@ export class SelectProviderUseCase {
         reason: "customer_selected_provider",
         metadata: { offerId: offer.id, commissionReservationId: reservationId },
       });
-      await trx
-        .insertInto("audit_events")
-        .values({
+      await this.audit.append(
+        {
           actor_id: input.customerUserId,
           action: "order.provider_selected",
           reason: "customer_selected_provider",
@@ -212,8 +213,9 @@ export class SelectProviderUseCase {
             commissionReservationId: reservationId,
             acceptedPriceKzt: offer.price_kzt,
           },
-        })
-        .execute();
+        },
+        trx,
+      );
 
       return this.orders.getOrderById(input.orderId, trx);
     });

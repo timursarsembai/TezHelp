@@ -3,6 +3,7 @@ import type { Transaction } from "kysely";
 
 import type { OrderContactSummary, OrderStatus, OrderSummary } from "@tezhelp/types";
 
+import { AuditEventRepository } from "../../foundation/audit/audit-event.repository.js";
 import { DatabaseService } from "../../foundation/database/database.service.js";
 import type { DatabaseSchema } from "../../foundation/database/database.types.js";
 import { WalletRepository } from "../../wallet/infrastructure/wallet.repository.js";
@@ -35,13 +36,14 @@ export class ConfirmProviderDepartureUseCase {
   constructor(
     private readonly database: DatabaseService,
     private readonly orders: OrdersRepository,
+    private readonly audit: AuditEventRepository,
   ) {}
 
   async execute(input: {
     readonly providerUserId: string;
     readonly orderId: string;
   }): Promise<OrderSummary> {
-    return transitionAssignedProviderOrder(this.database, this.orders, {
+    return transitionAssignedProviderOrder(this.database, this.orders, this.audit, {
       providerUserId: input.providerUserId,
       orderId: input.orderId,
       nextStatus: "provider_en_route",
@@ -57,13 +59,14 @@ export class ConfirmProviderArrivalUseCase {
   constructor(
     private readonly database: DatabaseService,
     private readonly orders: OrdersRepository,
+    private readonly audit: AuditEventRepository,
   ) {}
 
   async execute(input: {
     readonly providerUserId: string;
     readonly orderId: string;
   }): Promise<OrderSummary> {
-    return transitionAssignedProviderOrder(this.database, this.orders, {
+    return transitionAssignedProviderOrder(this.database, this.orders, this.audit, {
       providerUserId: input.providerUserId,
       orderId: input.orderId,
       nextStatus: "provider_arrived",
@@ -79,13 +82,14 @@ export class StartOrderWorkUseCase {
   constructor(
     private readonly database: DatabaseService,
     private readonly orders: OrdersRepository,
+    private readonly audit: AuditEventRepository,
   ) {}
 
   async execute(input: {
     readonly providerUserId: string;
     readonly orderId: string;
   }): Promise<OrderSummary> {
-    return transitionAssignedProviderOrder(this.database, this.orders, {
+    return transitionAssignedProviderOrder(this.database, this.orders, this.audit, {
       providerUserId: input.providerUserId,
       orderId: input.orderId,
       nextStatus: "in_progress",
@@ -102,6 +106,7 @@ export class CompleteOrderUseCase {
     private readonly database: DatabaseService,
     private readonly orders: OrdersRepository,
     private readonly wallet: WalletRepository,
+    private readonly audit: AuditEventRepository,
   ) {}
 
   async execute(input: {
@@ -157,7 +162,7 @@ export class CompleteOrderUseCase {
         reason: "provider_completed_order",
         metadata: { commissionReservationId: reservationId },
       });
-      await writeOrderAudit(trx, {
+      await writeOrderAudit(this.audit, trx, {
         actorUserId: input.providerUserId,
         action: "order.completed",
         reason: "provider_completed_order",
@@ -176,6 +181,7 @@ export class CancelOrderUseCase {
     private readonly database: DatabaseService,
     private readonly orders: OrdersRepository,
     private readonly wallet: WalletRepository,
+    private readonly audit: AuditEventRepository,
   ) {}
 
   async execute(input: {
@@ -257,7 +263,7 @@ export class CancelOrderUseCase {
           commissionReservationId: order.commission_reservation_id,
         },
       });
-      await writeOrderAudit(trx, {
+      await writeOrderAudit(this.audit, trx, {
         actorUserId: input.actorUserId,
         action: "order.cancelled",
         reason: input.reason,
@@ -328,6 +334,7 @@ export class GetOrderContactUseCase {
 async function transitionAssignedProviderOrder(
   database: DatabaseService,
   orders: OrdersRepository,
+  audit: AuditEventRepository,
   input: {
     readonly providerUserId: string;
     readonly orderId: string;
@@ -365,7 +372,7 @@ async function transitionAssignedProviderOrder(
       actorUserId: input.providerUserId,
       reason: input.reason,
     });
-    await writeOrderAudit(trx, {
+    await writeOrderAudit(audit, trx, {
       actorUserId: input.providerUserId,
       action: input.auditAction,
       reason: input.reason,
@@ -637,6 +644,7 @@ function expectedCancelledStatus(actor: CancellationActor): OrderStatus {
 }
 
 async function writeOrderAudit(
+  audit: AuditEventRepository,
   trx: Transaction<DatabaseSchema>,
   input: {
     readonly actorUserId: string;
@@ -646,15 +654,15 @@ async function writeOrderAudit(
     readonly metadata: Record<string, unknown>;
   },
 ): Promise<void> {
-  await trx
-    .insertInto("audit_events")
-    .values({
+  await audit.append(
+    {
       actor_id: input.actorUserId,
       action: input.action,
       reason: input.reason,
       related_entity_type: "order",
       related_entity_id: input.orderId,
       metadata: input.metadata,
-    })
-    .execute();
+    },
+    trx,
+  );
 }

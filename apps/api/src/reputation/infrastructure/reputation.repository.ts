@@ -15,6 +15,7 @@ import type {
   ServiceCategorySlug,
 } from "@tezhelp/types";
 
+import { AuditEventRepository } from "../../foundation/audit/audit-event.repository.js";
 import { DatabaseService } from "../../foundation/database/database.service.js";
 import type {
   DatabaseSchema,
@@ -69,7 +70,10 @@ interface ProviderSanctionEventRow {
 
 @Injectable()
 export class ReputationRepository {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly audit: AuditEventRepository,
+  ) {}
 
   async submitReview(input: {
     readonly orderId: string;
@@ -541,17 +545,17 @@ export class ReputationRepository {
       readonly metadata: Record<string, unknown>;
     },
   ): Promise<void> {
-    await executor
-      .insertInto("audit_events")
-      .values({
+    await this.audit.append(
+      {
         actor_id: input.actorUserId,
         action: input.action,
         reason: input.reason,
         related_entity_type: "provider_sanction",
         related_entity_id: input.entityId,
         metadata: input.metadata,
-      })
-      .execute();
+      },
+      executor,
+    );
   }
 
   private async listEventsBySanctionIds(

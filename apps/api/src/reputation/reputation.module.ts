@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 
+import { AuditModule } from "../foundation/audit/audit.module.js";
 import { AuthorizationModule } from "../foundation/authorization/authorization.module.js";
 import { ConfigurationModule } from "../foundation/configuration/configuration.module.js";
 import { DatabaseModule } from "../foundation/database/database.module.js";
@@ -19,7 +20,7 @@ import { ProviderReputationController } from "./presentation/provider-reputation
 import { PublicProviderReliabilityController } from "./presentation/public-provider-reliability.controller.js";
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule, AuthorizationModule],
+  imports: [ConfigurationModule, DatabaseModule, AuthorizationModule, AuditModule],
   controllers: [
     OrderReviewsController,
     ProviderReputationController,

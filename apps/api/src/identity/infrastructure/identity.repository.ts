@@ -3,6 +3,7 @@ import type { Transaction } from "kysely";
 
 import type { Locale, UserRole } from "@tezhelp/types";
 
+import { AuditEventRepository } from "../../foundation/audit/audit-event.repository.js";
 import { DatabaseService } from "../../foundation/database/database.service.js";
 import type {
   AuthProvider,
@@ -57,7 +58,10 @@ export interface CreateOtpChallengeInput {
 
 @Injectable()
 export class IdentityRepository {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly audit: AuditEventRepository,
+  ) {}
 
   async transaction<T>(callback: (trx: Transaction<DatabaseSchema>) => Promise<T>): Promise<T> {
     return this.database.transaction(callback);
@@ -145,17 +149,17 @@ export class IdentityRepository {
       .insertInto("identity_security_events")
       .values({ user_id: userId, event_type: eventType, metadata })
       .execute();
-    await trx
-      .insertInto("audit_events")
-      .values({
+    await this.audit.append(
+      {
         actor_id: userId,
         action: eventType,
         reason: "identity_security_event",
         related_entity_type: "user",
         related_entity_id: userId,
         metadata,
-      })
-      .execute();
+      },
+      trx,
+    );
   }
 
   async verifyOtpChallenge(

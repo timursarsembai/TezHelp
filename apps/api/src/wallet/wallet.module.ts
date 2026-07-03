@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 
+import { AuditModule } from "../foundation/audit/audit.module.js";
 import { AuthorizationModule } from "../foundation/authorization/authorization.module.js";
 import { ConfigurationModule } from "../foundation/configuration/configuration.module.js";
 import { DatabaseModule } from "../foundation/database/database.module.js";
@@ -14,7 +15,7 @@ import { AdminWalletController } from "./presentation/admin-wallet.controller.js
 import { ProviderWalletController } from "./presentation/provider-wallet.controller.js";
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule, AuthorizationModule],
+  imports: [ConfigurationModule, DatabaseModule, AuthorizationModule, AuditModule],
   controllers: [ProviderWalletController, AdminWalletController],
   providers: [
     WalletRepository,

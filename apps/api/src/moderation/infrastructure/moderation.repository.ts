@@ -13,6 +13,7 @@ import type {
   ServiceCategorySlug,
 } from "@tezhelp/types";
 
+import { AuditEventRepository } from "../../foundation/audit/audit-event.repository.js";
 import { DatabaseService } from "../../foundation/database/database.service.js";
 import type { DatabaseSchema } from "../../foundation/database/database.types.js";
 import { ModerationApplicationError } from "../domain/moderation-errors.js";
@@ -29,7 +30,10 @@ export interface AdminDocumentRecord {
 
 @Injectable()
 export class ModerationRepository {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly audit: AuditEventRepository,
+  ) {}
 
   async listQueue(
     filter: ModerationQueueFilter,
@@ -239,9 +243,8 @@ export class ModerationRepository {
         reason: input.reason,
         documentVersion: profile.document_version,
       });
-      await trx
-        .insertInto("audit_events")
-        .values({
+      await this.audit.append(
+        {
           actor_id: input.adminUserId,
           action: input.action,
           reason: input.reason,
@@ -252,8 +255,9 @@ export class ModerationRepository {
             toStatus: input.toStatus,
             documentVersion: profile.document_version,
           },
-        })
-        .execute();
+        },
+        trx,
+      );
     });
   }
 

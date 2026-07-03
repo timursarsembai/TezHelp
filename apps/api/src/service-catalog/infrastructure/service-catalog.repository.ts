@@ -9,11 +9,15 @@ import type {
   ServiceCategorySummary,
 } from "@tezhelp/types";
 
+import { AuditEventRepository } from "../../foundation/audit/audit-event.repository.js";
 import { DatabaseService } from "../../foundation/database/database.service.js";
 
 @Injectable()
 export class ServiceCatalogRepository {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly audit: AuditEventRepository,
+  ) {}
 
   async listCategories(locale: Locale): Promise<ReadonlyArray<ServiceCategorySummary>> {
     const rows = await this.database.db
@@ -121,9 +125,8 @@ export class ServiceCatalogRepository {
         ])
         .executeTakeFirstOrThrow();
 
-      await trx
-        .insertInto("audit_events")
-        .values({
+      await this.audit.append(
+        {
           actor_id: adminUserId,
           action: "service_category.commercial_config_updated",
           reason: "admin_updated_commercial_config",
@@ -133,8 +136,9 @@ export class ServiceCatalogRepository {
             before: this.toCommercialConfig(previous),
             after: this.toCommercialConfig(row),
           },
-        })
-        .execute();
+        },
+        trx,
+      );
 
       return this.toCommercialConfig(row);
     });

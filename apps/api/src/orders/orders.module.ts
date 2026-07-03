@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 
 import { CommissionCalculator } from "../commissions/domain/commission-calculator.js";
+import { AuditModule } from "../foundation/audit/audit.module.js";
 import { AuthorizationModule } from "../foundation/authorization/authorization.module.js";
 import { ConfigurationModule } from "../foundation/configuration/configuration.module.js";
 import { DatabaseModule } from "../foundation/database/database.module.js";
@@ -25,7 +26,7 @@ import { OrdersController } from "./presentation/orders.controller.js";
 import { ProviderOrderLifecycleController } from "./presentation/provider-order-lifecycle.controller.js";
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule, WalletModule, AuthorizationModule],
+  imports: [ConfigurationModule, DatabaseModule, WalletModule, AuthorizationModule, AuditModule],
   controllers: [OrdersController, ProviderOrderLifecycleController, AdminOrdersController],
   providers: [
     CommissionCalculator,

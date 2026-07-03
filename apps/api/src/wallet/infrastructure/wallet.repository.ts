@@ -7,6 +7,7 @@ import type {
   WalletSummary,
 } from "@tezhelp/types";
 
+import { AuditEventRepository } from "../../foundation/audit/audit-event.repository.js";
 import { DatabaseService } from "../../foundation/database/database.service.js";
 import type { DatabaseSchema } from "../../foundation/database/database.types.js";
 import { WalletApplicationError } from "../domain/wallet-errors.js";
@@ -43,7 +44,10 @@ export interface CommissionReservationLedgerInput {
 
 @Injectable()
 export class WalletRepository {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly audit: AuditEventRepository,
+  ) {}
 
   async transaction<T>(callback: (trx: Transaction<DatabaseSchema>) => Promise<T>): Promise<T> {
     return this.database.transaction(callback);
@@ -76,17 +80,17 @@ export class WalletRepository {
     return this.database.transaction(async (trx) => {
       await this.ensureWalletForUpdate(trx, input.providerUserId);
       const entry = await this.applyLedgerEntry(trx, input);
-      await trx
-        .insertInto("audit_events")
-        .values({
+      await this.audit.append(
+        {
           actor_id: input.actorUserId,
           action: `wallet.${input.entryType}`,
           reason: input.reason,
           related_entity_type: "wallet_account",
           related_entity_id: input.providerUserId,
           metadata: { amountKzt: input.amountKzt, ledgerEntryId: entry.id },
-        })
-        .execute();
+        },
+        trx,
+      );
 
       return entry;
     });
