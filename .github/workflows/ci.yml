@@ -56,7 +56,7 @@ jobs:
       - name: Dependency vulnerability audit
         run: pnpm audit --audit-level=high
       - name: Secret scan
-        uses: trufflesecurity/trufflehog@v3.88.27
+        uses: trufflesecurity/trufflehog@v3.95.8
         with:
           path: ./
           base: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || 'HEAD~1' }}
