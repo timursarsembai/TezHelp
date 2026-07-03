@@ -15,10 +15,13 @@ import {
   SuspendProviderServiceProfileUseCase,
 } from "../application/moderation.use-cases.js";
 import { ModerationApplicationError } from "../domain/moderation-errors.js";
-import { type AdminRequest, DevelopmentAdminGuard } from "./development-admin.guard.js";
+import {
+  type AdminRequest,
+  StaffAuthGuard,
+} from "../../foundation/authorization/staff-auth.guard.js";
 
 @ApiTags("admin-moderation")
-@UseGuards(DevelopmentAdminGuard)
+@UseGuards(StaffAuthGuard)
 @Controller("admin/provider-moderation")
 export class AdminModerationController {
   constructor(

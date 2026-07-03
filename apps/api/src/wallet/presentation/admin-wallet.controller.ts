@@ -7,15 +7,15 @@ import { parseBody } from "../../identity/presentation/zod-body.js";
 import { ModerationApplicationError } from "../../moderation/domain/moderation-errors.js";
 import {
   type AdminRequest,
-  DevelopmentAdminGuard,
-} from "../../moderation/presentation/development-admin.guard.js";
+  StaffAuthGuard,
+} from "../../foundation/authorization/staff-auth.guard.js";
 import {
   ManualWalletCreditUseCase,
   ManualWalletDebitCorrectionUseCase,
 } from "../application/wallet.use-cases.js";
 
 @ApiTags("admin-wallet")
-@UseGuards(DevelopmentAdminGuard)
+@UseGuards(StaffAuthGuard)
 @Controller("admin/wallet")
 export class AdminWalletController {
   constructor(

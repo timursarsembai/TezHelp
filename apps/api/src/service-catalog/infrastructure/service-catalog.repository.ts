@@ -86,28 +86,58 @@ export class ServiceCatalogRepository {
   async updateCommercialConfig(
     slug: ServiceCategorySlug,
     input: ServiceCategoryCommercialConfig,
+    adminUserId: string,
   ): Promise<ServiceCategoryCommercialConfig> {
-    const row = await this.database.db
-      .updateTable("service_categories")
-      .set({
-        response_fee_kzt: input.responseFeeKzt,
-        commission_strategy: input.commissionStrategy,
-        commission_percentage_bps: input.commissionPercentageBps,
-        commission_fixed_kzt: input.commissionFixedKzt,
-        operational_minimum_kzt: input.operationalMinimumKzt,
-        updated_at: new Date(),
-      })
-      .where("slug", "=", slug)
-      .returning([
-        "response_fee_kzt",
-        "commission_strategy",
-        "commission_percentage_bps",
-        "commission_fixed_kzt",
-        "operational_minimum_kzt",
-      ])
-      .executeTakeFirstOrThrow();
+    return this.database.transaction(async (trx) => {
+      const previous = await trx
+        .selectFrom("service_categories")
+        .select([
+          "response_fee_kzt",
+          "commission_strategy",
+          "commission_percentage_bps",
+          "commission_fixed_kzt",
+          "operational_minimum_kzt",
+        ])
+        .where("slug", "=", slug)
+        .executeTakeFirstOrThrow();
 
-    return this.toCommercialConfig(row);
+      const row = await trx
+        .updateTable("service_categories")
+        .set({
+          response_fee_kzt: input.responseFeeKzt,
+          commission_strategy: input.commissionStrategy,
+          commission_percentage_bps: input.commissionPercentageBps,
+          commission_fixed_kzt: input.commissionFixedKzt,
+          operational_minimum_kzt: input.operationalMinimumKzt,
+          updated_at: new Date(),
+        })
+        .where("slug", "=", slug)
+        .returning([
+          "response_fee_kzt",
+          "commission_strategy",
+          "commission_percentage_bps",
+          "commission_fixed_kzt",
+          "operational_minimum_kzt",
+        ])
+        .executeTakeFirstOrThrow();
+
+      await trx
+        .insertInto("audit_events")
+        .values({
+          actor_id: adminUserId,
+          action: "service_category.commercial_config_updated",
+          reason: "admin_updated_commercial_config",
+          related_entity_type: "service_category",
+          related_entity_id: slug,
+          metadata: {
+            before: this.toCommercialConfig(previous),
+            after: this.toCommercialConfig(row),
+          },
+        })
+        .execute();
+
+      return this.toCommercialConfig(row);
+    });
   }
 
   private toCommercialConfig(row: {

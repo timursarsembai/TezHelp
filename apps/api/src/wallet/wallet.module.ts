@@ -1,9 +1,8 @@
 import { Module } from "@nestjs/common";
 
+import { AuthorizationModule } from "../foundation/authorization/authorization.module.js";
 import { ConfigurationModule } from "../foundation/configuration/configuration.module.js";
 import { DatabaseModule } from "../foundation/database/database.module.js";
-import { DevelopmentIdentityGuard } from "../identity/presentation/development-identity.guard.js";
-import { DevelopmentAdminGuard } from "../moderation/presentation/development-admin.guard.js";
 import {
   GetProviderWalletUseCase,
   ListProviderLedgerUseCase,
@@ -15,11 +14,9 @@ import { AdminWalletController } from "./presentation/admin-wallet.controller.js
 import { ProviderWalletController } from "./presentation/provider-wallet.controller.js";
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule],
+  imports: [ConfigurationModule, DatabaseModule, AuthorizationModule],
   controllers: [ProviderWalletController, AdminWalletController],
   providers: [
-    DevelopmentIdentityGuard,
-    DevelopmentAdminGuard,
     WalletRepository,
     GetProviderWalletUseCase,
     ListProviderLedgerUseCase,

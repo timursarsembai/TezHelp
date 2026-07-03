@@ -305,7 +305,6 @@ export const apiEnvSchema = z
       .string()
       .regex(/^\d{6}$/)
       .default("123456"),
-    IDENTITY_DEV_AUTH_HEADER_ENABLED: z.coerce.boolean().default(true),
     OTP_TTL_SECONDS: z.coerce.number().int().positive().default(300),
     OTP_RESEND_COOLDOWN_SECONDS: z.coerce.number().int().positive().default(60),
     OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
@@ -313,9 +312,29 @@ export const apiEnvSchema = z
     OTP_IP_RATE_LIMIT_PER_HOUR: z.coerce.number().int().positive().default(30),
     SESSION_COOKIE_NAME: z.string().min(1).default("tezhelp_session"),
     SESSION_COOKIE_SECURE: z.coerce.boolean().default(false),
+    SESSION_COOKIE_DOMAIN: z.string().min(1).optional(),
+    SESSION_COOKIE_SAMESITE: z.enum(["lax", "strict", "none"]).default("lax"),
+    SESSION_TTL_SECONDS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(60 * 60 * 24 * 30),
+    SESSION_SLIDING_REFRESH_SECONDS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(60 * 15),
     ERROR_MONITORING_SINK: z.enum(["local", "disabled"]).default("local"),
   })
   .superRefine((value, context) => {
+    if (value.SESSION_COOKIE_SAMESITE === "none" && !value.SESSION_COOKIE_SECURE) {
+      context.addIssue({
+        code: "custom",
+        path: ["SESSION_COOKIE_SAMESITE"],
+        message: "SameSite=none requires SESSION_COOKIE_SECURE=true",
+      });
+    }
+
     if (value.NODE_ENV !== "production") {
       return;
     }
@@ -325,14 +344,6 @@ export const apiEnvSchema = z
         code: "custom",
         path: ["IDENTITY_OTP_ADAPTER"],
         message: "Development OTP adapter is not allowed in production",
-      });
-    }
-
-    if (value.IDENTITY_DEV_AUTH_HEADER_ENABLED) {
-      context.addIssue({
-        code: "custom",
-        path: ["IDENTITY_DEV_AUTH_HEADER_ENABLED"],
-        message: "Development auth header is not allowed in production",
       });
     }
 

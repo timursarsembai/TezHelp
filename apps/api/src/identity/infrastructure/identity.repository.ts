@@ -8,6 +8,7 @@ import type {
   AuthProvider,
   DatabaseSchema,
   OtpPurpose,
+  StaffRole,
 } from "../../foundation/database/database.types.js";
 
 export interface UserRecord {
@@ -17,6 +18,16 @@ export interface UserRecord {
   readonly selectedRole: UserRole;
   readonly verifiedPhone: string | null;
   readonly recentAuthAt: Date | null;
+  readonly isStaff: boolean;
+  readonly staffRole: StaffRole | null;
+}
+
+export interface SessionRecord {
+  readonly id: string;
+  readonly userId: string;
+  readonly createdAt: Date;
+  readonly recentAuthAt: Date;
+  readonly revokedAt: Date | null;
 }
 
 export interface OtpChallengeRecord {
@@ -107,14 +118,21 @@ export class IdentityRepository {
   }
 
   async switchRole(userId: string, role: UserRole): Promise<UserRecord | null> {
-    const row = await this.database.db
-      .updateTable("users")
-      .set({ selected_role: role, updated_at: new Date() })
-      .where("id", "=", userId)
-      .returningAll()
-      .executeTakeFirst();
+    return this.database.transaction(async (trx) => {
+      const row = await trx
+        .updateTable("users")
+        .set({ selected_role: role, updated_at: new Date() })
+        .where("id", "=", userId)
+        .returningAll()
+        .executeTakeFirst();
+      if (!row) {
+        return null;
+      }
 
-    return row ? this.toUserRecord(row) : null;
+      await this.createSecurityEvent(trx, userId, "identity.role_switched", { role });
+
+      return this.toUserRecord(row);
+    });
   }
 
   async createSecurityEvent(
@@ -219,6 +237,7 @@ export class IdentityRepository {
         preferred_locale: locale,
         status: "active",
         selected_role: "customer",
+        is_staff: false,
         verified_phone: phone,
         phone_verified_at: now,
         recent_auth_at: now,
@@ -233,51 +252,95 @@ export class IdentityRepository {
   }
 
   async signInWithDevelopmentGoogle(
+    trx: Transaction<DatabaseSchema>,
     providerSubject: string,
     locale: Locale,
     now: Date,
   ): Promise<UserRecord> {
-    return this.database.transaction(async (trx) => {
-      const existingLink = await trx
-        .selectFrom("auth_identity_links")
-        .innerJoin("users", "users.id", "auth_identity_links.user_id")
-        .selectAll("users")
-        .where("auth_identity_links.provider", "=", "google")
-        .where("auth_identity_links.provider_subject", "=", providerSubject)
-        .executeTakeFirst();
+    const existingLink = await trx
+      .selectFrom("auth_identity_links")
+      .innerJoin("users", "users.id", "auth_identity_links.user_id")
+      .selectAll("users")
+      .where("auth_identity_links.provider", "=", "google")
+      .where("auth_identity_links.provider_subject", "=", providerSubject)
+      .executeTakeFirst();
 
-      if (existingLink) {
-        const updated = await trx
-          .updateTable("users")
-          .set({ recent_auth_at: now, updated_at: now })
-          .where("id", "=", existingLink.id)
-          .returningAll()
-          .executeTakeFirstOrThrow();
-        await this.createSecurityEvent(trx, updated.id, "identity.google.signed_in", {
-          phoneVerified: Boolean(updated.verified_phone),
-        });
-        return this.toUserRecord(updated);
-      }
-
-      const created = await trx
-        .insertInto("users")
-        .values({
-          preferred_locale: locale,
-          status: "pending_phone",
-          selected_role: "customer",
-          recent_auth_at: now,
-          updated_at: now,
-        })
+    if (existingLink) {
+      const updated = await trx
+        .updateTable("users")
+        .set({ recent_auth_at: now, updated_at: now })
+        .where("id", "=", existingLink.id)
         .returningAll()
         .executeTakeFirstOrThrow();
-
-      await this.ensureRoleProfiles(trx, created.id);
-      await this.ensureIdentityLink(trx, created.id, "google", providerSubject);
-      await this.createSecurityEvent(trx, created.id, "identity.google.linked", {
-        phoneVerified: false,
+      await this.createSecurityEvent(trx, updated.id, "identity.google.signed_in", {
+        phoneVerified: Boolean(updated.verified_phone),
       });
-      return this.toUserRecord(created);
+      return this.toUserRecord(updated);
+    }
+
+    const created = await trx
+      .insertInto("users")
+      .values({
+        preferred_locale: locale,
+        status: "pending_phone",
+        selected_role: "customer",
+        is_staff: false,
+        recent_auth_at: now,
+        updated_at: now,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+
+    await this.ensureRoleProfiles(trx, created.id);
+    await this.ensureIdentityLink(trx, created.id, "google", providerSubject);
+    await this.createSecurityEvent(trx, created.id, "identity.google.linked", {
+      phoneVerified: false,
     });
+    return this.toUserRecord(created);
+  }
+
+  async createSession(
+    trx: Transaction<DatabaseSchema>,
+    userId: string,
+    tokenHash: string,
+    now: Date,
+  ): Promise<SessionRecord> {
+    const row = await trx
+      .insertInto("user_sessions")
+      .values({ user_id: userId, token_hash: tokenHash, recent_auth_at: now })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+
+    return this.toSessionRecord(row);
+  }
+
+  async findActiveSessionByTokenHash(tokenHash: string): Promise<SessionRecord | null> {
+    const row = await this.database.db
+      .selectFrom("user_sessions")
+      .selectAll()
+      .where("token_hash", "=", tokenHash)
+      .where("revoked_at", "is", null)
+      .executeTakeFirst();
+
+    return row ? this.toSessionRecord(row) : null;
+  }
+
+  async touchSessionAuthIfStale(sessionId: string, now: Date, staleAfterMs: number): Promise<void> {
+    await this.database.db
+      .updateTable("user_sessions")
+      .set({ recent_auth_at: now })
+      .where("id", "=", sessionId)
+      .where("recent_auth_at", "<", new Date(now.getTime() - staleAfterMs))
+      .execute();
+  }
+
+  async revokeSessionByTokenHash(tokenHash: string, now: Date): Promise<void> {
+    await this.database.db
+      .updateTable("user_sessions")
+      .set({ revoked_at: now })
+      .where("token_hash", "=", tokenHash)
+      .where("revoked_at", "is", null)
+      .execute();
   }
 
   async findOtpForUpdate(
@@ -330,6 +393,8 @@ export class IdentityRepository {
     selected_role: UserRole;
     verified_phone: string | null;
     recent_auth_at: Date | null;
+    is_staff: boolean;
+    staff_role: StaffRole | null;
   }): UserRecord {
     return {
       id: row.id,
@@ -338,6 +403,24 @@ export class IdentityRepository {
       selectedRole: row.selected_role,
       verifiedPhone: row.verified_phone,
       recentAuthAt: row.recent_auth_at,
+      isStaff: row.is_staff,
+      staffRole: row.staff_role,
+    };
+  }
+
+  private toSessionRecord(row: {
+    id: string;
+    user_id: string;
+    created_at: Date;
+    recent_auth_at: Date;
+    revoked_at: Date | null;
+  }): SessionRecord {
+    return {
+      id: row.id,
+      userId: row.user_id,
+      createdAt: row.created_at,
+      recentAuthAt: row.recent_auth_at,
+      revokedAt: row.revoked_at,
     };
   }
 

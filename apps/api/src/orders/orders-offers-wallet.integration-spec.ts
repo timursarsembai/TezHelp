@@ -1147,6 +1147,7 @@ function activeUser(id: string, phone: string, selectedRole: "customer" | "provi
     preferred_locale: "ru" as const,
     status: "active" as const,
     selected_role: selectedRole,
+    is_staff: false,
     verified_phone: phone,
     phone_verified_at: new Date(),
     updated_at: new Date(),

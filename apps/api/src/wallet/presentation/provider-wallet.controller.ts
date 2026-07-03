@@ -2,7 +2,7 @@ import { Controller, Get, Req, UseGuards } from "@nestjs/common";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 
 import { IdentityApplicationError } from "../../identity/domain/identity-errors.js";
-import { DevelopmentIdentityGuard } from "../../identity/presentation/development-identity.guard.js";
+import { SessionAuthGuard } from "../../foundation/authorization/session-auth.guard.js";
 import type { IdentityRequest } from "../../identity/presentation/identity-request.js";
 import {
   GetProviderWalletUseCase,
@@ -10,7 +10,7 @@ import {
 } from "../application/wallet.use-cases.js";
 
 @ApiTags("wallet")
-@UseGuards(DevelopmentIdentityGuard)
+@UseGuards(SessionAuthGuard)
 @Controller("provider/wallet")
 export class ProviderWalletController {
   constructor(

@@ -1,10 +1,9 @@
 import { Module } from "@nestjs/common";
 
 import { CommissionCalculator } from "../commissions/domain/commission-calculator.js";
+import { AuthorizationModule } from "../foundation/authorization/authorization.module.js";
 import { ConfigurationModule } from "../foundation/configuration/configuration.module.js";
 import { DatabaseModule } from "../foundation/database/database.module.js";
-import { DevelopmentIdentityGuard } from "../identity/presentation/development-identity.guard.js";
-import { DevelopmentAdminGuard } from "../moderation/presentation/development-admin.guard.js";
 import { WalletModule } from "../wallet/wallet.module.js";
 import {
   CancelOrderUseCase,
@@ -14,7 +13,11 @@ import {
   GetOrderContactUseCase,
   StartOrderWorkUseCase,
 } from "./application/order-lifecycle.use-cases.js";
-import { CreateOrderUseCase, GetOrderUseCase, GetProviderActiveOrderUseCase } from "./application/order.use-cases.js";
+import {
+  CreateOrderUseCase,
+  GetOrderUseCase,
+  GetProviderActiveOrderUseCase,
+} from "./application/order.use-cases.js";
 import { SelectProviderUseCase } from "./application/select-provider.use-case.js";
 import { OrdersRepository } from "./infrastructure/orders.repository.js";
 import { AdminOrdersController } from "./presentation/admin-orders.controller.js";
@@ -22,11 +25,9 @@ import { OrdersController } from "./presentation/orders.controller.js";
 import { ProviderOrderLifecycleController } from "./presentation/provider-order-lifecycle.controller.js";
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule, WalletModule],
+  imports: [ConfigurationModule, DatabaseModule, WalletModule, AuthorizationModule],
   controllers: [OrdersController, ProviderOrderLifecycleController, AdminOrdersController],
   providers: [
-    DevelopmentIdentityGuard,
-    DevelopmentAdminGuard,
     CommissionCalculator,
     OrdersRepository,
     CreateOrderUseCase,

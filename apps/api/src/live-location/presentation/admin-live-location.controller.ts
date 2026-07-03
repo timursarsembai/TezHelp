@@ -4,12 +4,12 @@ import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { ModerationApplicationError } from "../../moderation/domain/moderation-errors.js";
 import {
   type AdminRequest,
-  DevelopmentAdminGuard,
-} from "../../moderation/presentation/development-admin.guard.js";
+  StaffAuthGuard,
+} from "../../foundation/authorization/staff-auth.guard.js";
 import { GetAdminOrderLiveLocationUseCase } from "../application/live-location.use-cases.js";
 
 @ApiTags("admin-live-location")
-@UseGuards(DevelopmentAdminGuard)
+@UseGuards(StaffAuthGuard)
 @Controller("admin/orders/:orderId/location")
 export class AdminLiveLocationController {
   constructor(private readonly getLocation: GetAdminOrderLiveLocationUseCase) {}

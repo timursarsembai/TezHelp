@@ -321,6 +321,13 @@ export class ReputationRepository {
         eventType: "applied",
         reason: input.reason,
       });
+      await this.recordAuditEvent(trx, {
+        actorUserId: input.adminUserId,
+        action: "provider_sanction.applied",
+        reason: input.reason,
+        entityId: row.id,
+        metadata: { providerUserId: input.providerUserId, sanctionType: input.sanctionType },
+      });
 
       return this.getSanctionSummary(row.id, trx);
     });
@@ -391,6 +398,13 @@ export class ReputationRepository {
         eventType: "appealed",
         reason: input.reason,
       });
+      await this.recordAuditEvent(trx, {
+        actorUserId: input.providerUserId,
+        action: "provider_sanction.appealed",
+        reason: input.reason,
+        entityId: input.sanctionId,
+        metadata: {},
+      });
 
       return this.getSanctionSummary(input.sanctionId, trx);
     });
@@ -441,6 +455,13 @@ export class ReputationRepository {
         actorUserId: input.adminUserId,
         eventType: "lifted",
         reason: input.reason,
+      });
+      await this.recordAuditEvent(trx, {
+        actorUserId: input.adminUserId,
+        action: "provider_sanction.lifted",
+        reason: input.reason,
+        entityId: input.sanctionId,
+        metadata: {},
       });
 
       return this.getSanctionSummary(input.sanctionId, trx);
@@ -506,6 +527,29 @@ export class ReputationRepository {
         actor_user_id: input.actorUserId,
         event_type: input.eventType,
         reason: input.reason,
+      })
+      .execute();
+  }
+
+  private async recordAuditEvent(
+    executor: DatabaseExecutor,
+    input: {
+      readonly actorUserId: string;
+      readonly action: string;
+      readonly reason: string;
+      readonly entityId: string;
+      readonly metadata: Record<string, unknown>;
+    },
+  ): Promise<void> {
+    await executor
+      .insertInto("audit_events")
+      .values({
+        actor_id: input.actorUserId,
+        action: input.action,
+        reason: input.reason,
+        related_entity_type: "provider_sanction",
+        related_entity_id: input.entityId,
+        metadata: input.metadata,
       })
       .execute();
   }

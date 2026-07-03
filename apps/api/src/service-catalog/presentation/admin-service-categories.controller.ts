@@ -11,15 +11,15 @@ import { parseBody } from "../../identity/presentation/zod-body.js";
 import { ModerationApplicationError } from "../../moderation/domain/moderation-errors.js";
 import {
   type AdminRequest,
-  DevelopmentAdminGuard,
-} from "../../moderation/presentation/development-admin.guard.js";
+  StaffAuthGuard,
+} from "../../foundation/authorization/staff-auth.guard.js";
 import {
   GetServiceCategoryCommercialConfigUseCase,
   UpdateServiceCategoryCommercialConfigUseCase,
 } from "../application/list-service-categories.use-case.js";
 
 @ApiTags("admin-service-catalog")
-@UseGuards(DevelopmentAdminGuard)
+@UseGuards(StaffAuthGuard)
 @Controller("admin/service-categories")
 export class AdminServiceCategoriesController {
   constructor(
@@ -41,9 +41,9 @@ export class AdminServiceCategoriesController {
     @Body() body: unknown,
     @Req() request: AdminRequest,
   ) {
-    this.requireAdminUserId(request);
+    const adminUserId = this.requireAdminUserId(request);
     const input = parseBody(serviceCategoryCommercialConfigSchema, body);
-    return this.updateConfig.execute(this.parseSlug(rawSlug), input);
+    return this.updateConfig.execute(this.parseSlug(rawSlug), input, adminUserId);
   }
 
   private parseSlug(rawSlug: string): ServiceCategorySlug {

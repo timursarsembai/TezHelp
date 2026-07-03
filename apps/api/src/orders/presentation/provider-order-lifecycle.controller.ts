@@ -4,7 +4,7 @@ import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { cancelOrderSchema, orderLifecycleCommandSchema } from "@tezhelp/validation";
 
 import { IdentityApplicationError } from "../../identity/domain/identity-errors.js";
-import { DevelopmentIdentityGuard } from "../../identity/presentation/development-identity.guard.js";
+import { SessionAuthGuard } from "../../foundation/authorization/session-auth.guard.js";
 import type { IdentityRequest } from "../../identity/presentation/identity-request.js";
 import { parseBody } from "../../identity/presentation/zod-body.js";
 import {
@@ -17,7 +17,7 @@ import {
 import { GetProviderActiveOrderUseCase } from "../application/order.use-cases.js";
 
 @ApiTags("provider-order-lifecycle")
-@UseGuards(DevelopmentIdentityGuard)
+@UseGuards(SessionAuthGuard)
 @Controller("provider/orders")
 export class ProviderOrderLifecycleController {
   constructor(

@@ -17,8 +17,13 @@ export interface VerifyPhoneOtpInput {
   readonly userId?: string;
 }
 
+export interface VerifyPhoneOtpResult {
+  readonly user: IdentityUserSummary;
+  readonly sessionToken?: string;
+}
+
 type VerifyOtpResult =
-  | { readonly kind: "success"; readonly user: UserRecord }
+  | { readonly kind: "success"; readonly user: UserRecord; readonly sessionToken?: string }
   | { readonly kind: "failure"; readonly error: IdentityApplicationError };
 
 @Injectable()
@@ -30,7 +35,7 @@ export class VerifyPhoneOtpUseCase {
     private readonly clock: Clock,
   ) {}
 
-  async execute(input: VerifyPhoneOtpInput): Promise<IdentityUserSummary> {
+  async execute(input: VerifyPhoneOtpInput): Promise<VerifyPhoneOtpResult> {
     const now = this.clock.now();
 
     const result = await this.handleDuplicatePhone(async () =>
@@ -104,7 +109,14 @@ export class VerifyPhoneOtpUseCase {
           now,
         );
         await this.repository.createSecurityEvent(trx, signedIn.id, "identity.phone.signed_in", {});
-        return { kind: "success", user: signedIn } satisfies VerifyOtpResult;
+        const sessionToken = this.hashing.createSessionToken();
+        await this.repository.createSession(
+          trx,
+          signedIn.id,
+          this.hashing.hashSessionToken(sessionToken),
+          now,
+        );
+        return { kind: "success", user: signedIn, sessionToken } satisfies VerifyOtpResult;
       }),
     );
 
@@ -112,7 +124,10 @@ export class VerifyPhoneOtpUseCase {
       throw result.error;
     }
 
-    return presentIdentityUser(result.user);
+    return {
+      user: presentIdentityUser(result.user),
+      ...(result.sessionToken ? { sessionToken: result.sessionToken } : {}),
+    };
   }
 
   private async handleDuplicatePhone<T>(callback: () => Promise<T>): Promise<T> {

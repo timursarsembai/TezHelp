@@ -35,6 +35,7 @@ type AccountStatus = "pending_phone" | "active" | "blocked";
 export type AuthProvider = "google" | "phone";
 export type OtpPurpose = "sign_in" | "phone_completion" | "phone_change";
 type UserRole = "customer" | "provider";
+export type StaffRole = "support" | "moderator" | "super_admin";
 export type ProviderTaxStatus = "individual_entrepreneur" | "self_employed_special_tax";
 export type ProviderModerationStatus =
   | "draft"
@@ -89,6 +90,8 @@ interface UsersTable {
   readonly verified_phone: string | null;
   readonly phone_verified_at: TimestampColumn | null;
   readonly recent_auth_at: TimestampColumn | null;
+  readonly is_staff: boolean;
+  readonly staff_role: StaffRole | null;
   readonly created_at: Generated<Date>;
   readonly updated_at: TimestampColumn;
 }
@@ -141,6 +144,7 @@ interface OtpChallengesTable {
 interface UserSessionsTable {
   readonly id: Generated<string>;
   readonly user_id: string;
+  readonly token_hash: string;
   readonly created_at: Generated<Date>;
   readonly recent_auth_at: TimestampColumn;
   readonly revoked_at: TimestampColumn | null;

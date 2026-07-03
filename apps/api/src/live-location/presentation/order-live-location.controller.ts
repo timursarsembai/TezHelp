@@ -2,12 +2,12 @@ import { Controller, Get, Param, Req, UseGuards } from "@nestjs/common";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 
 import { IdentityApplicationError } from "../../identity/domain/identity-errors.js";
-import { DevelopmentIdentityGuard } from "../../identity/presentation/development-identity.guard.js";
+import { SessionAuthGuard } from "../../foundation/authorization/session-auth.guard.js";
 import type { IdentityRequest } from "../../identity/presentation/identity-request.js";
 import { GetOrderLiveLocationUseCase } from "../application/live-location.use-cases.js";
 
 @ApiTags("order-live-location")
-@UseGuards(DevelopmentIdentityGuard)
+@UseGuards(SessionAuthGuard)
 @Controller("orders/:orderId/location")
 export class OrderLiveLocationController {
   constructor(private readonly getLocation: GetOrderLiveLocationUseCase) {}

@@ -49,7 +49,7 @@ const runbooks = [
       "backups",
       "ERROR_MONITORING_SINK",
       "SESSION_COOKIE_SECURE=true",
-      "IDENTITY_DEV_AUTH_HEADER_ENABLED=false",
+      "is_staff",
       "never rewrite applied migrations",
     ],
   },

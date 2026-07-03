@@ -68,7 +68,7 @@ describeWithInfrastructure("identity integration", () => {
   });
 
   it("creates a Google identity that still requires phone completion", async () => {
-    const user = await googleSignIn.execute({
+    const { user } = await googleSignIn.execute({
       providerSubject: "google-test-1",
       preferredLocale: "ru",
     });
@@ -85,7 +85,7 @@ describeWithInfrastructure("identity integration", () => {
       requestIp: "127.0.0.1",
     });
 
-    const user = await verifyOtp.execute({
+    const { user } = await verifyOtp.execute({
       challengeId: challenge.challengeId,
       code: "123456",
       preferredLocale: "kk",
@@ -174,7 +174,7 @@ describeWithInfrastructure("identity integration", () => {
       code: "123456",
       preferredLocale: "ru",
     });
-    const googleUser = await googleSignIn.execute({
+    const { user: googleUser } = await googleSignIn.execute({
       providerSubject: "google-test-duplicate",
       preferredLocale: "ru",
     });
@@ -201,7 +201,7 @@ describeWithInfrastructure("identity integration", () => {
       purpose: "sign_in",
       requestIp: "127.0.0.6",
     });
-    const user = await verifyOtp.execute({
+    const { user } = await verifyOtp.execute({
       challengeId: challenge.challengeId,
       code: "123456",
       preferredLocale: "ru",
@@ -228,7 +228,7 @@ describeWithInfrastructure("identity integration", () => {
       purpose: "sign_in",
       requestIp: "127.0.0.11",
     });
-    const firstUser = await verifyOtp.execute({
+    const { user: firstUser } = await verifyOtp.execute({
       challengeId: firstChallenge.challengeId,
       code: "123456",
       preferredLocale: "ru",
@@ -238,7 +238,7 @@ describeWithInfrastructure("identity integration", () => {
       purpose: "sign_in",
       requestIp: "127.0.0.12",
     });
-    const secondUser = await verifyOtp.execute({
+    const { user: secondUser } = await verifyOtp.execute({
       challengeId: secondChallenge.challengeId,
       code: "123456",
       preferredLocale: "ru",
@@ -265,7 +265,7 @@ describeWithInfrastructure("identity integration", () => {
       purpose: "sign_in",
       requestIp: "127.0.0.8",
     });
-    const user = await verifyOtp.execute({
+    const { user } = await verifyOtp.execute({
       challengeId: challenge.challengeId,
       code: "123456",
       preferredLocale: "ru",
@@ -276,7 +276,7 @@ describeWithInfrastructure("identity integration", () => {
       requestIp: "127.0.0.9",
     });
 
-    const changed = await verifyOtp.execute({
+    const { user: changed } = await verifyOtp.execute({
       challengeId: change.challengeId,
       code: "123456",
       preferredLocale: "ru",

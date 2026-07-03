@@ -3,6 +3,7 @@ import "reflect-metadata";
 import { ValidationPipe, VersioningType } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import cookieParser from "cookie-parser";
 import type { Express, Request, Response } from "express";
 
 import { ApiRootModule } from "./root/api-root.module.js";
@@ -14,6 +15,7 @@ async function bootstrap() {
   const app = await NestFactory.create(ApiRootModule, { bufferLogs: true });
   const config = app.get(AppConfigService);
 
+  app.use(cookieParser());
   app.enableCors({
     origin: config.corsOrigins,
     credentials: true,

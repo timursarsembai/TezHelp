@@ -41,7 +41,10 @@ export function MapWorkspace({
   const [categories, setCategories] = useState<ReadonlyArray<ServiceCategorySummary>>([]);
   const [catalogStatus, setCatalogStatus] = useState<"loading" | "ready" | "error">("loading");
   const [activeOrder, setActiveOrder] = useState<OrderSummary | null>(null);
-  const [providerPoint, setProviderPoint] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [providerPoint, setProviderPoint] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
 
   useEffect(() => {
     const client = createBrowserApiClient();
@@ -68,41 +71,42 @@ export function MapWorkspace({
       { signal: controller.signal, headers: { "Accept-Language": "ru" } },
     )
       .then((r) => r.json())
-      .then((data: {
-        name?: string;
-        category?: string;
-        type?: string;
-        address?: {
-          road?: string;
-          residential?: string;
-          pedestrian?: string;
-          quarter?: string;
-          neighbourhood?: string;
-          suburb?: string;
-          city_district?: string;
-          house_number?: string;
-          amenity?: string;
-          place?: string;
-        }
-      }) => {
-        const a = data.address;
-        const rawRoad = a?.road ?? a?.residential ?? a?.pedestrian;
-        // Парковки и подобные объекты "протекают" своим названием в поле road
-        // (например "Parking guest"). Это не адрес улицы — отбрасываем.
-        const roadIsLeakedName =
-          data.type === "parking" ||
-          /\b(parking|guest)\b/i.test(rawRoad ?? "");
-        const street = roadIsLeakedName ? undefined : rawRoad;
-        // Микрорайон лежит в quarter ("Микрорайон №3"); suburb="Микрорайоны" и
-        // city_district="Ауэзовский район" слишком общие, поэтому ниже в приоритете.
-        const district =
-          a?.quarter ?? a?.neighbourhood ?? a?.place ?? a?.suburb ?? a?.city_district;
-        const house = a?.house_number;
-        const parts = (street ? [street, house] : [district, house]).filter(
-          (p): p is string => Boolean(p),
-        );
-        setSelectedAddress(parts.length > 0 ? parts.join(", ") : null);
-      })
+      .then(
+        (data: {
+          name?: string;
+          category?: string;
+          type?: string;
+          address?: {
+            road?: string;
+            residential?: string;
+            pedestrian?: string;
+            quarter?: string;
+            neighbourhood?: string;
+            suburb?: string;
+            city_district?: string;
+            house_number?: string;
+            amenity?: string;
+            place?: string;
+          };
+        }) => {
+          const a = data.address;
+          const rawRoad = a?.road ?? a?.residential ?? a?.pedestrian;
+          // Парковки и подобные объекты "протекают" своим названием в поле road
+          // (например "Parking guest"). Это не адрес улицы — отбрасываем.
+          const roadIsLeakedName =
+            data.type === "parking" || /\b(parking|guest)\b/i.test(rawRoad ?? "");
+          const street = roadIsLeakedName ? undefined : rawRoad;
+          // Микрорайон лежит в quarter ("Микрорайон №3"); suburb="Микрорайоны" и
+          // city_district="Ауэзовский район" слишком общие, поэтому ниже в приоритете.
+          const district =
+            a?.quarter ?? a?.neighbourhood ?? a?.place ?? a?.suburb ?? a?.city_district;
+          const house = a?.house_number;
+          const parts = (street ? [street, house] : [district, house]).filter((p): p is string =>
+            Boolean(p),
+          );
+          setSelectedAddress(parts.length > 0 ? parts.join(", ") : null);
+        },
+      )
       .catch(() => undefined);
     return () => controller.abort();
   }, [selectedPoint]);
@@ -120,9 +124,7 @@ export function MapWorkspace({
     }
     const interval = setInterval(() => {
       void createBrowserApiClient()
-        .get<OrderSummary>(`/backend/v1/orders/${activeOrder.id}`, {
-          headers: { "x-tezhelp-user-id": initialUser.id },
-        })
+        .get<OrderSummary>(`/backend/v1/orders/${activeOrder.id}`)
         .then(setActiveOrder)
         .catch(() => undefined);
     }, 4000);
@@ -148,7 +150,6 @@ export function MapWorkspace({
       try {
         const snapshot = await createBrowserApiClient().get<LiveLocationSnapshot>(
           `/backend/v1/orders/${activeOrder.id}/location`,
-          { headers: { "x-tezhelp-user-id": initialUser.id } },
         );
         if (cancelled) return;
         if (snapshot.visible && snapshot.providerPoint) {
@@ -208,11 +209,7 @@ export function MapWorkspace({
     const nextUser = await createBrowserApiClient().patch<
       IdentityUserSummary,
       { readonly role: "provider" }
-    >(
-      "/backend/v1/me/role",
-      { role: "provider" },
-      { headers: { "x-tezhelp-user-id": initialUser.id } },
-    );
+    >("/backend/v1/me/role", { role: "provider" });
     onSessionChange(nextUser);
   }
 
@@ -290,17 +287,80 @@ export function MapWorkspace({
           type="button"
         >
           {locateStatus === "error" ? (
-            <svg fill="none" height="20" viewBox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10 2L2 17h16L10 2z" fill="#dc3545" opacity=".15" stroke="#dc3545" strokeLinejoin="round" strokeWidth="1.5"/>
-              <path d="M10 8v4M10 14.5v.5" stroke="#dc3545" strokeLinecap="round" strokeWidth="1.5"/>
+            <svg
+              fill="none"
+              height="20"
+              viewBox="0 0 20 20"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M10 2L2 17h16L10 2z"
+                fill="#dc3545"
+                opacity=".15"
+                stroke="#dc3545"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M10 8v4M10 14.5v.5"
+                stroke="#dc3545"
+                strokeLinecap="round"
+                strokeWidth="1.5"
+              />
             </svg>
           ) : (
-            <svg fill="none" height="20" viewBox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="10" cy="10" r="3" fill={locateStatus === "locating" ? "#165dff" : "none"} stroke="#165dff" strokeWidth="1.75"/>
-              <line stroke="#165dff" strokeLinecap="round" strokeWidth="1.75" x1="10" x2="10" y1="1.5" y2="4.5"/>
-              <line stroke="#165dff" strokeLinecap="round" strokeWidth="1.75" x1="10" x2="10" y1="15.5" y2="18.5"/>
-              <line stroke="#165dff" strokeLinecap="round" strokeWidth="1.75" x1="1.5" x2="4.5" y1="10" y2="10"/>
-              <line stroke="#165dff" strokeLinecap="round" strokeWidth="1.75" x1="15.5" x2="18.5" y1="10" y2="10"/>
+            <svg
+              fill="none"
+              height="20"
+              viewBox="0 0 20 20"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="10"
+                cy="10"
+                r="3"
+                fill={locateStatus === "locating" ? "#165dff" : "none"}
+                stroke="#165dff"
+                strokeWidth="1.75"
+              />
+              <line
+                stroke="#165dff"
+                strokeLinecap="round"
+                strokeWidth="1.75"
+                x1="10"
+                x2="10"
+                y1="1.5"
+                y2="4.5"
+              />
+              <line
+                stroke="#165dff"
+                strokeLinecap="round"
+                strokeWidth="1.75"
+                x1="10"
+                x2="10"
+                y1="15.5"
+                y2="18.5"
+              />
+              <line
+                stroke="#165dff"
+                strokeLinecap="round"
+                strokeWidth="1.75"
+                x1="1.5"
+                x2="4.5"
+                y1="10"
+                y2="10"
+              />
+              <line
+                stroke="#165dff"
+                strokeLinecap="round"
+                strokeWidth="1.75"
+                x1="15.5"
+                x2="18.5"
+                y1="10"
+                y2="10"
+              />
             </svg>
           )}
         </button>
@@ -310,7 +370,8 @@ export function MapWorkspace({
             {locateStatus === "error"
               ? translate(initialLocale, "maps.locationError")
               : selectedPoint
-                ? (selectedAddress ?? `${selectedPoint.latitude.toFixed(5)}, ${selectedPoint.longitude.toFixed(5)}`)
+                ? (selectedAddress ??
+                  `${selectedPoint.latitude.toFixed(5)}, ${selectedPoint.longitude.toFixed(5)}`)
                 : translate(initialLocale, "maps.pickPoint")}
           </p>
           <Button onClick={() => setActivePanel("create")}>
@@ -343,7 +404,6 @@ export function MapWorkspace({
               setSelectedAddress(address);
             }}
             selectedPoint={selectedPoint}
-            userId={initialUser.id}
           />
         ) : null}
 
@@ -351,7 +411,6 @@ export function MapWorkspace({
           <OffersPanel
             locale={initialLocale}
             order={activeOrder}
-            userId={initialUser.id}
             onSelected={setActiveOrder}
             onCancelled={() => setActiveOrder(null)}
           />
@@ -478,7 +537,6 @@ interface OrderPanelProps {
   readonly initialLandmark?: string;
   readonly locale: Locale;
   readonly selectedPoint: GeoPoint | null;
-  readonly userId: string;
   readonly onClose: () => void;
   readonly onPublished: (order: OrderSummary) => void;
   readonly onPointSelect?: (point: GeoPoint, address: string) => void;
@@ -490,7 +548,6 @@ function OrderPanel({
   initialLandmark = "",
   locale,
   selectedPoint,
-  userId,
   onClose,
   onPublished,
   onPointSelect,
@@ -534,19 +591,15 @@ function OrderPanel({
           readonly images: [];
           readonly unlockingLawfulAccess: Readonly<Record<string, never>>;
         }
-      >(
-        "/backend/v1/orders",
-        {
-          categorySlug,
-          latitude: selectedPoint.latitude,
-          longitude: selectedPoint.longitude,
-          addressLandmark: landmark,
-          description,
-          images: [],
-          unlockingLawfulAccess: {},
-        },
-        { headers: { "x-tezhelp-user-id": userId } },
-      );
+      >("/backend/v1/orders", {
+        categorySlug,
+        latitude: selectedPoint.latitude,
+        longitude: selectedPoint.longitude,
+        addressLandmark: landmark,
+        description,
+        images: [],
+        unlockingLawfulAccess: {},
+      });
       onPublished(order);
     } catch {
       setStatus(translate(locale, "maps.publishError"));
@@ -580,21 +633,26 @@ function OrderPanel({
   function getSuggestionLabel(result: NominatimResult): { primary: string; secondary: string } {
     const name = result.name ?? result.address?.amenity ?? result.address?.building;
     const street = result.address?.road ?? result.address?.residential;
-    const district = result.address?.neighbourhood ?? result.address?.suburb ?? result.address?.city_district;
+    const district =
+      result.address?.neighbourhood ?? result.address?.suburb ?? result.address?.city_district;
     const house = result.address?.house_number;
 
     if (name) {
-      const addrParts = (street ? [street, house] : [district, house]).filter((p): p is string => Boolean(p));
+      const addrParts = (street ? [street, house] : [district, house]).filter((p): p is string =>
+        Boolean(p),
+      );
       const addr = addrParts.join(", ");
       const secondary = addr && addr.toLowerCase() !== name.toLowerCase() ? addr : "";
       return { primary: name, secondary };
     }
     // Нет имени объекта — строим адрес из улицы или микрорайона
-    const addrParts = (street ? [street, house] : [district, house]).filter((p): p is string => Boolean(p));
+    const addrParts = (street ? [street, house] : [district, house]).filter((p): p is string =>
+      Boolean(p),
+    );
     const addr = addrParts.join(", ");
     return {
       primary: addr || (result.display_name.split(",")[0] ?? result.display_name),
-      secondary: (!street && district && addr.includes(district)) ? "" : (district ?? ""),
+      secondary: !street && district && addr.includes(district) ? "" : (district ?? ""),
     };
   }
 
@@ -636,7 +694,8 @@ function OrderPanel({
       <p className="order-location">
         <span aria-hidden="true">●</span>
         {selectedPoint
-          ? (landmark || `${selectedPoint.latitude.toFixed(5)}, ${selectedPoint.longitude.toFixed(5)}`)
+          ? landmark ||
+            `${selectedPoint.latitude.toFixed(5)}, ${selectedPoint.longitude.toFixed(5)}`
           : translate(locale, "maps.selectLocationFirst")}
       </p>
 
@@ -690,7 +749,9 @@ function OrderPanel({
                   role="option"
                 >
                   <span className="address-suggestion-primary">{primary}</span>
-                  {secondary ? <span className="address-suggestion-secondary">{secondary}</span> : null}
+                  {secondary ? (
+                    <span className="address-suggestion-secondary">{secondary}</span>
+                  ) : null}
                 </li>
               );
             })}
@@ -756,13 +817,11 @@ function NavigationButton({
 function OffersPanel({
   locale,
   order,
-  userId,
   onSelected,
   onCancelled,
 }: {
   readonly locale: Locale;
   readonly order: OrderSummary;
-  readonly userId: string;
   readonly onSelected: (order: OrderSummary) => void;
   readonly onCancelled: () => void;
 }) {
@@ -777,16 +836,14 @@ function OffersPanel({
     const client = createBrowserApiClient();
     const load = () => {
       void client
-        .get<ReadonlyArray<OfferSummary>>(`/backend/v1/orders/${order.id}/offers`, {
-          headers: { "x-tezhelp-user-id": userId },
-        })
+        .get<ReadonlyArray<OfferSummary>>(`/backend/v1/orders/${order.id}/offers`)
         .then(setOffers)
         .catch(() => undefined);
     };
     load();
     const interval = setInterval(load, 5000);
     return () => clearInterval(interval);
-  }, [order.id, userId]);
+  }, [order.id]);
 
   async function selectOffer(offerId: string) {
     setSelectingId(offerId);
@@ -795,11 +852,10 @@ function OffersPanel({
       const updated = await createBrowserApiClient().post<
         OrderSummary,
         { readonly offerId: string; readonly idempotencyKey: string }
-      >(
-        `/backend/v1/orders/${order.id}/select-provider`,
-        { offerId, idempotencyKey: `${order.id}-${offerId}` },
-        { headers: { "x-tezhelp-user-id": userId } },
-      );
+      >(`/backend/v1/orders/${order.id}/select-provider`, {
+        offerId,
+        idempotencyKey: `${order.id}-${offerId}`,
+      });
       onSelected(updated);
     } catch {
       setError(translate(locale, "offers.selectError"));
@@ -813,11 +869,10 @@ function OffersPanel({
     setCancelling(true);
     setError(null);
     try {
-      await createBrowserApiClient().post(
-        `/backend/v1/orders/${order.id}/cancel`,
-        { reason: cancelReason, idempotencyKey: `cancel-${order.id}` },
-        { headers: { "x-tezhelp-user-id": userId } },
-      );
+      await createBrowserApiClient().post(`/backend/v1/orders/${order.id}/cancel`, {
+        reason: cancelReason,
+        idempotencyKey: `cancel-${order.id}`,
+      });
       onCancelled();
     } catch {
       setError(translate(locale, "offers.cancelError"));
@@ -865,7 +920,11 @@ function OffersPanel({
         </div>
       ) : null}
 
-      {error ? <p className="order-panel-status" role="alert">{error}</p> : null}
+      {error ? (
+        <p className="order-panel-status" role="alert">
+          {error}
+        </p>
+      ) : null}
 
       {offers.length === 0 ? (
         <p className="offers-empty">{translate(locale, "offers.empty")}</p>
@@ -875,7 +934,9 @@ function OffersPanel({
             <li className="offer-card" key={offer.id}>
               <div className="offer-meta">
                 <span className="offer-price">{offer.priceKzt.toLocaleString()} ₸</span>
-                <span className="offer-arrival">{offer.arrivalMinutes} {translate(locale, "offers.arrival")}</span>
+                <span className="offer-arrival">
+                  {offer.arrivalMinutes} {translate(locale, "offers.arrival")}
+                </span>
               </div>
               {offer.comment ? <p className="offer-comment">{offer.comment}</p> : null}
               <Button
@@ -955,7 +1016,9 @@ function ActiveOrderPanel({
               <button
                 aria-label={translate(locale, "chat.openChat")}
                 className="icon-button"
-                onClick={() => { setChatOpen((v) => !v); }}
+                onClick={() => {
+                  setChatOpen((v) => !v);
+                }}
                 title={translate(locale, "chat.openChat")}
                 type="button"
               >
@@ -984,15 +1047,15 @@ function ActiveOrderPanel({
           </ol>
         ) : null}
 
-        {order.status === "completed" ? (
-          <ReviewPanel locale={locale} orderId={order.id} userId={userId} />
-        ) : null}
+        {order.status === "completed" ? <ReviewPanel locale={locale} orderId={order.id} /> : null}
       </section>
 
       {chatOpen && chatAvailable ? (
         <ChatPanel
           locale={locale}
-          onClose={() => { setChatOpen(false); }}
+          onClose={() => {
+            setChatOpen(false);
+          }}
           orderId={order.id}
           userId={userId}
         />
@@ -1001,15 +1064,7 @@ function ActiveOrderPanel({
   );
 }
 
-function ReviewPanel({
-  locale,
-  orderId,
-  userId,
-}: {
-  readonly locale: Locale;
-  readonly orderId: string;
-  readonly userId: string;
-}) {
+function ReviewPanel({ locale, orderId }: { readonly locale: Locale; readonly orderId: string }) {
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [comment, setComment] = useState("");
@@ -1028,11 +1083,10 @@ function ReviewPanel({
     if (rating === 0) return;
     setStatus("submitting");
     try {
-      await createBrowserApiClient().post(
-        `/backend/v1/orders/${orderId}/reviews`,
-        { rating, ...(comment.trim() ? { comment: comment.trim() } : {}) },
-        { headers: { "x-tezhelp-user-id": userId } },
-      );
+      await createBrowserApiClient().post(`/backend/v1/orders/${orderId}/reviews`, {
+        rating,
+        ...(comment.trim() ? { comment: comment.trim() } : {}),
+      });
       setStatus("submitted");
     } catch {
       setStatus("error");
@@ -1049,9 +1103,15 @@ function ReviewPanel({
             aria-label={`${star}`}
             className={`star-rating__btn ${(hovered || rating) >= star ? "star-rating__btn--filled" : "star-rating__btn--empty"}`}
             key={star}
-            onClick={() => { setRating(star); }}
-            onMouseEnter={() => { setHovered(star); }}
-            onMouseLeave={() => { setHovered(0); }}
+            onClick={() => {
+              setRating(star);
+            }}
+            onMouseEnter={() => {
+              setHovered(star);
+            }}
+            onMouseLeave={() => {
+              setHovered(0);
+            }}
             type="button"
           >
             ★
@@ -1059,7 +1119,9 @@ function ReviewPanel({
         ))}
       </div>
       <textarea
-        onChange={(e) => { setComment(e.target.value); }}
+        onChange={(e) => {
+          setComment(e.target.value);
+        }}
         placeholder={translate(locale, "review.commentPlaceholder")}
         value={comment}
       />
@@ -1071,7 +1133,9 @@ function ReviewPanel({
       <div className="review-actions">
         <Button
           disabled={rating === 0 || status === "submitting"}
-          onClick={() => { void submit(); }}
+          onClick={() => {
+            void submit();
+          }}
           variant="primary"
         >
           {status === "submitting"
@@ -1094,7 +1158,9 @@ function ChatPanel({
   readonly userId: string;
   readonly onClose: () => void;
 }) {
-  const [messages, setMessages] = useState<ReadonlyArray<import("@tezhelp/types").ChatMessageSummary>>([]);
+  const [messages, setMessages] = useState<
+    ReadonlyArray<import("@tezhelp/types").ChatMessageSummary>
+  >([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -1104,10 +1170,9 @@ function ChatPanel({
 
     async function load() {
       try {
-        const conv = await createBrowserApiClient().get<import("@tezhelp/types").OrderConversationSummary>(
-          `/backend/v1/orders/${orderId}/chat`,
-          { headers: { "x-tezhelp-user-id": userId } },
-        );
+        const conv = await createBrowserApiClient().get<
+          import("@tezhelp/types").OrderConversationSummary
+        >(`/backend/v1/orders/${orderId}/chat`);
         if (!cancelled) setMessages(conv.messages);
       } catch {
         // ignore
@@ -1115,7 +1180,9 @@ function ChatPanel({
     }
 
     void load();
-    const interval = setInterval(() => { void load(); }, 3000);
+    const interval = setInterval(() => {
+      void load();
+    }, 3000);
     return () => {
       cancelled = true;
       clearInterval(interval);
@@ -1131,11 +1198,10 @@ function ChatPanel({
     if (!trimmed || sending) return;
     setSending(true);
     try {
-      await createBrowserApiClient().post(
-        `/backend/v1/orders/${orderId}/chat/messages`,
-        { messageType: "text", text: trimmed },
-        { headers: { "x-tezhelp-user-id": userId } },
-      );
+      await createBrowserApiClient().post(`/backend/v1/orders/${orderId}/chat/messages`, {
+        messageType: "text",
+        text: trimmed,
+      });
       setText("");
     } catch {
       // ignore — next poll will reflect state
@@ -1195,7 +1261,9 @@ function ChatPanel({
       <div className="chat-input-row">
         <textarea
           disabled={sending}
-          onChange={(e) => { setText(e.target.value); }}
+          onChange={(e) => {
+            setText(e.target.value);
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
@@ -1210,7 +1278,9 @@ function ChatPanel({
           aria-label={translate(locale, "chat.send")}
           className="chat-send-btn"
           disabled={!text.trim() || sending}
-          onClick={() => { void send(); }}
+          onClick={() => {
+            void send();
+          }}
           type="button"
         >
           ↑

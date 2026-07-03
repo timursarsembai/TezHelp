@@ -3,6 +3,7 @@ export type ModerationErrorCode =
   | "MODERATION_ACTION_NOT_ALLOWED"
   | "PROVIDER_DOCUMENT_NOT_FOUND"
   | "PROVIDER_SERVICE_PROFILE_NOT_FOUND"
+  | "STAFF_ACCESS_REQUIRED"
   | "UNAUTHORIZED_ADMIN_USER";
 
 export class ModerationApplicationError extends Error {

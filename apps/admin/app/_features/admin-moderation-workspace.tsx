@@ -1,11 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { ApiClient } from "@tezhelp/api-client";
 import { translate } from "@tezhelp/i18n";
 import type {
-  IdentityUserSummary,
   Locale,
   ProviderDocumentSummary,
   ProviderModerationDetail,
@@ -19,11 +18,9 @@ import type {
 import { Button } from "@tezhelp/ui";
 
 export function AdminModerationWorkspace({
-  admin,
   locale,
   onSignOut,
 }: {
-  readonly admin: IdentityUserSummary;
   readonly locale: Locale;
   readonly onSignOut: () => void;
 }) {
@@ -35,7 +32,6 @@ export function AdminModerationWorkspace({
   const [categoryFilter, setCategoryFilter] = useState<ServiceCategorySlug | "">("");
   const [loadStatus, setLoadStatus] = useState<"loading" | "ready" | "error">("loading");
   const [detailStatus, setDetailStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
-  const headers = useMemo(() => ({ "x-tezhelp-admin-user-id": admin.id }), [admin.id]);
 
   const loadQueue = useCallback(async () => {
     setLoadStatus("loading");
@@ -52,7 +48,6 @@ export function AdminModerationWorkspace({
       const [items, serviceCategories] = await Promise.all([
         client.get<ReadonlyArray<ProviderModerationQueueItem>>(
           `/backend/v1/admin/provider-moderation/queue?${query.toString()}`,
-          { headers },
         ),
         client.get<ReadonlyArray<ServiceCategorySummary>>(
           `/backend/v1/service-categories?locale=${locale}`,
@@ -64,7 +59,7 @@ export function AdminModerationWorkspace({
     } catch {
       setLoadStatus("error");
     }
-  }, [categoryFilter, headers, locale, statusFilter]);
+  }, [categoryFilter, locale, statusFilter]);
 
   const loadDetail = useCallback(
     async (serviceProfileId: string) => {
@@ -73,7 +68,6 @@ export function AdminModerationWorkspace({
       try {
         const result = await createApiClient().get<ProviderModerationDetail>(
           `/backend/v1/admin/provider-moderation/service-profiles/${serviceProfileId}?locale=${locale}`,
-          { headers },
         );
         setDetail(result);
         setDetailStatus("ready");
@@ -82,7 +76,7 @@ export function AdminModerationWorkspace({
         setDetailStatus("error");
       }
     },
-    [headers, locale],
+    [locale],
   );
 
   useEffect(() => {
@@ -225,7 +219,6 @@ export function AdminModerationWorkspace({
                 (category) => category.slug === detail.serviceProfile.categorySlug,
               )}
               detail={detail}
-              headers={headers}
               locale={locale}
               onChanged={async (profile) => {
                 setDetail((current) =>
@@ -246,13 +239,11 @@ function ModerationDetailPanel({
   category,
   detail,
   locale,
-  headers,
   onChanged,
 }: {
   readonly category: ServiceCategorySummary | undefined;
   readonly detail: ProviderModerationDetail;
   readonly locale: Locale;
-  readonly headers: Readonly<Record<string, string>>;
   readonly onChanged: (profile: ProviderServiceProfileSummary) => Promise<void>;
 }) {
   const [reason, setReason] = useState("");
@@ -273,7 +264,6 @@ function ModerationDetailPanel({
       >(
         `/backend/v1/admin/provider-moderation/service-profiles/${profile.id}/${action}`,
         action === "review" ? {} : { reason },
-        { headers },
       );
       setReason("");
       await onChanged(result);
@@ -318,14 +308,12 @@ function ModerationDetailPanel({
 
       <DocumentSection
         documents={generalDocuments}
-        headers={headers}
         isGeneral
         locale={locale}
         title={translate(locale, "admin.moderation.generalDocuments")}
       />
       <DocumentSection
         documents={profile.documents}
-        headers={headers}
         labels={new Map(category?.requiredDocuments.map((rule) => [rule.documentType, rule.label]))}
         locale={locale}
         title={translate(locale, "admin.moderation.categoryDocuments")}
@@ -427,14 +415,12 @@ function DocumentSection({
   title,
   documents,
   locale,
-  headers,
   isGeneral = false,
   labels = new Map(),
 }: {
   readonly title: string;
   readonly documents: ReadonlyArray<ProviderDocumentSummary>;
   readonly locale: Locale;
-  readonly headers: Readonly<Record<string, string>>;
   readonly isGeneral?: boolean;
   readonly labels?: ReadonlyMap<string, string>;
 }) {
@@ -448,7 +434,6 @@ function DocumentSection({
           {documents.map((document) => (
             <DocumentReviewButton
               document={document}
-              headers={headers}
               key={document.id}
               label={
                 isGeneral
@@ -469,12 +454,10 @@ function DocumentReviewButton({
   document,
   label,
   locale,
-  headers,
 }: {
   readonly document: ProviderDocumentSummary;
   readonly label: string;
   readonly locale: Locale;
-  readonly headers: Readonly<Record<string, string>>;
 }) {
   const [isOpening, setIsOpening] = useState(false);
   const [error, setError] = useState(false);
@@ -485,7 +468,6 @@ function DocumentReviewButton({
     try {
       const signed = await createApiClient().get<SignedDocumentUrlResponse>(
         `/backend/v1/admin/provider-moderation/documents/${document.id}/access-url`,
-        { headers },
       );
       window.open(signed.url, "_blank", "noopener,noreferrer");
     } catch {

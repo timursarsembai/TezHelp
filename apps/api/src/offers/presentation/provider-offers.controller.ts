@@ -4,7 +4,7 @@ import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { providerDiscoveryPreferenceSchema, submitOfferSchema } from "@tezhelp/validation";
 
 import { IdentityApplicationError } from "../../identity/domain/identity-errors.js";
-import { DevelopmentIdentityGuard } from "../../identity/presentation/development-identity.guard.js";
+import { SessionAuthGuard } from "../../foundation/authorization/session-auth.guard.js";
 import type { IdentityRequest } from "../../identity/presentation/identity-request.js";
 import { parseBody } from "../../identity/presentation/zod-body.js";
 import {
@@ -15,7 +15,7 @@ import {
 } from "../application/offers.use-cases.js";
 
 @ApiTags("offers")
-@UseGuards(DevelopmentIdentityGuard)
+@UseGuards(SessionAuthGuard)
 @Controller("provider")
 export class ProviderOffersController {
   constructor(

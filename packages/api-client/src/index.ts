@@ -39,6 +39,7 @@ export class ApiClient {
   ): Promise<TData> {
     const options = normalizeRequestOptions(requestOptions);
     const response = await this.fetchImpl(new URL(path, this.options.baseUrl), {
+      credentials: "include",
       headers: {
         ...options.headers,
         "x-correlation-id": options.correlationId,
@@ -78,6 +79,7 @@ export class ApiClient {
     const options = normalizeRequestOptions(requestOptions);
     const response = await this.fetchImpl(new URL(path, this.options.baseUrl), {
       body,
+      credentials: "include",
       headers: {
         ...options.headers,
         "x-correlation-id": options.correlationId,
@@ -103,6 +105,7 @@ export class ApiClient {
     const options = normalizeRequestOptions(requestOptions);
     const response = await this.fetchImpl(new URL(path, this.options.baseUrl), {
       body: JSON.stringify(body),
+      credentials: "include",
       headers: {
         ...options.headers,
         "content-type": "application/json",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { ApiClient } from "@tezhelp/api-client";
 import { translate } from "@tezhelp/i18n";
@@ -17,17 +17,11 @@ import { Button } from "@tezhelp/ui";
 
 interface ProviderOnboardingProps {
   readonly locale: Locale;
-  readonly userId: string;
   readonly onClose: () => void;
   readonly onSignOut: () => void;
 }
 
-export function ProviderOnboarding({
-  locale,
-  userId,
-  onClose,
-  onSignOut,
-}: ProviderOnboardingProps) {
+export function ProviderOnboarding({ locale, onClose, onSignOut }: ProviderOnboardingProps) {
   const [profile, setProfile] = useState<ProviderProfileSummary | null>(null);
   const [serviceProfiles, setServiceProfiles] = useState<
     ReadonlyArray<ProviderServiceProfileSummary>
@@ -36,17 +30,15 @@ export function ProviderOnboarding({
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [notice, setNotice] = useState<string | null>(null);
-  const headers = useMemo(() => ({ "x-tezhelp-user-id": userId }), [userId]);
 
   const load = useCallback(async () => {
     setStatus("loading");
     try {
       const client = createBrowserApiClient();
       const [providerProfile, profiles, serviceCategories] = await Promise.all([
-        client.get<ProviderProfileSummary>("/backend/v1/provider/profile", { headers }),
+        client.get<ProviderProfileSummary>("/backend/v1/provider/profile"),
         client.get<ReadonlyArray<ProviderServiceProfileSummary>>(
           `/backend/v1/provider/service-profiles?locale=${locale}`,
-          { headers },
         ),
         client.get<ReadonlyArray<ServiceCategorySummary>>(
           `/backend/v1/service-categories?locale=${locale}`,
@@ -60,7 +52,7 @@ export function ProviderOnboarding({
     } catch {
       setStatus("error");
     }
-  }, [headers, locale]);
+  }, [locale]);
 
   useEffect(() => {
     void load();
@@ -109,7 +101,6 @@ export function ProviderOnboarding({
         <div className="provider-onboarding-layout">
           <div className="provider-onboarding-primary">
             <ProviderGeneralProfileForm
-              headers={headers}
               locale={locale}
               onSaved={(nextProfile) => {
                 setProfile(nextProfile);
@@ -119,7 +110,6 @@ export function ProviderOnboarding({
             />
             <GeneralDocuments
               documents={profile.generalDocuments ?? []}
-              headers={headers}
               locale={locale}
               onUploaded={() => void load()}
             />
@@ -128,7 +118,6 @@ export function ProviderOnboarding({
           <div className="provider-onboarding-services">
             <ServiceProfileSelector
               availableCategories={availableCategories}
-              headers={headers}
               locale={locale}
               onCreated={(created) => {
                 setServiceProfiles((current) => [...current, created]);
@@ -141,7 +130,6 @@ export function ProviderOnboarding({
             {selectedProfile && selectedCategory ? (
               <ServiceProfileEditor
                 category={selectedCategory}
-                headers={headers}
                 locale={locale}
                 onChanged={(nextProfile) => {
                   setServiceProfiles((current) =>
@@ -175,12 +163,10 @@ export function ProviderOnboarding({
 function ProviderGeneralProfileForm({
   profile,
   locale,
-  headers,
   onSaved,
 }: {
   readonly profile: ProviderProfileSummary;
   readonly locale: Locale;
-  readonly headers: Readonly<Record<string, string>>;
   readonly onSaved: (profile: ProviderProfileSummary) => void;
 }) {
   const [displayName, setDisplayName] = useState(profile.displayName ?? "");
@@ -200,16 +186,12 @@ function ProviderGeneralProfileForm({
           readonly city: string;
           readonly taxStatus: ProviderTaxStatus;
         }
-      >(
-        "/backend/v1/provider/profile",
-        {
-          displayName,
-          iin,
-          city,
-          taxStatus: taxStatus as ProviderTaxStatus,
-        },
-        { headers },
-      );
+      >("/backend/v1/provider/profile", {
+        displayName,
+        iin,
+        city,
+        taxStatus: taxStatus as ProviderTaxStatus,
+      });
       onSaved(nextProfile);
     } finally {
       setIsSaving(false);
@@ -292,12 +274,10 @@ function ProviderGeneralProfileForm({
 function GeneralDocuments({
   documents,
   locale,
-  headers,
   onUploaded,
 }: {
   readonly documents: ReadonlyArray<ProviderDocumentSummary>;
   readonly locale: Locale;
-  readonly headers: Readonly<Record<string, string>>;
   readonly onUploaded: () => void;
 }) {
   return (
@@ -310,7 +290,6 @@ function GeneralDocuments({
         accept="image/jpeg,image/png,image/webp"
         documentType="face_photo"
         existing={documents.find((document) => document.documentType === "face_photo")}
-        headers={headers}
         label={translate(locale, "providerOnboarding.facePhoto")}
         locale={locale}
         onUploaded={onUploaded}
@@ -319,7 +298,6 @@ function GeneralDocuments({
         accept="application/pdf,image/jpeg,image/png,image/webp"
         documentType="identity_document"
         existing={documents.find((document) => document.documentType === "identity_document")}
-        headers={headers}
         label={translate(locale, "providerOnboarding.identityDocument")}
         locale={locale}
         onUploaded={onUploaded}
@@ -333,7 +311,6 @@ function ServiceProfileSelector({
   selectedProfileId,
   availableCategories,
   locale,
-  headers,
   onSelect,
   onCreated,
 }: {
@@ -341,7 +318,6 @@ function ServiceProfileSelector({
   readonly selectedProfileId: string | null;
   readonly availableCategories: ReadonlyArray<ServiceCategorySummary>;
   readonly locale: Locale;
-  readonly headers: Readonly<Record<string, string>>;
   readonly onSelect: (id: string) => void;
   readonly onCreated: (profile: ProviderServiceProfileSummary) => void;
 }) {
@@ -354,11 +330,9 @@ function ServiceProfileSelector({
       const created = await createBrowserApiClient().post<
         ProviderServiceProfileSummary,
         { readonly categorySlug: ServiceCategorySlug }
-      >(
-        "/backend/v1/provider/service-profiles",
-        { categorySlug: categorySlug as ServiceCategorySlug },
-        { headers },
-      );
+      >("/backend/v1/provider/service-profiles", {
+        categorySlug: categorySlug as ServiceCategorySlug,
+      });
       onCreated(created);
       setCategorySlug("");
     } finally {
@@ -424,14 +398,12 @@ function ServiceProfileEditor({
   category,
   providerProfile,
   locale,
-  headers,
   onChanged,
 }: {
   readonly profile: ProviderServiceProfileSummary;
   readonly category: ServiceCategorySummary;
   readonly providerProfile: ProviderProfileSummary;
   readonly locale: Locale;
-  readonly headers: Readonly<Record<string, string>>;
   readonly onChanged: (profile: ProviderServiceProfileSummary) => void;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -459,7 +431,7 @@ function ServiceProfileEditor({
       const submitted = await createBrowserApiClient().post<
         ProviderServiceProfileSummary,
         Record<string, never>
-      >(`/backend/v1/provider/service-profiles/${profile.id}/submit`, {}, { headers });
+      >(`/backend/v1/provider/service-profiles/${profile.id}/submit`, {});
       onChanged(submitted);
     } catch {
       setSubmitError(true);
@@ -494,7 +466,6 @@ function ServiceProfileEditor({
             existing={profile.documents.find(
               (document) => document.documentType === rule.documentType,
             )}
-            headers={headers}
             key={rule.id}
             label={rule.label}
             locale={locale}
@@ -549,7 +520,6 @@ function DocumentUploadRow({
   existing,
   serviceProfileId,
   locale,
-  headers,
   onUploaded,
 }: {
   readonly label: string;
@@ -558,7 +528,6 @@ function DocumentUploadRow({
   readonly existing: ProviderDocumentSummary | undefined;
   readonly serviceProfileId?: string;
   readonly locale: Locale;
-  readonly headers: Readonly<Record<string, string>>;
   readonly onUploaded: (document: ProviderDocumentSummary) => void;
 }) {
   const [isUploading, setIsUploading] = useState(false);
@@ -578,7 +547,6 @@ function DocumentUploadRow({
       const document = await createBrowserApiClient().postForm<ProviderDocumentSummary>(
         "/backend/v1/provider/documents/upload",
         form,
-        { headers },
       );
       onUploaded(document);
     } catch {

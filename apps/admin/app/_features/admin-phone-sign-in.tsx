@@ -44,7 +44,7 @@ export function AdminPhoneSignIn({
     setIsSubmitting(true);
     setStatus(null);
     try {
-      const user = await createApiClient().post<
+      await createApiClient().post<
         IdentityUserSummary,
         { readonly challengeId: string; readonly code: string; readonly preferredLocale: Locale }
       >("/backend/v1/auth/otp/verify", {
@@ -52,7 +52,8 @@ export function AdminPhoneSignIn({
         code,
         preferredLocale: locale,
       });
-      onAuthenticated(user);
+      const admin = await createApiClient().get<IdentityUserSummary>("/backend/v1/admin/me");
+      onAuthenticated(admin);
     } catch {
       setStatus(translate(locale, "identity.authError"));
     } finally {

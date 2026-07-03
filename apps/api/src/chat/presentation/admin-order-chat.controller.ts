@@ -4,15 +4,15 @@ import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { ModerationApplicationError } from "../../moderation/domain/moderation-errors.js";
 import {
   type AdminRequest,
-  DevelopmentAdminGuard,
-} from "../../moderation/presentation/development-admin.guard.js";
+  StaffAuthGuard,
+} from "../../foundation/authorization/staff-auth.guard.js";
 import {
   GetAdminOrderConversationUseCase,
   GetChatAttachmentAccessUrlUseCase,
 } from "../application/chat.use-cases.js";
 
 @ApiTags("admin-order-chat")
-@UseGuards(DevelopmentAdminGuard)
+@UseGuards(StaffAuthGuard)
 @Controller("admin/orders/:orderId/chat")
 export class AdminOrderChatController {
   constructor(

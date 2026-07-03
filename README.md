@@ -65,17 +65,28 @@ provider feed can therefore be empty or unavailable until an administrator
 completes moderation. The UI does not invent eligible orders or bypass backend
 rules.
 
-Open the admin app and use the same local OTP flow to enter the development
-moderation workspace. The returned user ID is used only as the audited local
-moderator actor. The workspace filters the queue, opens general and
+Open the admin app and sign in with the same local OTP flow to enter the
+moderation workspace. Admin access requires the signed-in user's `is_staff`
+database flag to be set (see below); the acting moderator is the audited
+session actor. The workspace filters the queue, opens general and
 category-specific documents through five-minute MinIO presigned URLs, records
 document access, and supports review, approval, rejection, and suspension with
-mandatory reasons. This is not production staff authorization.
+mandatory reasons. This is not production staff account management.
 
-The browser retains the returned user ID in session storage only for this local
-development flow and sends it through the existing `x-tezhelp-user-id` header.
-This is not production authentication. Secure server-issued sessions, real SMS,
-and Google OAuth remain required before deployment.
+Both apps authenticate through real server-issued sessions: after phone OTP
+verification, the API sets an HttpOnly session cookie
+(`SESSION_COOKIE_NAME`, default `tezhelp_session`), and the browser sends it
+automatically on every request. There is no client-readable auth token and no
+`sessionStorage`-based session. To grant local admin/staff access, run:
+
+```sql
+UPDATE users SET is_staff = true, staff_role = 'super_admin'
+WHERE verified_phone = '+7...';
+```
+
+Real SMS and Google OAuth remain required before deployment; the session
+cookie mechanism itself is the same one intended for production, gated by
+`SESSION_COOKIE_SECURE=true`.
 
 The current map adapter uses public OpenStreetMap raster tiles for low-volume
 local development only. TezHelp must select a Kazakhstan-compatible production
@@ -88,7 +99,9 @@ Implemented development endpoints:
 - `POST /v1/auth/otp/request`
 - `POST /v1/auth/otp/verify`
 - `POST /v1/auth/google/development`
+- `POST /v1/auth/logout`
 - `GET /v1/me`
+- `GET /v1/admin/me`
 - `POST /v1/me/phone-completion/request`
 - `POST /v1/me/phone-completion/verify`
 - `POST /v1/me/phone-change/request`
@@ -97,9 +110,12 @@ Implemented development endpoints:
 - `PATCH /v1/me/role`
 
 Development OTP is configured by `IDENTITY_DEVELOPMENT_OTP` and defaults to
-`123456`. The development OTP adapter and `x-tezhelp-user-id` development auth
-header are rejected in production by environment validation. Do not use these as
-production authentication.
+`123456`. The development OTP adapter is rejected in production by environment
+validation (`IDENTITY_OTP_ADAPTER` must not be `development`). Sign-in issues a
+real server-issued, DB-backed HttpOnly session cookie (`SESSION_COOKIE_NAME`),
+verified on every request by `SessionAuthGuard`/`StaffAuthGuard`
+(`apps/api/src/foundation/authorization/`). `POST /v1/auth/logout` revokes the
+current session.
 
 ## Provider Moderation Foundation
 
@@ -123,10 +139,10 @@ Implemented development endpoints:
 - `POST /v1/admin/provider-moderation/service-profiles/:serviceProfileId/suspend`
 - `GET /v1/admin/provider-moderation/documents/:documentId/access-url`
 
-Provider endpoints use the development `x-tezhelp-user-id` header. Admin
-moderation endpoints use `x-tezhelp-admin-user-id`. Both are local/test
-adapters only and are rejected in production through the same development-auth
-environment guard.
+Provider endpoints require a valid session (`SessionAuthGuard`). Admin
+moderation endpoints additionally require the session user's `is_staff`
+database flag (`StaffAuthGuard`) — see `GET /v1/admin/me` in the Identity
+Foundation section for the staff identity check.
 
 ## Orders, Offers, Wallet Foundation
 

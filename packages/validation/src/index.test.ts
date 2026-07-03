@@ -58,7 +58,6 @@ describe("validation schemas", () => {
         S3_SECRET_ACCESS_KEY: "tezhelp_dev_secret_key",
         S3_BUCKET_PRIVATE: "tezhelp-private-dev",
         IDENTITY_OTP_ADAPTER: "development",
-        IDENTITY_DEV_AUTH_HEADER_ENABLED: "true",
         SESSION_COOKIE_SECURE: "false",
       }),
     ).toThrow();

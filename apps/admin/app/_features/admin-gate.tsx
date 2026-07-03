@@ -2,20 +2,31 @@
 
 import { useEffect, useState } from "react";
 
+import { ApiClient } from "@tezhelp/api-client";
 import type { IdentityUserSummary, Locale } from "@tezhelp/types";
 
 import { AdminModerationWorkspace } from "./admin-moderation-workspace";
 import { AdminPhoneSignIn } from "./admin-phone-sign-in";
-
-const adminSessionKey = "tezhelp.local-admin-session";
 
 export function AdminGate({ locale }: { readonly locale: Locale }) {
   const [admin, setAdmin] = useState<IdentityUserSummary | null>(null);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    setAdmin(readAdminSession());
-    setIsReady(true);
+    let cancelled = false;
+    createAdminApiClient()
+      .get<IdentityUserSummary>("/backend/v1/admin/me")
+      .then((user) => {
+        if (!cancelled) setAdmin(user);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) setIsReady(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (!isReady) {
@@ -27,7 +38,6 @@ export function AdminGate({ locale }: { readonly locale: Locale }) {
       <AdminPhoneSignIn
         locale={locale}
         onAuthenticated={(user) => {
-          window.sessionStorage.setItem(adminSessionKey, JSON.stringify(user));
           setAdmin(user);
         }}
       />
@@ -36,37 +46,15 @@ export function AdminGate({ locale }: { readonly locale: Locale }) {
 
   return (
     <AdminModerationWorkspace
-      admin={admin}
       locale={locale}
       onSignOut={() => {
-        window.sessionStorage.removeItem(adminSessionKey);
+        void createAdminApiClient().post("/backend/v1/auth/logout", {});
         setAdmin(null);
       }}
     />
   );
 }
 
-function readAdminSession(): IdentityUserSummary | null {
-  const serialized = window.sessionStorage.getItem(adminSessionKey);
-  if (!serialized) {
-    return null;
-  }
-
-  try {
-    const value: unknown = JSON.parse(serialized);
-    if (
-      typeof value === "object" &&
-      value !== null &&
-      "id" in value &&
-      typeof value.id === "string" &&
-      "status" in value &&
-      value.status === "active"
-    ) {
-      return value as IdentityUserSummary;
-    }
-  } catch {
-    window.sessionStorage.removeItem(adminSessionKey);
-  }
-
-  return null;
+function createAdminApiClient(): ApiClient {
+  return new ApiClient({ baseUrl: window.location.origin });
 }

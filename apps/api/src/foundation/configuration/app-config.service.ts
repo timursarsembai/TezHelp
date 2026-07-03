@@ -42,7 +42,6 @@ export class AppConfigService {
       nodeEnv: this.config.get("NODE_ENV", { infer: true }),
       otpAdapter: this.config.get("IDENTITY_OTP_ADAPTER", { infer: true }),
       developmentOtp: this.config.get("IDENTITY_DEVELOPMENT_OTP", { infer: true }),
-      devAuthHeaderEnabled: this.config.get("IDENTITY_DEV_AUTH_HEADER_ENABLED", { infer: true }),
       otpTtlSeconds: this.config.get("OTP_TTL_SECONDS", { infer: true }),
       otpResendCooldownSeconds: this.config.get("OTP_RESEND_COOLDOWN_SECONDS", { infer: true }),
       otpMaxAttempts: this.config.get("OTP_MAX_ATTEMPTS", { infer: true }),
@@ -52,6 +51,12 @@ export class AppConfigService {
       otpIpRateLimitPerHour: this.config.get("OTP_IP_RATE_LIMIT_PER_HOUR", { infer: true }),
       sessionCookieName: this.config.get("SESSION_COOKIE_NAME", { infer: true }),
       sessionCookieSecure: this.config.get("SESSION_COOKIE_SECURE", { infer: true }),
+      sessionCookieDomain: this.config.get("SESSION_COOKIE_DOMAIN", { infer: true }),
+      sessionCookieSameSite: this.config.get("SESSION_COOKIE_SAMESITE", { infer: true }),
+      sessionTtlSeconds: this.config.get("SESSION_TTL_SECONDS", { infer: true }),
+      sessionSlidingRefreshSeconds: this.config.get("SESSION_SLIDING_REFRESH_SECONDS", {
+        infer: true,
+      }),
     };
   }
 

@@ -6,8 +6,8 @@ import { createProviderSanctionSchema, liftProviderSanctionSchema } from "@tezhe
 import { ModerationApplicationError } from "../../moderation/domain/moderation-errors.js";
 import {
   type AdminRequest,
-  DevelopmentAdminGuard,
-} from "../../moderation/presentation/development-admin.guard.js";
+  StaffAuthGuard,
+} from "../../foundation/authorization/staff-auth.guard.js";
 import { parseBody } from "../../identity/presentation/zod-body.js";
 import {
   CreateProviderSanctionUseCase,
@@ -15,7 +15,7 @@ import {
 } from "../application/reputation.use-cases.js";
 
 @ApiTags("admin-sanctions")
-@UseGuards(DevelopmentAdminGuard)
+@UseGuards(StaffAuthGuard)
 @Controller("admin")
 export class AdminSanctionsController {
   constructor(

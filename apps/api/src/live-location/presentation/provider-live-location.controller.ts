@@ -4,13 +4,13 @@ import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { liveLocationUpdateSchema } from "@tezhelp/validation";
 
 import { IdentityApplicationError } from "../../identity/domain/identity-errors.js";
-import { DevelopmentIdentityGuard } from "../../identity/presentation/development-identity.guard.js";
+import { SessionAuthGuard } from "../../foundation/authorization/session-auth.guard.js";
 import type { IdentityRequest } from "../../identity/presentation/identity-request.js";
 import { parseBody } from "../../identity/presentation/zod-body.js";
 import { PublishProviderLocationUseCase } from "../application/live-location.use-cases.js";
 
 @ApiTags("provider-live-location")
-@UseGuards(DevelopmentIdentityGuard)
+@UseGuards(SessionAuthGuard)
 @Controller("provider/orders/:orderId/location")
 export class ProviderLiveLocationController {
   constructor(private readonly publishLocation: PublishProviderLocationUseCase) {}

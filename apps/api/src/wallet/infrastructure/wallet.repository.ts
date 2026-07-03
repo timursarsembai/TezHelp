@@ -75,7 +75,20 @@ export class WalletRepository {
   async applyStandaloneEntry(input: LedgerEntryInput): Promise<WalletLedgerEntrySummary> {
     return this.database.transaction(async (trx) => {
       await this.ensureWalletForUpdate(trx, input.providerUserId);
-      return this.applyLedgerEntry(trx, input);
+      const entry = await this.applyLedgerEntry(trx, input);
+      await trx
+        .insertInto("audit_events")
+        .values({
+          actor_id: input.actorUserId,
+          action: `wallet.${input.entryType}`,
+          reason: input.reason,
+          related_entity_type: "wallet_account",
+          related_entity_id: input.providerUserId,
+          metadata: { amountKzt: input.amountKzt, ledgerEntryId: entry.id },
+        })
+        .execute();
+
+      return entry;
     });
   }
 

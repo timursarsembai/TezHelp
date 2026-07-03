@@ -1,9 +1,8 @@
 import { Module } from "@nestjs/common";
 
+import { AuthorizationModule } from "../foundation/authorization/authorization.module.js";
 import { ConfigurationModule } from "../foundation/configuration/configuration.module.js";
 import { DatabaseModule } from "../foundation/database/database.module.js";
-import { DevelopmentIdentityGuard } from "../identity/presentation/development-identity.guard.js";
-import { DevelopmentAdminGuard } from "../moderation/presentation/development-admin.guard.js";
 import {
   AppealProviderSanctionUseCase,
   CreateProviderSanctionUseCase,
@@ -20,7 +19,7 @@ import { ProviderReputationController } from "./presentation/provider-reputation
 import { PublicProviderReliabilityController } from "./presentation/public-provider-reliability.controller.js";
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule],
+  imports: [ConfigurationModule, DatabaseModule, AuthorizationModule],
   controllers: [
     OrderReviewsController,
     ProviderReputationController,
@@ -28,8 +27,6 @@ import { PublicProviderReliabilityController } from "./presentation/public-provi
     PublicProviderReliabilityController,
   ],
   providers: [
-    DevelopmentIdentityGuard,
-    DevelopmentAdminGuard,
     ReputationRepository,
     SubmitOrderReviewUseCase,
     GetCustomerReliabilityUseCase,

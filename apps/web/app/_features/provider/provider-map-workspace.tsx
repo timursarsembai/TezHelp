@@ -38,16 +38,13 @@ export function ProviderMapWorkspace({
   const [feedStatus, setFeedStatus] = useState<"loading" | "ready" | "error">("loading");
   const [activeOrder, setActiveOrder] = useState<OrderSummary | null>(null);
   const watchIdRef = useRef<number | null>(null);
-  const headers = useMemo(() => ({ "x-tezhelp-user-id": user.id }), [user.id]);
 
   const loadProviderData = useCallback(async () => {
     const client = createBrowserApiClient();
     try {
       const [orderFeed, walletSummary] = await Promise.all([
-        client.get<ReadonlyArray<ProviderOrderDiscoveryItem>>("/backend/v1/provider/orders", {
-          headers,
-        }),
-        client.get<WalletSummary>("/backend/v1/provider/wallet", { headers }),
+        client.get<ReadonlyArray<ProviderOrderDiscoveryItem>>("/backend/v1/provider/orders"),
+        client.get<WalletSummary>("/backend/v1/provider/wallet"),
       ]);
       setOrders(orderFeed);
       setWallet(walletSummary);
@@ -55,7 +52,7 @@ export function ProviderMapWorkspace({
     } catch {
       setFeedStatus("error");
     }
-  }, [headers]);
+  }, []);
 
   useEffect(() => {
     void loadProviderData();
@@ -64,7 +61,10 @@ export function ProviderMapWorkspace({
   // Polling активного заказа провайдера каждые 4 сек
   useEffect(() => {
     const terminalStatuses: ReadonlyArray<OrderStatus> = [
-      "completed", "cancelled_by_customer", "cancelled_by_provider", "cancelled_by_admin",
+      "completed",
+      "cancelled_by_customer",
+      "cancelled_by_provider",
+      "cancelled_by_admin",
     ];
     if (activeOrder && terminalStatuses.includes(activeOrder.status)) return;
 
@@ -72,7 +72,6 @@ export function ProviderMapWorkspace({
       try {
         const order = await createBrowserApiClient().get<OrderSummary | null>(
           "/backend/v1/provider/orders/active",
-          { headers },
         );
         setActiveOrder(order);
       } catch {
@@ -81,17 +80,19 @@ export function ProviderMapWorkspace({
     }, 4000);
 
     void createBrowserApiClient()
-      .get<OrderSummary | null>("/backend/v1/provider/orders/active", { headers })
+      .get<OrderSummary | null>("/backend/v1/provider/orders/active")
       .then(setActiveOrder)
       .catch(() => undefined);
 
     return () => clearInterval(interval);
-  }, [headers, activeOrder?.status]);
+  }, [activeOrder?.status]);
 
   // GPS-публикация пока заказ активен
   useEffect(() => {
     const trackingStatuses: ReadonlyArray<OrderStatus> = [
-      "provider_en_route", "provider_arrived", "in_progress",
+      "provider_en_route",
+      "provider_arrived",
+      "in_progress",
     ];
     if (!activeOrder || !trackingStatuses.includes(activeOrder.status)) {
       if (watchIdRef.current !== null) {
@@ -105,16 +106,14 @@ export function ProviderMapWorkspace({
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
-        void createBrowserApiClient().post(
-          `/backend/v1/provider/orders/${activeOrder.id}/location`,
-          {
+        void createBrowserApiClient()
+          .post(`/backend/v1/provider/orders/${activeOrder.id}/location`, {
             latitude: pos.coords.latitude,
             longitude: pos.coords.longitude,
             accuracyMeters: pos.coords.accuracy,
             resumed: false,
-          },
-          { headers },
-        ).catch(() => undefined);
+          })
+          .catch(() => undefined);
       },
       () => undefined,
       { enableHighAccuracy: true, maximumAge: 5000 },
@@ -126,7 +125,7 @@ export function ProviderMapWorkspace({
         watchIdRef.current = null;
       }
     };
-  }, [activeOrder?.id, activeOrder?.status, headers]);
+  }, [activeOrder?.id, activeOrder?.status]);
 
   const selectedOrder = orders.find((item) => item.order.id === selectedOrderId) ?? null;
   const orderPoints = useMemo(
@@ -145,7 +144,7 @@ export function ProviderMapWorkspace({
     const nextUser = await createBrowserApiClient().patch<
       IdentityUserSummary,
       { readonly role: "customer" }
-    >("/backend/v1/me/role", { role: "customer" }, { headers });
+    >("/backend/v1/me/role", { role: "customer" });
     onSessionChange(nextUser);
   }
 
@@ -231,7 +230,6 @@ export function ProviderMapWorkspace({
             locale={locale}
             onClose={() => setShowOnboarding(false)}
             onSignOut={onSignOut}
-            userId={user.id}
           />
         ) : (
           <>
@@ -241,12 +239,17 @@ export function ProviderMapWorkspace({
               orderPoints={orderPoints}
               selectedPoint={null}
             />
-            {activeOrder && !["completed","cancelled_by_customer","cancelled_by_provider","cancelled_by_admin"].includes(activeOrder.status) ? (
+            {activeOrder &&
+            ![
+              "completed",
+              "cancelled_by_customer",
+              "cancelled_by_provider",
+              "cancelled_by_admin",
+            ].includes(activeOrder.status) ? (
               <ProviderActiveOrderPanel
                 locale={locale}
                 order={activeOrder}
                 onUpdated={setActiveOrder}
-                userId={user.id}
               />
             ) : selectedOrder ? (
               <ProviderOfferPanel
@@ -254,7 +257,6 @@ export function ProviderMapWorkspace({
                 locale={locale}
                 onClose={() => setSelectedOrderId(null)}
                 onSubmitted={() => void loadProviderData()}
-                userId={user.id}
               />
             ) : null}
           </>
@@ -305,19 +307,16 @@ export function ProviderMapWorkspace({
 function ProviderActiveOrderPanel({
   locale,
   order,
-  userId,
   onUpdated,
 }: {
   readonly locale: Locale;
   readonly order: OrderSummary;
-  readonly userId: string;
   readonly onUpdated: (order: OrderSummary) => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCancel, setShowCancel] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
-  const headers = useMemo(() => ({ "x-tezhelp-user-id": userId }), [userId]);
 
   async function lifecycle(endpoint: string, body: Record<string, unknown> = {}) {
     setBusy(true);
@@ -326,7 +325,6 @@ function ProviderActiveOrderPanel({
       const updated = await createBrowserApiClient().post<OrderSummary, Record<string, unknown>>(
         `/backend/v1/provider/orders/${order.id}/${endpoint}`,
         body,
-        { headers },
       );
       onUpdated(updated);
     } catch {
@@ -341,11 +339,13 @@ function ProviderActiveOrderPanel({
     setBusy(true);
     setError(null);
     try {
-      const updated = await createBrowserApiClient().post<OrderSummary, { reason: string; idempotencyKey: string }>(
-        `/backend/v1/provider/orders/${order.id}/cancel`,
-        { reason: cancelReason, idempotencyKey: `cancel-provider-${order.id}` },
-        { headers },
-      );
+      const updated = await createBrowserApiClient().post<
+        OrderSummary,
+        { reason: string; idempotencyKey: string }
+      >(`/backend/v1/provider/orders/${order.id}/cancel`, {
+        reason: cancelReason,
+        idempotencyKey: `cancel-provider-${order.id}`,
+      });
       onUpdated(updated);
     } catch {
       setError(translate(locale, "provider.cancelError"));
@@ -403,7 +403,9 @@ function ProviderActiveOrderPanel({
           <button
             className="nav-link-btn"
             key={nav.label}
-            onClick={() => { openNav(nav.href, nav.fallback); }}
+            onClick={() => {
+              openNav(nav.href, nav.fallback);
+            }}
             type="button"
           >
             {nav.label}
@@ -411,7 +413,9 @@ function ProviderActiveOrderPanel({
         ))}
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "0.75rem" }}>
+      <div
+        style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "0.75rem" }}
+      >
         {order.status === "provider_selected" ? (
           <Button disabled={busy} onClick={() => void lifecycle("depart")}>
             {translate(locale, "provider.depart")}
@@ -437,7 +441,9 @@ function ProviderActiveOrderPanel({
         ) : null}
         <Button
           disabled={busy}
-          onClick={() => { setShowCancel((v) => !v); }}
+          onClick={() => {
+            setShowCancel((v) => !v);
+          }}
           variant="secondary"
         >
           {translate(locale, "provider.cancelOrder")}
@@ -450,7 +456,9 @@ function ProviderActiveOrderPanel({
             {translate(locale, "provider.cancelReason")}
             <input
               className="app-input"
-              onChange={(e) => { setCancelReason(e.target.value); }}
+              onChange={(e) => {
+                setCancelReason(e.target.value);
+              }}
               value={cancelReason}
             />
           </label>
@@ -464,7 +472,11 @@ function ProviderActiveOrderPanel({
         </div>
       ) : null}
 
-      {error ? <p className="order-panel-status" role="alert">{error}</p> : null}
+      {error ? (
+        <p className="order-panel-status" role="alert">
+          {error}
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -472,13 +484,11 @@ function ProviderActiveOrderPanel({
 function ProviderOfferPanel({
   item,
   locale,
-  userId,
   onClose,
   onSubmitted,
 }: {
   readonly item: ProviderOrderDiscoveryItem;
   readonly locale: Locale;
-  readonly userId: string;
   readonly onClose: () => void;
   readonly onSubmitted: () => void;
 }) {
@@ -501,17 +511,13 @@ function ProviderOfferPanel({
           readonly comment: string;
           readonly idempotencyKey: string;
         }
-      >(
-        `/backend/v1/provider/orders/${item.order.id}/offers`,
-        {
-          providerServiceProfileId: item.providerServiceProfileId,
-          priceKzt: Number(priceKzt),
-          arrivalMinutes: Number(arrivalMinutes),
-          comment,
-          idempotencyKey: createIdempotencyKey(),
-        },
-        { headers: { "x-tezhelp-user-id": userId } },
-      );
+      >(`/backend/v1/provider/orders/${item.order.id}/offers`, {
+        providerServiceProfileId: item.providerServiceProfileId,
+        priceKzt: Number(priceKzt),
+        arrivalMinutes: Number(arrivalMinutes),
+        comment,
+        idempotencyKey: createIdempotencyKey(),
+      });
       setStatus(translate(locale, "provider.offerSubmitted"));
       onSubmitted();
     } catch {

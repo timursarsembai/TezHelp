@@ -2,12 +2,12 @@ import { Controller, Get, Param, Req, UseGuards } from "@nestjs/common";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 
 import { IdentityApplicationError } from "../../identity/domain/identity-errors.js";
-import { DevelopmentIdentityGuard } from "../../identity/presentation/development-identity.guard.js";
+import { SessionAuthGuard } from "../../foundation/authorization/session-auth.guard.js";
 import type { IdentityRequest } from "../../identity/presentation/identity-request.js";
 import { ListOrderOffersUseCase } from "../application/offers.use-cases.js";
 
 @ApiTags("offers")
-@UseGuards(DevelopmentIdentityGuard)
+@UseGuards(SessionAuthGuard)
 @Controller("orders")
 export class OrderOffersController {
   constructor(private readonly listOffers: ListOrderOffersUseCase) {}

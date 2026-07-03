@@ -1,9 +1,8 @@
 import { Module } from "@nestjs/common";
 
+import { AuthorizationModule } from "../foundation/authorization/authorization.module.js";
 import { ConfigurationModule } from "../foundation/configuration/configuration.module.js";
 import { DatabaseModule } from "../foundation/database/database.module.js";
-import { DevelopmentIdentityGuard } from "../identity/presentation/development-identity.guard.js";
-import { DevelopmentAdminGuard } from "../moderation/presentation/development-admin.guard.js";
 import {
   GetAdminOrderLiveLocationUseCase,
   GetOrderLiveLocationUseCase,
@@ -15,15 +14,13 @@ import { OrderLiveLocationController } from "./presentation/order-live-location.
 import { ProviderLiveLocationController } from "./presentation/provider-live-location.controller.js";
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule],
+  imports: [ConfigurationModule, DatabaseModule, AuthorizationModule],
   controllers: [
     ProviderLiveLocationController,
     OrderLiveLocationController,
     AdminLiveLocationController,
   ],
   providers: [
-    DevelopmentIdentityGuard,
-    DevelopmentAdminGuard,
     LiveLocationRepository,
     PublishProviderLocationUseCase,
     GetOrderLiveLocationUseCase,

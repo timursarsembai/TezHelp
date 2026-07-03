@@ -4,13 +4,13 @@ import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { submitOrderReviewSchema } from "@tezhelp/validation";
 
 import { IdentityApplicationError } from "../../identity/domain/identity-errors.js";
-import { DevelopmentIdentityGuard } from "../../identity/presentation/development-identity.guard.js";
+import { SessionAuthGuard } from "../../foundation/authorization/session-auth.guard.js";
 import type { IdentityRequest } from "../../identity/presentation/identity-request.js";
 import { parseBody } from "../../identity/presentation/zod-body.js";
 import { SubmitOrderReviewUseCase } from "../application/reputation.use-cases.js";
 
 @ApiTags("order-reviews")
-@UseGuards(DevelopmentIdentityGuard)
+@UseGuards(SessionAuthGuard)
 @Controller("orders/:orderId/reviews")
 export class OrderReviewsController {
   constructor(private readonly submitReview: SubmitOrderReviewUseCase) {}

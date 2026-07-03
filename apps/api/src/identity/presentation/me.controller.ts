@@ -15,12 +15,12 @@ import { SwitchRoleUseCase } from "../application/switch-role.use-case.js";
 import { UpdateLocaleUseCase } from "../application/update-locale.use-case.js";
 import { VerifyPhoneOtpUseCase } from "../application/verify-phone-otp.use-case.js";
 import { IdentityApplicationError } from "../domain/identity-errors.js";
-import { DevelopmentIdentityGuard } from "./development-identity.guard.js";
+import { SessionAuthGuard } from "../../foundation/authorization/session-auth.guard.js";
 import { type IdentityRequest, requestIp } from "./identity-request.js";
 import { parseBody } from "./zod-body.js";
 
 @ApiTags("identity")
-@UseGuards(DevelopmentIdentityGuard)
+@UseGuards(SessionAuthGuard)
 @Controller("me")
 export class MeController {
   constructor(
@@ -53,12 +53,13 @@ export class MeController {
   @ApiOkResponse({ description: "Verify OTP for a phone change." })
   async verifyPhoneChange(@Body() body: unknown, @Req() request: IdentityRequest) {
     const input = parseBody(verifyPhoneChangeSchema, body);
-    return this.verifyPhoneOtp.execute({
+    const result = await this.verifyPhoneOtp.execute({
       challengeId: input.challengeId,
       code: input.code,
       preferredLocale: "ru",
       userId: this.requireUserId(request),
     });
+    return result.user;
   }
 
   @Post("phone-completion/request")
@@ -79,12 +80,13 @@ export class MeController {
   @ApiOkResponse({ description: "Verify OTP to complete a Google-created account." })
   async verifyPhoneCompletion(@Body() body: unknown, @Req() request: IdentityRequest) {
     const input = parseBody(verifyPhoneChangeSchema, body);
-    return this.verifyPhoneOtp.execute({
+    const result = await this.verifyPhoneOtp.execute({
       challengeId: input.challengeId,
       code: input.code,
       preferredLocale: "ru",
       userId: this.requireUserId(request),
     });
+    return result.user;
   }
 
   @Patch("locale")

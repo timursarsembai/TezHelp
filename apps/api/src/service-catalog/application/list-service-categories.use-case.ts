@@ -29,7 +29,8 @@ export class UpdateServiceCategoryCommercialConfigUseCase {
   async execute(
     slug: ServiceCategorySummary["slug"],
     input: ServiceCategorySummary["commercialConfig"],
+    adminUserId: string,
   ) {
-    return this.repository.updateCommercialConfig(slug, input);
+    return this.repository.updateCommercialConfig(slug, input, adminUserId);
   }
 }

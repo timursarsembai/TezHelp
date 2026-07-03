@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
 
+import { AuthorizationModule } from "../foundation/authorization/authorization.module.js";
 import { ConfigurationModule } from "../foundation/configuration/configuration.module.js";
 import { DatabaseModule } from "../foundation/database/database.module.js";
-import { DevelopmentAdminGuard } from "../moderation/presentation/development-admin.guard.js";
 import {
   GetServiceCategoryCommercialConfigUseCase,
   ListServiceCategoriesUseCase,
@@ -13,10 +13,9 @@ import { AdminServiceCategoriesController } from "./presentation/admin-service-c
 import { ServiceCategoriesController } from "./presentation/service-categories.controller.js";
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule],
+  imports: [ConfigurationModule, DatabaseModule, AuthorizationModule],
   controllers: [ServiceCategoriesController, AdminServiceCategoriesController],
   providers: [
-    DevelopmentAdminGuard,
     ServiceCatalogRepository,
     ListServiceCategoriesUseCase,
     GetServiceCategoryCommercialConfigUseCase,
