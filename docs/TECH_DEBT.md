@@ -104,13 +104,17 @@ References: `apps/api/src/wallet/wallet-concurrency.integration-spec.ts`.
 
 ### 6. Database connection pool size is hardcoded
 
-Status: open.
+Status: done (2026-07-04).
 
-`database.module.ts` hardcodes a Kysely/pg pool max of 10 connections.
-Fine for MVP load, but should be an env-configurable value now rather than a
-value to rediscover during a production incident.
+Added `DB_POOL_MAX` (positive integer, default `10`) to `apiEnvSchema` in
+`packages/validation/src/index.ts` and surfaced it via `AppConfigService.dbPoolMax`.
+`DatabaseModule` now passes `config.dbPoolMax` to the `pg` Pool constructor
+instead of the literal `10`. Added `DB_POOL_MAX=10` to `.env.example` with a
+comment so operators know to tune it before scaling.
 
-References: `apps/api/src/foundation/database/database.module.ts`.
+References: `apps/api/src/foundation/database/database.module.ts`,
+`apps/api/src/foundation/configuration/app-config.service.ts`,
+`packages/validation/src/index.ts`.
 
 ## Architectural gap, not urgent yet
 

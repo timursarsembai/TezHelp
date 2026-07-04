@@ -66,6 +66,10 @@ export class AppConfigService {
     };
   }
 
+  get dbPoolMax(): number {
+    return this.config.get("DB_POOL_MAX", { infer: true });
+  }
+
   get rateLimits() {
     return {
       ordersCreatePerHour: this.config.get("RATE_LIMIT_ORDERS_CREATE_PER_HOUR", { infer: true }),

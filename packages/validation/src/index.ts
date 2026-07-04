@@ -331,6 +331,7 @@ export const apiEnvSchema = z
     RATE_LIMIT_CHAT_MESSAGES_PER_HOUR: z.coerce.number().int().positive().default(120),
     RATE_LIMIT_LOCATION_UPDATES_PER_HOUR: z.coerce.number().int().positive().default(600),
     RATE_LIMIT_ADMIN_WALLET_PER_HOUR: z.coerce.number().int().positive().default(30),
+    DB_POOL_MAX: z.coerce.number().int().positive().default(10),
   })
   .superRefine((value, context) => {
     if (value.SESSION_COOKIE_SAMESITE === "none" && !value.SESSION_COOKIE_SECURE) {

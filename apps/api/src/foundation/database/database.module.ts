@@ -20,7 +20,7 @@ import { DatabaseService } from "./database.service.js";
           dialect: new PostgresDialect({
             pool: new Pool({
               connectionString: config.databaseUrl,
-              max: 10,
+              max: config.dbPoolMax,
             }),
           }),
         }),
