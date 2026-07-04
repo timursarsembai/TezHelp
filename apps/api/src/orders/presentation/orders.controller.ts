@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 
 import { cancelOrderSchema, createOrderSchema, selectProviderSchema } from "@tezhelp/validation";
@@ -15,6 +26,14 @@ import {
 } from "../application/order-lifecycle.use-cases.js";
 import { CreateOrderUseCase, GetOrderUseCase } from "../application/order.use-cases.js";
 import { SelectProviderUseCase } from "../application/select-provider.use-case.js";
+import { UploadOrderImageUseCase } from "../application/upload-order-image.use-case.js";
+
+interface UploadedOrderImage {
+  readonly originalname: string;
+  readonly mimetype: string;
+  readonly size: number;
+  readonly buffer: Buffer;
+}
 
 @ApiTags("orders")
 @UseGuards(SessionAuthGuard)
@@ -26,7 +45,24 @@ export class OrdersController {
     private readonly selectProvider: SelectProviderUseCase,
     private readonly cancelOrder: CancelOrderUseCase,
     private readonly getContact: GetOrderContactUseCase,
+    private readonly uploadImage: UploadOrderImageUseCase,
   ) {}
+
+  @Post("images/upload")
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 20 * 1024 * 1024 } }))
+  @ApiOkResponse({ description: "Upload a single order image and return its storage metadata." })
+  async uploadOrderImage(
+    @UploadedFile() file: UploadedOrderImage,
+    @Req() request: IdentityRequest,
+  ) {
+    return this.uploadImage.execute({
+      customerUserId: this.requireUserId(request),
+      originalFilename: file.originalname,
+      contentType: file.mimetype,
+      sizeBytes: file.size,
+      body: file.buffer,
+    });
+  }
 
   @Post()
   @UseGuards(RateLimitGuard)

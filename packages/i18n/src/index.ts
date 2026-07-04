@@ -120,6 +120,11 @@ export type MessageKey =
   | "maps.orderLandmarkPlaceholder"
   | "maps.orderDescription"
   | "maps.orderDescriptionPlaceholder"
+  | "maps.orderPhotos"
+  | "maps.orderPhotosHint"
+  | "maps.orderPhotosAdd"
+  | "maps.orderPhotoUploading"
+  | "maps.orderPhotoUploadError"
   | "maps.orderPublish"
   | "maps.orderPublishing"
   | "maps.orderPublished"
@@ -357,6 +362,11 @@ const ru: Dictionary = {
   "maps.orderLandmarkPlaceholder": "Например, проспект Абая, рядом с АЗС",
   "maps.orderDescription": "Что нужно сделать",
   "maps.orderDescriptionPlaceholder": "Коротко опишите ситуацию",
+  "maps.orderPhotos": "Фотографии",
+  "maps.orderPhotosHint": "До 5 фото — помогут исполнителю понять ситуацию",
+  "maps.orderPhotosAdd": "Добавить фото",
+  "maps.orderPhotoUploading": "Загрузка...",
+  "maps.orderPhotoUploadError": "Не удалось загрузить фото",
   "maps.orderPublish": "Опубликовать заказ",
   "maps.orderPublishing": "Публикуем",
   "maps.orderPublished": "Заказ опубликован",
@@ -596,6 +606,11 @@ const kk: Dictionary = {
   "maps.orderLandmarkPlaceholder": "Мысалы, Абай даңғылы, жанармай бекетінің жанында",
   "maps.orderDescription": "Не істеу керек",
   "maps.orderDescriptionPlaceholder": "Жағдайды қысқаша сипаттаңыз",
+  "maps.orderPhotos": "Фотосуреттер",
+  "maps.orderPhotosHint": "5 фотоға дейін — орындаушыға жағдайды түсінуге көмектеседі",
+  "maps.orderPhotosAdd": "Фото қосу",
+  "maps.orderPhotoUploading": "Жүктелуде...",
+  "maps.orderPhotoUploadError": "Фотоны жүктеу мүмкін болмады",
   "maps.orderPublish": "Тапсырысты жариялау",
   "maps.orderPublishing": "Жариялануда",
   "maps.orderPublished": "Тапсырыс жарияланды",
@@ -834,6 +849,11 @@ const en: Dictionary = {
   "maps.orderLandmarkPlaceholder": "For example, Abay Avenue near the fuel station",
   "maps.orderDescription": "What needs to be done",
   "maps.orderDescriptionPlaceholder": "Briefly describe the situation",
+  "maps.orderPhotos": "Photos",
+  "maps.orderPhotosHint": "Up to 5 photos — help the provider understand the situation",
+  "maps.orderPhotosAdd": "Add photo",
+  "maps.orderPhotoUploading": "Uploading...",
+  "maps.orderPhotoUploadError": "Photo could not be uploaded",
   "maps.orderPublish": "Publish order",
   "maps.orderPublishing": "Publishing",
   "maps.orderPublished": "Order published",

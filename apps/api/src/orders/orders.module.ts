@@ -5,6 +5,7 @@ import { AuditModule } from "../foundation/audit/audit.module.js";
 import { AuthorizationModule } from "../foundation/authorization/authorization.module.js";
 import { ConfigurationModule } from "../foundation/configuration/configuration.module.js";
 import { DatabaseModule } from "../foundation/database/database.module.js";
+import { StorageModule } from "../foundation/storage/storage.module.js";
 import { WalletModule } from "../wallet/wallet.module.js";
 import {
   CancelOrderUseCase,
@@ -20,13 +21,21 @@ import {
   GetProviderActiveOrderUseCase,
 } from "./application/order.use-cases.js";
 import { SelectProviderUseCase } from "./application/select-provider.use-case.js";
+import { UploadOrderImageUseCase } from "./application/upload-order-image.use-case.js";
 import { OrdersRepository } from "./infrastructure/orders.repository.js";
 import { AdminOrdersController } from "./presentation/admin-orders.controller.js";
 import { OrdersController } from "./presentation/orders.controller.js";
 import { ProviderOrderLifecycleController } from "./presentation/provider-order-lifecycle.controller.js";
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule, WalletModule, AuthorizationModule, AuditModule],
+  imports: [
+    ConfigurationModule,
+    DatabaseModule,
+    WalletModule,
+    AuthorizationModule,
+    AuditModule,
+    StorageModule,
+  ],
   controllers: [OrdersController, ProviderOrderLifecycleController, AdminOrdersController],
   providers: [
     CommissionCalculator,
@@ -41,6 +50,7 @@ import { ProviderOrderLifecycleController } from "./presentation/provider-order-
     CompleteOrderUseCase,
     CancelOrderUseCase,
     GetOrderContactUseCase,
+    UploadOrderImageUseCase,
   ],
   exports: [OrdersRepository],
 })

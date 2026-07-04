@@ -542,6 +542,13 @@ interface OrderPanelProps {
   readonly onPointSelect?: (point: GeoPoint, address: string) => void;
 }
 
+interface OrderImageMeta {
+  readonly privateObjectKey: string;
+  readonly originalFilename: string;
+  readonly contentType: string;
+  readonly sizeBytes: number;
+}
+
 function OrderPanel({
   categories,
   catalogStatus,
@@ -565,8 +572,56 @@ function OrderPanel({
     }
   }, [initialLandmark]);
   const [description, setDescription] = useState("");
+  const [images, setImages] = useState<ReadonlyArray<OrderImageMeta>>([]);
+  const [uploadingCount, setUploadingCount] = useState(0);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  async function handlePhotoSelect(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (files.length === 0) return;
+
+    const remaining = 5 - images.length;
+    const toUpload = files.slice(0, remaining);
+    if (toUpload.length === 0) return;
+
+    setPhotoError(null);
+    setUploadingCount((n) => n + toUpload.length);
+
+    const results = await Promise.allSettled(
+      toUpload.map(async (file) => {
+        const form = new FormData();
+        form.set("file", file);
+        return createBrowserApiClient().postForm<OrderImageMeta>(
+          "/backend/v1/orders/images/upload",
+          form,
+        );
+      }),
+    );
+
+    const succeeded: OrderImageMeta[] = [];
+    let hadError = false;
+    for (const result of results) {
+      if (result.status === "fulfilled") {
+        succeeded.push(result.value);
+      } else {
+        hadError = true;
+      }
+    }
+
+    setImages((prev) => [...prev, ...succeeded]);
+    setUploadingCount((n) => n - toUpload.length);
+    if (hadError) {
+      setPhotoError(translate(locale, "maps.orderPhotoUploadError"));
+    }
+  }
+
+  function removePhoto(privateObjectKey: string) {
+    setImages((prev) => prev.filter((img) => img.privateObjectKey !== privateObjectKey));
+  }
 
   async function publishOrder() {
     if (!selectedPoint) {
@@ -588,7 +643,7 @@ function OrderPanel({
           readonly longitude: number;
           readonly addressLandmark: string;
           readonly description: string;
-          readonly images: [];
+          readonly images: ReadonlyArray<OrderImageMeta>;
           readonly unlockingLawfulAccess: Readonly<Record<string, never>>;
         }
       >("/backend/v1/orders", {
@@ -597,7 +652,7 @@ function OrderPanel({
         longitude: selectedPoint.longitude,
         addressLandmark: landmark,
         description,
-        images: [],
+        images,
         unlockingLawfulAccess: {},
       });
       onPublished(order);
@@ -770,6 +825,53 @@ function OrderPanel({
         />
       </label>
 
+      <div className="order-photos-field">
+        <span className="field-label">{translate(locale, "maps.orderPhotos")}</span>
+        <p className="order-photos-hint">{translate(locale, "maps.orderPhotosHint")}</p>
+        {images.length > 0 ? (
+          <ul className="order-photos-list" aria-label={translate(locale, "maps.orderPhotos")}>
+            {images.map((img) => (
+              <li className="order-photo-item" key={img.privateObjectKey}>
+                <span className="order-photo-name">{img.originalFilename}</span>
+                <button
+                  aria-label={`Удалить ${img.originalFilename}`}
+                  className="icon-button"
+                  onClick={() => removePhoto(img.privateObjectKey)}
+                  type="button"
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {uploadingCount > 0 ? (
+          <p className="order-photos-uploading" aria-busy="true">
+            {translate(locale, "maps.orderPhotoUploading")}
+          </p>
+        ) : null}
+        {photoError ? (
+          <p className="order-photos-error" role="alert">
+            {photoError}
+          </p>
+        ) : null}
+        {images.length < 5 ? (
+          <label className="provider-file-button" htmlFor="order-photos-input">
+            {translate(locale, "maps.orderPhotosAdd")}
+            <input
+              accept="image/jpeg,image/png,image/webp"
+              aria-label={translate(locale, "maps.orderPhotosAdd")}
+              id="order-photos-input"
+              multiple
+              onChange={(e) => void handlePhotoSelect(e)}
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              type="file"
+            />
+          </label>
+        ) : null}
+      </div>
+
       {status ? (
         <p className="order-panel-status" role="status">
           {status}
@@ -778,7 +880,7 @@ function OrderPanel({
 
       <Button
         className="w-full"
-        disabled={!canPublish || isPublishing}
+        disabled={!canPublish || isPublishing || uploadingCount > 0}
         onClick={() => void publishOrder()}
       >
         {translate(locale, isPublishing ? "maps.orderPublishing" : "maps.orderPublish")}
